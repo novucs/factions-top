@@ -6,9 +6,11 @@
 
     <groupId>net.novucs</groupId>
     <artifactId>factions-top</artifactId>
-    <name>FactionsTop</name>
     <version>1.0.0-SNAPSHOT</version>
-    <description>An efficient and comprehensive factions ranking system</description>
+    <packaging>pom</packaging>
+
+    <name>FactionsTop-Parent</name>
+    <description>An efficient and comprehensive factions ranking system.</description>
 
     <build>
         <finalName>${project.name}</finalName>
@@ -30,6 +32,23 @@
             </plugin>
         </plugins>
     </build>
+
+    <scm>
+        <url>https://github.com/novucs/factions-top</url>
+        <connection>scm:git:ssh://git@github.com/novucs/factions-top.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/novucs/factions-top.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/novucs/factions-top/issues</url>
+    </issueManagement>
+
+    <modules>
+        <module>hook</module>
+        <module>core</module>
+    </modules>
 
     <repositories>
         <repository>

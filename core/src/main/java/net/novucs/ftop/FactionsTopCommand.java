@@ -43,7 +43,7 @@ public class FactionsTopCommand implements CommandExecutor, Listener, PluginServ
     }
 
     private void sendTop(CommandSender sender, int page) {
-        // Do not attempt to send factions worth if page requested is beyond the limit.
+        // Do not attempt to send hook worth if page requested is beyond the limit.
         int entries = plugin.getSettings().getFactionsPerPage();
         List<FactionWorth> factions = plugin.getWorthManager().getOrderedFactions();
         if (factions.size() < entries * page) {

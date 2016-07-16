@@ -1,6 +1,7 @@
 package net.novucs.ftop;
 
 import com.google.common.collect.ImmutableList;
+import net.novucs.ftop.hook.FactionsHook;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.plugin.java.JavaPlugin;
 

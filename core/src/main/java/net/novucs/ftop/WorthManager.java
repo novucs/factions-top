@@ -68,7 +68,7 @@ public final class WorthManager {
 
     private FactionWorth getFactionWorth(ChunkPos pos) {
         // Do nothing if chunk is not claimed.
-        UUID factionId = plugin.getFactionsHook().getFactionAt(pos);
+        UUID factionId = plugin.getFactionsHook().getFactionAt(pos.getWorld(), pos.getX(), pos.getZ());
         if (factionId == null) return null;
 
         // Get the stats of the chunk owning faction.

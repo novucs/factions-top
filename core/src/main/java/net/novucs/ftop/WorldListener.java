@@ -40,8 +40,7 @@ public class WorldListener implements Listener, PluginService {
 
     private void updateWorth(BlockEvent event, boolean negate) {
         // Do nothing if this area should not be calculated.
-        ChunkPos chunk = ChunkPos.of(event.getBlock());
-        UUID factionId = plugin.getFactionsHook().getFactionAt(chunk);
+        UUID factionId = plugin.getFactionsHook().getFactionAt(event.getBlock());
         if (factionId == null || !plugin.getSettings().isEnabled(WorthType.PLACED)) {
             return;
         }
@@ -51,6 +50,6 @@ public class WorldListener implements Listener, PluginService {
         if (price == 0) return;
 
         // Add block price to the count.
-        plugin.getWorthManager().addPlaced(chunk, negate ? -price : price);
+        plugin.getWorthManager().addPlaced(ChunkPos.of(event.getBlock()), negate ? -price : price);
     }
 }
