@@ -122,9 +122,14 @@ public class Settings {
         return config.getString(path);
     }
 
+    private ConfigurationSection getOrCreateSection(String key) {
+        return config.getConfigurationSection(key) == null ?
+                config.createSection(key) : config.getConfigurationSection(key);
+    }
+
     private <T> List<?> getList(String key, List<T> def) {
-        config.addDefault("settings." + key, def);
-        return config.getList("settings." + key, config.getList("settings." + key));
+        config.addDefault(key, def);
+        return config.getList(key, config.getList(key));
     }
 
     private <E> List<E> getList(String key, List<E> def, Class<E> type) {
@@ -150,7 +155,7 @@ public class Settings {
 
     private <T extends Enum<T>> EnumMap<T, Boolean> parseStateMap(Class<T> type, String key, boolean def) {
         EnumMap<T, Boolean> target = new EnumMap<>(type);
-        for (String name : config.getConfigurationSection(key).getKeys(false)) {
+        for (String name : getOrCreateSection(key).getKeys(false)) {
             // Warn user if unable to parse enum.
             Optional<T> parsed = parseEnum(type, name);
             if (!parsed.isPresent()) {
@@ -165,7 +170,7 @@ public class Settings {
     }
 
     private <T extends Enum<T>> void addDefaults(Class<T> type, String key, boolean def, List<T> exempt) {
-        ConfigurationSection section = config.getConfigurationSection(key);
+        ConfigurationSection section = getOrCreateSection(key);
         for (T target : type.getEnumConstants()) {
             section.addDefault(target.name(), exempt.contains(target) == def);
         }
@@ -173,7 +178,7 @@ public class Settings {
 
     private <T extends Enum<T>> EnumMap<T, Double> parsePriceMap(Class<T> type, String key, double def) {
         EnumMap<T, Double> target = new EnumMap<>(type);
-        for (String name : config.getConfigurationSection(key).getKeys(false)) {
+        for (String name : getOrCreateSection(key).getKeys(false)) {
             // Warn user if unable to parse enum.
             Optional<T> parsed = parseEnum(type, name);
             if (!parsed.isPresent()) {
@@ -188,8 +193,8 @@ public class Settings {
     }
 
     private <T extends Enum<T>> void addDefaults(String key, Map<T, Double> prices) {
-        ConfigurationSection section = config.getConfigurationSection(key);
-        prices.forEach((type, price) -> section.addDefault(key + "." + type.name(), price));
+        ConfigurationSection section = getOrCreateSection(key);
+        prices.forEach((type, price) -> section.addDefault(type.name(), price));
     }
 
     private <T extends Enum<T>> EnumMap<T, Double> parseDefPrices(Class<T> type, Map<String, Double> def) {
