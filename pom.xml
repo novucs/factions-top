@@ -46,7 +46,8 @@
     </issueManagement>
 
     <modules>
-        <module>hook</module>
+        <module>hook
+        </module>
         <module>core</module>
     </modules>
 
@@ -54,6 +55,10 @@
         <repository>
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+        </repository>
+        <repository>
+            <id>minelink-repo</id>
+            <url>http://repo.minelink.net/content/repositories/public/</url>
         </repository>
     </repositories>
 

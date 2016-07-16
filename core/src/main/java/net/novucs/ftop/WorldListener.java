@@ -8,8 +8,6 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 
-import java.util.UUID;
-
 public class WorldListener implements Listener, PluginService {
 
     private final FactionsTopPlugin plugin;
@@ -40,7 +38,7 @@ public class WorldListener implements Listener, PluginService {
 
     private void updateWorth(BlockEvent event, boolean negate) {
         // Do nothing if this area should not be calculated.
-        UUID factionId = plugin.getFactionsHook().getFactionAt(event.getBlock());
+        String factionId = plugin.getFactionsHook().getFactionAt(event.getBlock());
         if (factionId == null || !plugin.getSettings().isEnabled(WorthType.PLACED)) {
             return;
         }

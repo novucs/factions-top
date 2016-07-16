@@ -6,7 +6,7 @@ public final class WorthManager {
 
     private final FactionsTopPlugin plugin;
     private final Map<ChunkPos, ChunkWorth> chunks = new HashMap<>();
-    private final Map<UUID, FactionWorth> factions = new HashMap<>();
+    private final Map<String, FactionWorth> factions = new HashMap<>();
     private final List<FactionWorth> orderedFactions = new LinkedList<>();
 
     public WorthManager(FactionsTopPlugin plugin) {
@@ -68,7 +68,7 @@ public final class WorthManager {
 
     private FactionWorth getFactionWorth(ChunkPos pos) {
         // Do nothing if chunk is not claimed.
-        UUID factionId = plugin.getFactionsHook().getFactionAt(pos.getWorld(), pos.getX(), pos.getZ());
+        String factionId = plugin.getFactionsHook().getFactionAt(pos);
         if (factionId == null) return null;
 
         // Get the stats of the chunk owning faction.
@@ -109,7 +109,7 @@ public final class WorthManager {
         sort(factionWorth);
     }
 
-    public void remove(UUID factionId) {
+    public void remove(String factionId) {
         FactionWorth factionWorth = factions.remove(factionId);
         orderedFactions.remove(factionWorth);
     }

@@ -6,23 +6,23 @@ import java.util.UUID;
 
 public class FactionWorth implements Comparable<FactionWorth> {
 
-    private final UUID uniqueId;
+    private final String uniqueId;
     private final EnumMap<WorthType, Double> worth;
     private String name;
     private double totalWorth = 0;
 
-    public FactionWorth(UUID uniqueId, String name) {
+    public FactionWorth(String uniqueId, String name) {
         this(uniqueId, new EnumMap<>(WorthType.class), name);
     }
 
-    public FactionWorth(UUID uniqueId, EnumMap<WorthType, Double> worth, String name) {
+    public FactionWorth(String uniqueId, EnumMap<WorthType, Double> worth, String name) {
         this.uniqueId = uniqueId;
         this.worth = worth;
         this.name = name;
         worth.values().forEach(v -> totalWorth += v);
     }
 
-    public UUID getUniqueId() {
+    public String getUniqueId() {
         return uniqueId;
     }
 

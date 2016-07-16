@@ -12,18 +12,28 @@
     </parent>
 
     <groupId>net.novucs.ftop.hook</groupId>
-    <artifactId>factions-2-8</artifactId>
+    <artifactId>factions-2-7</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>Factions-Hook-v2.8.x</name>
-    <description>Provides support for Factions 2.8.x.</description>
+    <name>Factions-Hook-v2.7.x</name>
+    <description>Provides support for Factions 2.7.x.</description>
 
     <dependencies>
         <dependency>
             <groupId>net.novucs.ftop.hook</groupId>
             <artifactId>manager</artifactId>
             <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.massivecraft</groupId>
+            <artifactId>Factions</artifactId>
+            <version>2.7.5</version>
+        </dependency>
+        <dependency>
+            <groupId>com.massivecraft</groupId>
+            <artifactId>MassiveCore</artifactId>
+            <version>2.7.5</version>
         </dependency>
     </dependencies>
 </project>
