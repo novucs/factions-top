@@ -110,7 +110,7 @@ public class FactionsTopCommand implements CommandExecutor, Listener, PluginServ
             }
 
             FactionWorth worth = it.next();
-            ChatColor relationColor = getRelationColor(sender, worth.getUniqueId());
+            ChatColor relationColor = getRelationColor(sender, worth.getFactionId());
             FancyMessage message = new FancyMessage((i + 1) + ". ").color(ChatColor.YELLOW)
                     .then(worth.getName()).color(relationColor)
                     .then(currencyFormat.format(worth.getTotalWorth())).color(ChatColor.AQUA);

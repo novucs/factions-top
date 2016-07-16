@@ -2,28 +2,27 @@ package net.novucs.ftop;
 
 import java.util.EnumMap;
 import java.util.Objects;
-import java.util.UUID;
 
 public class FactionWorth implements Comparable<FactionWorth> {
 
-    private final String uniqueId;
+    private final String factionId;
     private final EnumMap<WorthType, Double> worth;
     private String name;
     private double totalWorth = 0;
 
-    public FactionWorth(String uniqueId, String name) {
-        this(uniqueId, new EnumMap<>(WorthType.class), name);
+    public FactionWorth(String factionId, String name) {
+        this(factionId, new EnumMap<>(WorthType.class), name);
     }
 
-    public FactionWorth(String uniqueId, EnumMap<WorthType, Double> worth, String name) {
-        this.uniqueId = uniqueId;
+    public FactionWorth(String factionId, EnumMap<WorthType, Double> worth, String name) {
+        this.factionId = factionId;
         this.worth = worth;
         this.name = name;
         worth.values().forEach(v -> totalWorth += v);
     }
 
-    public String getUniqueId() {
-        return uniqueId;
+    public String getFactionId() {
+        return factionId;
     }
 
     public double getWorth(WorthType worthType) {
@@ -62,20 +61,20 @@ public class FactionWorth implements Comparable<FactionWorth> {
         if (o == null || getClass() != o.getClass()) return false;
         FactionWorth that = (FactionWorth) o;
         return Double.compare(that.totalWorth, totalWorth) == 0 &&
-                Objects.equals(uniqueId, that.uniqueId) &&
+                Objects.equals(factionId, that.factionId) &&
                 Objects.equals(worth, that.worth) &&
                 Objects.equals(name, that.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(uniqueId, worth, name, totalWorth);
+        return Objects.hash(factionId, worth, name, totalWorth);
     }
 
     @Override
     public String toString() {
         return "FactionWorth{" +
-                "uniqueId=" + uniqueId +
+                "factionId=" + factionId +
                 ", worth=" + worth +
                 ", name='" + name + '\'' +
                 ", totalWorth=" + totalWorth +
