@@ -24,16 +24,19 @@
             <groupId>net.novucs.ftop.hook</groupId>
             <artifactId>manager</artifactId>
             <version>1.0.0-SNAPSHOT</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.massivecraft</groupId>
             <artifactId>Factions</artifactId>
             <version>2.7.5</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.massivecraft</groupId>
             <artifactId>MassiveCore</artifactId>
             <version>2.7.5</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

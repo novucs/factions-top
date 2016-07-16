@@ -10,7 +10,7 @@
     <packaging>pom</packaging>
 
     <name>FactionsTop-Parent</name>
-    <description>An efficient and comprehensive factions ranking system.</description>
+    <description>Parent project for all FactionsTop modules.</description>
 
     <build>
         <finalName>${project.name}</finalName>

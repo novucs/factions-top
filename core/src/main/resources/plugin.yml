@@ -3,3 +3,4 @@ main: net.novucs.ftop.FactionsTopPlugin
 version: ${project.version}
 description: ${project.description}
 author: novucs
+depend: [Factions]

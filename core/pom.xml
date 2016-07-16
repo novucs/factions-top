@@ -17,18 +17,47 @@
     <packaging>jar</packaging>
 
     <name>FactionsTop</name>
-    <description>Core codebase behind the factions top statistics calculator.</description>
+    <description>An efficient and comprehensive factions ranking system.</description>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.4.3</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
     <dependencies>
         <dependency>
             <groupId>net.novucs.ftop.hook</groupId>
-            <artifactId>factions-2-8</artifactId>
+            <artifactId>factions-1-6</artifactId>
             <version>1.0.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.novucs.ftop.hook</groupId>
+            <artifactId>factions-2-7</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>net.novucs.ftop.hook</groupId>
             <artifactId>manager</artifactId>
             <version>1.0.0-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>

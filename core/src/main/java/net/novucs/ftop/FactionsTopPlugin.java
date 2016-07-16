@@ -1,8 +1,11 @@
 package net.novucs.ftop;
 
 import com.google.common.collect.ImmutableList;
+import net.novucs.ftop.hook.Factions16x;
+import net.novucs.ftop.hook.Factions27x;
 import net.novucs.ftop.hook.FactionsHook;
 import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
@@ -10,7 +13,6 @@ import java.util.logging.Level;
 
 public final class FactionsTopPlugin extends JavaPlugin {
 
-    private final ChunkWorthTask chunkWorthTask = new ChunkWorthTask(this);
     private final Settings settings = new Settings(this);
     private final WorthManager worthManager = new WorthManager(this);
     private final ImmutableList<PluginService> services = ImmutableList.of(
@@ -21,10 +23,6 @@ public final class FactionsTopPlugin extends JavaPlugin {
 
     private boolean active;
     private FactionsHook factionsHook;
-
-    public ChunkWorthTask getChunkWorthTask() {
-        return chunkWorthTask;
-    }
 
     public Settings getSettings() {
         return settings;
@@ -40,6 +38,13 @@ public final class FactionsTopPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        if (!loadFactionsHook()) {
+            getLogger().severe("No valid version of factions was found!");
+            getLogger().severe("Disabling FactionsTop . . .");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
         loadSettings();
     }
 
@@ -47,6 +52,26 @@ public final class FactionsTopPlugin extends JavaPlugin {
     public void onDisable() {
         services.forEach(PluginService::terminate);
         active = false;
+    }
+
+    public boolean loadFactionsHook() {
+        Plugin factions = getServer().getPluginManager().getPlugin("Factions");
+        if (factions == null) {
+            return false;
+        }
+
+        // Attempt to find a valid hook for the factions version.
+        switch (factions.getDescription().getVersion().substring(0, 3)) {
+            case "1.6":
+                factionsHook = new Factions16x(this);
+                return true;
+            case "2.7":
+            case "2.8":
+                factionsHook = new Factions27x(this);
+                return true;
+        }
+
+        return false;
     }
 
     /**
@@ -66,6 +91,7 @@ public final class FactionsTopPlugin extends JavaPlugin {
 
             // Update the plugin state to active.
             active = true;
+            return;
         } catch (InvalidConfigurationException e) {
             getLogger().severe("Unable to load settings from config.yml");
             getLogger().severe("The configuration you have provided has invalid syntax.");

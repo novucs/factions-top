@@ -24,6 +24,7 @@
             <groupId>net.novucs.ftop.hook</groupId>
             <artifactId>manager</artifactId>
             <version>1.0.0-SNAPSHOT</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.massivecraft</groupId>
@@ -35,6 +36,7 @@
                     <artifactId>fanciful</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>
