@@ -12,7 +12,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ChunkWorthTask extends Thread {
+public class ChunkWorthTask extends Thread implements PluginService {
 
     private final FactionsTopPlugin plugin;
     private final AtomicBoolean running = new AtomicBoolean(false);
@@ -23,18 +23,19 @@ public class ChunkWorthTask extends Thread {
         this.plugin = plugin;
     }
 
-    public void queue(ChunkSnapshot snapshot) {
-        queue.add(snapshot);
+    @Override
+    public void initialize() {
+        running.set(true);
+        start();
     }
 
     @Override
-    public void start() {
-        running.set(true);
-        super.start();
+    public void terminate() {
+        running.set(false);
     }
 
-    public void finish() {
-        running.set(false);
+    public void queue(ChunkSnapshot snapshot) {
+        queue.add(snapshot);
     }
 
     @Override

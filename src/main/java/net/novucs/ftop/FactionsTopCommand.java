@@ -5,18 +5,29 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
 import java.util.List;
 import java.util.ListIterator;
 
-public class FactionsTopCommand implements CommandExecutor, Listener {
+public class FactionsTopCommand implements CommandExecutor, Listener, PluginService {
 
     private final FactionsTopPlugin plugin;
 
     public FactionsTopCommand(FactionsTopPlugin plugin) {
         this.plugin = plugin;
+    }
+
+    @Override
+    public void initialize() {
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+    }
+
+    @Override
+    public void terminate() {
+        HandlerList.unregisterAll(this);
     }
 
     @Override

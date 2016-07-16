@@ -2,6 +2,7 @@ package net.novucs.ftop;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockEvent;
@@ -9,12 +10,22 @@ import org.bukkit.event.block.BlockPlaceEvent;
 
 import java.util.UUID;
 
-public class WorldListener implements Listener {
+public class WorldListener implements Listener, PluginService {
 
     private final FactionsTopPlugin plugin;
 
     public WorldListener(FactionsTopPlugin plugin) {
         this.plugin = plugin;
+    }
+
+    @Override
+    public void initialize() {
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+    }
+
+    @Override
+    public void terminate() {
+        HandlerList.unregisterAll(this);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
