@@ -93,10 +93,6 @@ public final class WorthManager {
         sort(factionWorth);
     }
 
-    public void updatePlaced(Map<ChunkPos, Double> placed) {
-        placed.forEach(this::updatePlaced);
-    }
-
     public void addPlaced(ChunkPos pos, double placed) {
         FactionWorth factionWorth = getFactionWorth(pos);
         if (factionWorth == null) return;

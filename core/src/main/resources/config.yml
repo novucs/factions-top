@@ -1,10 +1,6 @@
 # FactionsTop configuration.
 
 config-version: 1
-messages:
-  header: ""
-  entry: ""
-  footer: ""
 settings:
   command-aliases:
   - "f top"

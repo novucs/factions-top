@@ -1,12 +1,11 @@
 package net.novucs.ftop.hook;
 
-import com.massivecraft.factions.entity.BoardColl;
-import com.massivecraft.factions.entity.Faction;
-import com.massivecraft.factions.entity.FactionColl;
-import com.massivecraft.factions.entity.MFlag;
+import com.massivecraft.factions.entity.*;
 import com.massivecraft.factions.event.EventFactionsDisband;
 import com.massivecraft.factions.event.EventFactionsNameChange;
 import com.massivecraft.massivecore.ps.PS;
+import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.plugin.Plugin;
@@ -26,6 +25,13 @@ public class Factions27x extends FactionsHook {
     @Override
     public String getFactionName(String factionId) {
         return FactionColl.get().get(factionId).getName();
+    }
+
+    @Override
+    public ChatColor getRelation(Player player, String factionId) {
+        MPlayer mplayer = MPlayer.get(player);
+        Faction faction = Faction.get(factionId);
+        return mplayer.getFaction().getRelationTo(faction).getColor();
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

@@ -22,11 +22,6 @@ public class Settings {
     private FileConfiguration config;
     private File configFile;
 
-    // Message settings.
-    private String headerMessage;
-    private String entryMessage;
-    private String footerMessage;
-
     // General settings.
     private List<String> commandAliases;
     private int factionsPerPage;
@@ -221,7 +216,7 @@ public class Settings {
         // Load all configuration values into memory.
         int version = getInt("config-version", 0);
         commandAliases = getList("settings.command-aliases", Collections.singletonList("f top"), String.class);
-        factionsPerPage = getInt("settings.hook-per-page", 8);
+        factionsPerPage = getInt("settings.hook-per-page", 9);
         maxBatchSize = getInt("settings.max-batch-size", 10);
         maxQueueSize = getInt("settings.max-queue-size", 200);
         chunkRecalculateMillis = getLong("settings.chunk-recalculate-millis", 120000);

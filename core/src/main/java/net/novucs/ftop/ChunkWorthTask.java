@@ -4,10 +4,6 @@ import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -41,15 +37,16 @@ public class ChunkWorthTask extends Thread implements PluginService {
     @Override
     public void run() {
         while (running.get()) {
-            Set<ChunkSnapshot> toProcess = new HashSet<>();
-            queue.drainTo(toProcess);
-
-            Map<ChunkPos, Double> batch = new HashMap<>();
-            for (ChunkSnapshot snapshot : toProcess) {
-                batch.put(ChunkPos.of(snapshot), getWorth(snapshot));
+            ChunkSnapshot snapshot;
+            try {
+                snapshot = queue.take();
+            } catch (InterruptedException e) {
+                throw new RuntimeException("An exception occurred while attempting to take from the chunk snapshot queue.", e);
             }
 
-            plugin.getServer().getScheduler().runTask(plugin, () -> plugin.getWorthManager().updatePlaced(batch));
+            ChunkPos pos = ChunkPos.of(snapshot);
+            double worth = getWorth(snapshot);
+            plugin.getServer().getScheduler().runTask(plugin, () -> plugin.getWorthManager().updatePlaced(pos, worth));
         }
     }
 

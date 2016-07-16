@@ -2,7 +2,9 @@ package net.novucs.ftop.hook;
 
 import net.novucs.ftop.ChunkPos;
 import net.novucs.ftop.PluginService;
+import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
@@ -40,4 +42,6 @@ public abstract class FactionsHook implements Listener, PluginService {
     public abstract String getFactionAt(String worldName, int chunkX, int chunkZ);
 
     public abstract String getFactionName(String factionId);
+
+    public abstract ChatColor getRelation(Player player, String factionId);
 }
