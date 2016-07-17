@@ -33,7 +33,7 @@ public final class WorthManager {
         // Remove the current value.
         ListIterator<FactionWorth> it = orderedFactions.listIterator();
         while (it.hasNext()) {
-            if (it.next().equals(factionWorth)) {
+            if (it.next() == factionWorth) {
                 it.remove();
                 break;
             }

@@ -28,8 +28,8 @@ public class ChunkWorth {
             throw new IllegalArgumentException("Liquid worth cannot be associated with chunks!");
         }
 
-        double prev = this.worth.put(worthType, worth);
-        totalWorth += worth - prev;
+        Double prev = this.worth.put(worthType, worth);
+        totalWorth += worth - (prev == null ? 0 : prev);
     }
 
     public void addWorth(WorthType worthType, double worth) {
