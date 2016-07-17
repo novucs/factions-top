@@ -122,6 +122,11 @@ public class Settings {
                 config.createSection(key) : config.getConfigurationSection(key);
     }
 
+    private ConfigurationSection getOrDefaultSection(String key) {
+        return config.getConfigurationSection(key).getKeys(false).isEmpty() ?
+                config.getDefaults().getConfigurationSection(key) : config.getConfigurationSection(key);
+    }
+
     private <T> List<?> getList(String key, List<T> def) {
         config.addDefault(key, def);
         return config.getList(key, config.getList(key));
@@ -150,7 +155,8 @@ public class Settings {
 
     private <T extends Enum<T>> EnumMap<T, Boolean> parseStateMap(Class<T> type, String key, boolean def) {
         EnumMap<T, Boolean> target = new EnumMap<>(type);
-        for (String name : getOrCreateSection(key).getKeys(false)) {
+        ConfigurationSection section = getOrDefaultSection(key);
+        for (String name : section.getKeys(false)) {
             // Warn user if unable to parse enum.
             Optional<T> parsed = parseEnum(type, name);
             if (!parsed.isPresent()) {
@@ -159,7 +165,7 @@ public class Settings {
             }
 
             // Add the parsed enum and value to the target map.
-            target.put(parsed.get(), getBoolean(key + "." + name, def));
+            target.put(parsed.get(), section.getBoolean(name, def));
         }
         return target;
     }
@@ -167,13 +173,14 @@ public class Settings {
     private <T extends Enum<T>> void addDefaults(Class<T> type, String key, boolean def, List<T> exempt) {
         ConfigurationSection section = getOrCreateSection(key);
         for (T target : type.getEnumConstants()) {
-            section.addDefault(target.name(), exempt.contains(target) == def);
+            section.addDefault(target.name(), exempt.contains(target) != def);
         }
     }
 
     private <T extends Enum<T>> EnumMap<T, Double> parsePriceMap(Class<T> type, String key, double def) {
         EnumMap<T, Double> target = new EnumMap<>(type);
-        for (String name : getOrCreateSection(key).getKeys(false)) {
+        ConfigurationSection section = getOrDefaultSection(key);
+        for (String name : section.getKeys(false)) {
             // Warn user if unable to parse enum.
             Optional<T> parsed = parseEnum(type, name);
             if (!parsed.isPresent()) {
@@ -182,7 +189,7 @@ public class Settings {
             }
 
             // Add the parsed enum and value to the target map.
-            target.put(parsed.get(), getDouble(key + "." + name, def));
+            target.put(parsed.get(), section.getDouble(name, def));
         }
         return target;
     }
