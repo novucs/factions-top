@@ -4,6 +4,13 @@ config-version: 1
 settings:
   command-aliases:
   - "f top"
+  ignored-faction-ids:
+  - "none"
+  - "safezone"
+  - "warzone"
+  - "0"
+  - "-1"
+  - "-2"
   factions-per-page: 8
   max-batch-size: 10
   max-queue-size: 200

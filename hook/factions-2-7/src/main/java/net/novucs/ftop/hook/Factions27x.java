@@ -29,7 +29,7 @@ public class Factions27x extends FactionsHook {
     @Override
     public String getFactionAt(String worldName, int chunkX, int chunkZ) {
         Faction faction = BoardColl.get().getFactionAt(PS.valueOf(worldName, chunkX, chunkZ));
-        return faction.getFlag(MFlag.getFlagPeaceful()) ? null : faction.getId();
+        return faction.getId();
     }
 
     @Override
@@ -61,17 +61,9 @@ public class Factions27x extends FactionsHook {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onClaim(EventFactionsChunksChange event) {
-        // Gather all claims used in this event.
         Multimap<String, ChunkPos> claims = HashMultimap.create();
-        event.getOldFactionChunks().forEach((faction, chunks) ->
-                claims.putAll(faction.getFlag(MFlag.getFlagPeaceful()) ? null : faction.getId(), psToChunkPos(chunks)));
-
-        // Get the faction ID, null if non-participating faction.
-        Faction faction = event.getNewFaction();
-        String factionId = faction.getFlag(MFlag.getFlagPeaceful()) ? null : faction.getId();
-
-        // Call the event.
-        callEvent(new FactionClaimEvent(factionId, claims));
+        event.getOldFactionChunks().forEach((faction, chunks) -> claims.putAll(faction.getId(), psToChunkPos(chunks)));
+        callEvent(new FactionClaimEvent(event.getNewFaction().getId(), claims));
     }
 
     private Set<ChunkPos> psToChunkPos(Set<PS> positions) {

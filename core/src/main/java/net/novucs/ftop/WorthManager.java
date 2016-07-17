@@ -68,13 +68,15 @@ public final class WorthManager {
     }
 
     private FactionWorth getFactionWorth(ChunkPos pos) {
-        // Do nothing if chunk is not claimed.
-        String factionId = plugin.getFactionsHook().getFactionAt(pos);
-        if (factionId == null) return null;
-        return getFactionWorth(factionId);
+        return getFactionWorth(plugin.getFactionsHook().getFactionAt(pos));
     }
 
     private FactionWorth getFactionWorth(String factionId) {
+        // No faction worth is associated with ignored faction IDs.
+        if (plugin.getSettings().getIgnoredFactionIds().contains(factionId)) {
+            return null;
+        }
+
         return factions.compute(factionId, (k, v) -> {
             if (v == null) {
                 v = new FactionWorth(k, plugin.getFactionsHook().getFactionName(k));
@@ -85,6 +87,7 @@ public final class WorthManager {
     }
 
     public void updatePlaced(ChunkPos pos, double placed) {
+        // Do nothing if faction worth is null.
         FactionWorth factionWorth = getFactionWorth(pos);
         if (factionWorth == null) return;
 
@@ -97,6 +100,7 @@ public final class WorthManager {
     }
 
     public void addPlaced(ChunkPos pos, double placed) {
+        // Do nothing if faction worth is null.
         FactionWorth factionWorth = getFactionWorth(pos);
         if (factionWorth == null) return;
 
@@ -109,11 +113,9 @@ public final class WorthManager {
     }
 
     public void add(String factionId, Collection<ChunkPos> claims) {
-        // Do nothing if faction ID is null.
-        if (factionId == null) return;
-
-        // Get the relevant faction worth.
+        // Do nothing if faction worth is null.
         FactionWorth factionWorth = getFactionWorth(factionId);
+        if (factionWorth == null) return;
 
         // Add all placed and chest worth of each claim to the faction.
         for (ChunkPos pos : claims) {
@@ -127,11 +129,9 @@ public final class WorthManager {
     }
 
     public void remove(String factionId, Collection<ChunkPos> claims) {
-        // Do nothing if faction ID is null.
-        if (factionId == null) return;
-
-        // Get the relevant faction worth.
+        // Do nothing if faction worth is null.
         FactionWorth factionWorth = getFactionWorth(factionId);
+        if (factionWorth == null) return;
 
         // Take all placed and chest worth of each claim to the faction.
         for (ChunkPos pos : claims) {

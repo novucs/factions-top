@@ -23,7 +23,7 @@ public class Factions16x extends FactionsHook {
     @Override
     public String getFactionAt(String worldName, int chunkX, int chunkZ) {
         Faction faction = Board.getInstance().getFactionAt(new FLocation(worldName, chunkX, chunkZ));
-        return faction.isPeaceful() ? null : faction.getId();
+        return faction.getId();
     }
 
     @Override
@@ -65,7 +65,7 @@ public class Factions16x extends FactionsHook {
     public void onClaim(LandUnclaimEvent event) {
         Multimap<String, ChunkPos> claims = HashMultimap.create();
         claims.put(event.getFaction().getId(), getChunkPos(event.getLocation()));
-        callEvent(new FactionClaimEvent(null, claims));
+        callEvent(new FactionClaimEvent(Factions.getInstance().getNone().getId(), claims));
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -74,7 +74,7 @@ public class Factions16x extends FactionsHook {
         for (FLocation location : event.getFaction().getClaimOwnership().keySet()) {
             claims.put(event.getFaction().getId(), getChunkPos(location));
         }
-        callEvent(new FactionClaimEvent(null, claims));
+        callEvent(new FactionClaimEvent(Factions.getInstance().getNone().getId(), claims));
     }
 
     private ChunkPos getChunkPos(FLocation location) {

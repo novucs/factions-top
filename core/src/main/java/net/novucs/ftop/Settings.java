@@ -24,6 +24,7 @@ public class Settings {
 
     // General settings.
     private List<String> commandAliases;
+    private List<String> ignoredFactionIds;
     private int factionsPerPage;
     private int maxBatchSize;
     private int maxQueueSize;
@@ -42,6 +43,10 @@ public class Settings {
 
     public List<String> getCommandAliases() {
         return commandAliases;
+    }
+
+    public List<String> getIgnoredFactionIds() {
+        return ignoredFactionIds;
     }
 
     public int getFactionsPerPage() {
@@ -223,6 +228,7 @@ public class Settings {
         // Load all configuration values into memory.
         int version = getInt("config-version", 0);
         commandAliases = getList("settings.command-aliases", Collections.singletonList("f top"), String.class);
+        ignoredFactionIds = getList("settings.ignored-faction-ids", Arrays.asList("none", "safezone", "warzone", "0", "-1", "-2"), String.class);
         factionsPerPage = getInt("settings.hook-per-page", 9);
         maxBatchSize = getInt("settings.max-batch-size", 10);
         maxQueueSize = getInt("settings.max-queue-size", 200);
