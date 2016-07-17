@@ -19,6 +19,10 @@ public class ChunkPos {
         return new ChunkPos(snapshot.getWorldName(), snapshot.getX(), snapshot.getZ());
     }
 
+    public static ChunkPos of(String world, int x, int z) {
+        return new ChunkPos(world, x, z);
+    }
+
     private ChunkPos(String world, int x, int z) {
         this.world = world;
         this.x = x;

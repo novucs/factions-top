@@ -60,6 +60,7 @@ public final class WorthManager {
     private ChunkWorth getChunkWorth(ChunkPos pos) {
         return chunks.compute(pos, (k, v) -> {
             if (v == null) {
+                // TODO: Add chunk to calculation queue.
                 v = new ChunkWorth(this);
             }
             return v;
@@ -70,8 +71,10 @@ public final class WorthManager {
         // Do nothing if chunk is not claimed.
         String factionId = plugin.getFactionsHook().getFactionAt(pos);
         if (factionId == null) return null;
+        return getFactionWorth(factionId);
+    }
 
-        // Get the stats of the chunk owning faction.
+    private FactionWorth getFactionWorth(String factionId) {
         return factions.compute(factionId, (k, v) -> {
             if (v == null) {
                 v = new FactionWorth(k, plugin.getFactionsHook().getFactionName(k));
@@ -102,6 +105,42 @@ public final class WorthManager {
         double oldWorth = chunkWorth.getWorth(WorthType.PLACED);
         chunkWorth.setWorth(WorthType.PLACED, placed + oldWorth);
         factionWorth.addWorth(WorthType.PLACED, placed);
+        sort(factionWorth);
+    }
+
+    public void add(String factionId, Collection<ChunkPos> claims) {
+        // Do nothing if faction ID is null.
+        if (factionId == null) return;
+
+        // Get the relevant faction worth.
+        FactionWorth factionWorth = getFactionWorth(factionId);
+
+        // Add all placed and chest worth of each claim to the faction.
+        for (ChunkPos pos : claims) {
+            ChunkWorth chunkWorth = getChunkWorth(pos);
+            factionWorth.addWorth(WorthType.PLACED, chunkWorth.getWorth(WorthType.PLACED));
+            factionWorth.addWorth(WorthType.CHESTS, chunkWorth.getWorth(WorthType.CHESTS));
+        }
+
+        // Adjust factions location.
+        sort(factionWorth);
+    }
+
+    public void remove(String factionId, Collection<ChunkPos> claims) {
+        // Do nothing if faction ID is null.
+        if (factionId == null) return;
+
+        // Get the relevant faction worth.
+        FactionWorth factionWorth = getFactionWorth(factionId);
+
+        // Take all placed and chest worth of each claim to the faction.
+        for (ChunkPos pos : claims) {
+            ChunkWorth chunkWorth = getChunkWorth(pos);
+            factionWorth.addWorth(WorthType.PLACED, -chunkWorth.getWorth(WorthType.PLACED));
+            factionWorth.addWorth(WorthType.CHESTS, -chunkWorth.getWorth(WorthType.CHESTS));
+        }
+
+        // Adjust factions location.
         sort(factionWorth);
     }
 

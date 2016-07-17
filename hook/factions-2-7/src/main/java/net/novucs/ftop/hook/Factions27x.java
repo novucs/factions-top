@@ -1,14 +1,24 @@
 package net.novucs.ftop.hook;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.massivecraft.factions.entity.*;
+import com.massivecraft.factions.event.EventFactionsChunkChangeType;
+import com.massivecraft.factions.event.EventFactionsChunksChange;
 import com.massivecraft.factions.event.EventFactionsDisband;
 import com.massivecraft.factions.event.EventFactionsNameChange;
 import com.massivecraft.massivecore.ps.PS;
+import net.novucs.ftop.ChunkPos;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.plugin.Plugin;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Factions27x extends FactionsHook {
 
@@ -38,7 +48,7 @@ public class Factions27x extends FactionsHook {
     public void onDisband(EventFactionsDisband event) {
         String factionId = event.getFactionId();
         String factionName = event.getFaction().getName();
-        getPlugin().getServer().getPluginManager().callEvent(new FactionDisbandEvent(factionId, factionName));
+        callEvent(new FactionDisbandEvent(factionId, factionName));
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -46,6 +56,33 @@ public class Factions27x extends FactionsHook {
         String factionId = event.getFaction().getId();
         String oldName = event.getFaction().getName();
         String newName = event.getNewName();
-        getPlugin().getServer().getPluginManager().callEvent(new FactionRenameEvent(factionId, oldName, newName));
+        callEvent(new FactionRenameEvent(factionId, oldName, newName));
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onClaim(EventFactionsChunksChange event) {
+        // Gather all claims used in this event.
+        Multimap<String, ChunkPos> claims = HashMultimap.create();
+        event.getOldFactionChunks().forEach((faction, chunks) ->
+                claims.putAll(faction.getFlag(MFlag.getFlagPeaceful()) ? null : faction.getId(), psToChunkPos(chunks)));
+
+        // Get the faction ID, null if non-participating faction.
+        Faction faction = event.getNewFaction();
+        String factionId = faction.getFlag(MFlag.getFlagPeaceful()) ? null : faction.getId();
+
+        // Call the event.
+        callEvent(new FactionClaimEvent(factionId, claims));
+    }
+
+    private Set<ChunkPos> psToChunkPos(Set<PS> positions) {
+        return positions.stream().map(this::psToChunkPos).collect(Collectors.toSet());
+    }
+
+    private ChunkPos psToChunkPos(PS ps) {
+        return ChunkPos.of(ps.getWorld(), ps.getChunkX(), ps.getChunkZ());
+    }
+
+    private void callEvent(Event event) {
+        getPlugin().getServer().getPluginManager().callEvent(event);
     }
 }

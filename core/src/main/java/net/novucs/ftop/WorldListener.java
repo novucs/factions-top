@@ -1,5 +1,6 @@
 package net.novucs.ftop;
 
+import net.novucs.ftop.hook.FactionClaimEvent;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
@@ -49,5 +50,14 @@ public class WorldListener implements Listener, PluginService {
 
         // Add block price to the count.
         plugin.getWorthManager().addPlaced(ChunkPos.of(event.getBlock()), negate ? -price : price);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void updateWorth(FactionClaimEvent event) {
+        String newFactionId = event.getFactionId();
+        event.getClaims().asMap().forEach((factionId, claims) -> {
+            plugin.getWorthManager().add(newFactionId, claims);
+            plugin.getWorthManager().remove(factionId, claims);
+        });
     }
 }
