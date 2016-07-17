@@ -30,6 +30,7 @@ public class FactionWorth implements Comparable<FactionWorth> {
     }
 
     public void setWorth(WorthType worthType, double worth) {
+        worth = Math.max(0, worth);
         Double prev = this.worth.put(worthType, worth);
         totalWorth += worth - (prev == null ? 0 : prev);
     }
