@@ -1,6 +1,5 @@
 package net.novucs.ftop;
 
-import com.google.common.collect.ImmutableList;
 import net.novucs.ftop.hook.Factions16x;
 import net.novucs.ftop.hook.Factions27x;
 import net.novucs.ftop.hook.FactionsHook;
@@ -9,17 +8,20 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 
 public final class FactionsTopPlugin extends JavaPlugin {
 
     private final Settings settings = new Settings(this);
     private final WorthManager worthManager = new WorthManager(this);
-    private final ImmutableList<PluginService> services = ImmutableList.of(
+    private final Set<PluginService> services = new HashSet<>(Arrays.asList(
             new ChunkWorthTask(this),
             new FactionsTopCommand(this),
             new WorldListener(this)
-    );
+    ));
 
     private boolean active;
     private FactionsHook factionsHook;
@@ -45,6 +47,7 @@ public final class FactionsTopPlugin extends JavaPlugin {
             return;
         }
 
+        services.add(factionsHook);
         loadSettings();
     }
 
