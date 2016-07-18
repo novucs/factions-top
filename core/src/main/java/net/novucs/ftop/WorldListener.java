@@ -1,6 +1,7 @@
 package net.novucs.ftop;
 
 import net.novucs.ftop.hook.FactionClaimEvent;
+import net.novucs.ftop.hook.FactionDisbandEvent;
 import org.bukkit.block.Block;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.event.EventHandler;
@@ -76,5 +77,10 @@ public class WorldListener implements Listener, PluginService {
             plugin.getWorthManager().update(newFactionId, claims, false);
             plugin.getWorthManager().update(oldFactionId, claims, true);
         });
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void removeFaction(FactionDisbandEvent event) {
+        plugin.getWorthManager().remove(event.getFactionId());
     }
 }
