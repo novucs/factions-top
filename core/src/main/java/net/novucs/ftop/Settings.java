@@ -235,7 +235,7 @@ public class Settings {
         chunkRecalculateMillis = getLong("settings.chunk-recalculate-millis", 120000);
         batchRecalculateMillis = getLong("settings.batch-recalculate-millis", 15000);
 
-        addDefaults(WorthType.class, "settings.enabled", true, Collections.singletonList(WorthType.CHESTS));
+        addDefaults(WorthType.class, "settings.enabled", true, Collections.singletonList(WorthType.CHEST));
         enabled = parseStateMap(WorthType.class, "settings.enabled", false);
 
         addDefaults(WorthType.class, "settings.detailed", true, Collections.emptyList());

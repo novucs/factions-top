@@ -1,7 +1,8 @@
 package net.novucs.ftop;
 
+import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
-import org.bukkit.block.Block;
+import org.bukkit.Server;
 
 import java.util.Objects;
 
@@ -11,8 +12,8 @@ public class ChunkPos {
     private final int x;
     private final int z;
 
-    public static ChunkPos of(Block block) {
-        return new ChunkPos(block.getWorld().getName(), block.getX() >> 4, block.getZ() >> 4);
+    public static ChunkPos of(Chunk chunk) {
+        return new ChunkPos(chunk.getWorld().getName(), chunk.getX(), chunk.getZ());
     }
 
     public static ChunkPos of(ChunkSnapshot snapshot) {
@@ -39,6 +40,10 @@ public class ChunkPos {
 
     public int getZ() {
         return z;
+    }
+
+    public Chunk getChunk(Server server) {
+        return server.getWorld(world).getChunkAt(x, z);
     }
 
     @Override

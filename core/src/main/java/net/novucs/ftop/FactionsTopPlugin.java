@@ -16,9 +16,10 @@ import java.util.logging.Level;
 public final class FactionsTopPlugin extends JavaPlugin {
 
     private final Settings settings = new Settings(this);
+    private final ChunkWorthTask chunkWorthTask = new ChunkWorthTask(this);
     private final WorthManager worthManager = new WorthManager(this);
     private final Set<PluginService> services = new HashSet<>(Arrays.asList(
-            new ChunkWorthTask(this),
+            chunkWorthTask,
             new FactionsTopCommand(this),
             new WorldListener(this)
     ));
@@ -28,6 +29,10 @@ public final class FactionsTopPlugin extends JavaPlugin {
 
     public Settings getSettings() {
         return settings;
+    }
+
+    public ChunkWorthTask getChunkWorthTask() {
+        return chunkWorthTask;
     }
 
     public WorthManager getWorthManager() {

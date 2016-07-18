@@ -1,12 +1,13 @@
 package net.novucs.ftop;
 
 import net.novucs.ftop.hook.FactionClaimEvent;
+import org.bukkit.block.Block;
+import org.bukkit.block.CreatureSpawner;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 
 public class WorldListener implements Listener, PluginService {
@@ -29,35 +30,51 @@ public class WorldListener implements Listener, PluginService {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void updateWorth(BlockPlaceEvent event) {
-        updateWorth(event, false);
+        updateWorth(event.getBlock(), RecalculateReason.PLACE, false);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void updateWorth(BlockBreakEvent event) {
-        updateWorth(event, true);
+        updateWorth(event.getBlock(), RecalculateReason.BREAK, true);
     }
 
-    private void updateWorth(BlockEvent event, boolean negate) {
+    private void updateWorth(Block block, RecalculateReason reason, boolean negate) {
         // Do nothing if this area should not be calculated.
-        String factionId = plugin.getFactionsHook().getFactionAt(event.getBlock());
-        if (factionId == null || !plugin.getSettings().isEnabled(WorthType.PLACED)) {
+        String factionId = plugin.getFactionsHook().getFactionAt(block);
+        if (plugin.getSettings().getIgnoredFactionIds().contains(factionId)) {
             return;
         }
 
-        // Do nothing if price of the placed block is nothing.
-        double price = plugin.getSettings().getBlockPrice(event.getBlock().getType());
-        if (price == 0) return;
+        // Get the worth type and price of this event.
+        double price;
+        WorthType worthType;
+
+        switch (block.getType()) {
+            case MOB_SPAWNER:
+                worthType = WorthType.SPAWNER;
+                price = plugin.getSettings().getSpawnerPrice(((CreatureSpawner) block.getState()).getSpawnedType());
+                break;
+            default:
+                worthType = WorthType.BLOCK;
+                price = plugin.getSettings().getBlockPrice(block.getType());
+                break;
+        }
+
+        // Do nothing if price of the placed block is nothing or if this worth type is not enabled.
+        if (price == 0 || !plugin.getSettings().isEnabled(worthType)) {
+            return;
+        }
 
         // Add block price to the count.
-        plugin.getWorthManager().addPlaced(ChunkPos.of(event.getBlock()), negate ? -price : price);
+        plugin.getWorthManager().add(block.getChunk(), reason, worthType, negate ? -price : price);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void updateWorth(FactionClaimEvent event) {
         String newFactionId = event.getFactionId();
-        event.getClaims().asMap().forEach((factionId, claims) -> {
-            plugin.getWorthManager().add(newFactionId, claims);
-            plugin.getWorthManager().remove(factionId, claims);
+        event.getClaims().asMap().forEach((oldFactionId, claims) -> {
+            plugin.getWorthManager().update(newFactionId, claims, false);
+            plugin.getWorthManager().update(oldFactionId, claims, true);
         });
     }
 }

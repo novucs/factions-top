@@ -2,7 +2,6 @@ package net.novucs.ftop;
 
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
-import org.bukkit.entity.EntityType;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -15,7 +14,7 @@ public class ChunkWorthTask extends Thread implements PluginService {
     private final BlockingQueue<ChunkSnapshot> queue = new LinkedBlockingQueue<>();
 
     public ChunkWorthTask(FactionsTopPlugin plugin) {
-        super("Chunk Worth Task");
+        super("ChunkWorthTask");
         this.plugin = plugin;
     }
 
@@ -46,28 +45,32 @@ public class ChunkWorthTask extends Thread implements PluginService {
 
             ChunkPos pos = ChunkPos.of(snapshot);
             double worth = getWorth(snapshot);
-            plugin.getServer().getScheduler().runTask(plugin, () -> plugin.getWorthManager().updatePlaced(pos, worth));
+            plugin.getServer().getScheduler().runTask(plugin, () -> plugin.getWorthManager().set(pos, WorthType.BLOCK, worth));
         }
     }
 
     private double getWorth(ChunkSnapshot snapshot) {
         double worth = 0;
-        for (int x = 0; x < 16; x++) {
-            for (int z = 0; z < 16; z++) {
-                for (int y = 0; y < snapshot.getHighestBlockYAt(z, x); y++) {
+
+        for (int y = 0; y < 256; y++) {
+            // ChunkSnapshot#getHighestBlockYAt(x, y) for whatever reason
+            // provides us with a half complete chunk in Spigot v1.10.x. So
+            // we're testing if the chunk section is empty instead.
+            if (snapshot.isSectionEmpty(y >> 4)) {
+                y += 15;
+                continue;
+            }
+
+            for (int x = 0; x < 16; x++) {
+                for (int z = 0; z < 16; z++) {
                     Material material = Material.getMaterial(snapshot.getBlockTypeId(x, y, z));
-                    if (material == null) continue;
-
-                    if (material == Material.MOB_SPAWNER) {
-                        EntityType entityType = EntityType.fromId(snapshot.getBlockData(x, y, z));
-                        worth += plugin.getSettings().getSpawnerPrice(entityType);
-                        continue;
+                    if (material != null) {
+                        worth += plugin.getSettings().getBlockPrice(material);
                     }
-
-                    worth += plugin.getSettings().getBlockPrice(material);
                 }
             }
         }
+
         return worth;
     }
 }

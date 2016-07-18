@@ -5,16 +5,15 @@ import java.util.Objects;
 
 public class ChunkWorth {
 
-    private final WorthManager manager;
     private final EnumMap<WorthType, Double> worth;
     private double totalWorth = 0;
+    private long nextRecalculation;
 
-    public ChunkWorth(WorthManager manager) {
-        this(manager, new EnumMap<>(WorthType.class));
+    public ChunkWorth() {
+        this(new EnumMap<>(WorthType.class));
     }
 
-    public ChunkWorth(WorthManager manager, EnumMap<WorthType, Double> worth) {
-        this.manager = manager;
+    public ChunkWorth(EnumMap<WorthType, Double> worth) {
         this.worth = worth;
         worth.forEach((k, v) -> this.totalWorth += k == WorthType.LIQUID ? 0d : v);
     }
@@ -41,27 +40,35 @@ public class ChunkWorth {
         return totalWorth;
     }
 
+    public long getNextRecalculation() {
+        return nextRecalculation;
+    }
+
+    public void setNextRecalculation(long nextRecalculation) {
+        this.nextRecalculation = nextRecalculation;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ChunkWorth that = (ChunkWorth) o;
         return Double.compare(that.totalWorth, totalWorth) == 0 &&
-                Objects.equals(manager, that.manager) &&
+                nextRecalculation == that.nextRecalculation &&
                 Objects.equals(worth, that.worth);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(manager, worth, totalWorth);
+        return Objects.hash(worth, totalWorth, nextRecalculation);
     }
 
     @Override
     public String toString() {
         return "ChunkWorth{" +
-                "manager=" + manager +
-                ", worth=" + worth +
+                "worth=" + worth +
                 ", totalWorth=" + totalWorth +
+                ", nextRecalculation=" + nextRecalculation +
                 '}';
     }
 }
