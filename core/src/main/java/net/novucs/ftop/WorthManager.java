@@ -276,6 +276,19 @@ public final class WorthManager {
     }
 
     /**
+     * Renames a listed faction.
+     *
+     * @param factionId the faction ID.
+     * @param newName   the new faction name.
+     */
+    protected void rename(String factionId, String newName) {
+        FactionWorth factionWorth = factions.getOrDefault(factionId, null);
+        if (factionWorth != null) {
+            factionWorth.setName(newName);
+        }
+    }
+
+    /**
      * Removes a faction from the list.
      *
      * @param factionId the ID of the faction to remove.
