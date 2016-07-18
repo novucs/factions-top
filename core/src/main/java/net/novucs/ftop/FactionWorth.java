@@ -29,13 +29,13 @@ public class FactionWorth implements Comparable<FactionWorth> {
         return worth.getOrDefault(worthType, 0d);
     }
 
-    public void setWorth(WorthType worthType, double worth) {
+    protected void setWorth(WorthType worthType, double worth) {
         worth = Math.max(0, worth);
         Double prev = this.worth.put(worthType, worth);
         totalWorth += worth - (prev == null ? 0 : prev);
     }
 
-    public void addWorth(WorthType worthType, double worth) {
+    protected void addWorth(WorthType worthType, double worth) {
         setWorth(worthType, getWorth(worthType) + worth);
     }
 
@@ -43,7 +43,7 @@ public class FactionWorth implements Comparable<FactionWorth> {
         return name;
     }
 
-    public void setName(String name) {
+    protected void setName(String name) {
         this.name = name;
     }
 
