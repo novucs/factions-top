@@ -1,25 +1,19 @@
-package net.novucs.ftop.hook;
+package net.novucs.ftop.hook.event;
 
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-public class FactionDisbandEvent extends Event {
+public class FactionEvent extends Event {
 
     private static final HandlerList handlers = new HandlerList();
     private final String factionId;
-    private final String name;
 
-    public FactionDisbandEvent(String factionId, String name) {
+    public FactionEvent(String factionId) {
         this.factionId = factionId;
-        this.name = name;
     }
 
     public String getFactionId() {
         return factionId;
-    }
-
-    public String getName() {
-        return name;
     }
 
     @Override

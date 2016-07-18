@@ -1,6 +1,7 @@
 package net.novucs.ftop;
 
 import com.google.common.collect.ImmutableMap;
+import net.novucs.ftop.hook.VaultEconomyHook;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -26,6 +27,7 @@ public class Settings {
     private List<String> commandAliases;
     private List<String> ignoredFactionIds;
     private int factionsPerPage;
+    private int liquidUpdateTicks;
     private int chunkQueueSize;
     private long chunkRecalculateMillis;
     private Map<WorthType, Boolean> enabled;
@@ -49,6 +51,10 @@ public class Settings {
 
     public int getFactionsPerPage() {
         return factionsPerPage;
+    }
+
+    public int getLiquidUpdateTicks() {
+        return liquidUpdateTicks;
     }
 
     public int getChunkQueueSize() {
@@ -220,6 +226,10 @@ public class Settings {
         commandAliases = getList("settings.command-aliases", Collections.singletonList("f top"), String.class);
         ignoredFactionIds = getList("settings.ignored-faction-ids", Arrays.asList("none", "safezone", "warzone", "0", "-1", "-2"), String.class);
         factionsPerPage = getInt("settings.factions-per-page", 9);
+        liquidUpdateTicks = getInt("settings.liquid-update-ticks", 100);
+        if (plugin.getEconomyHook() instanceof VaultEconomyHook) {
+            ((VaultEconomyHook) plugin.getEconomyHook()).setLiquidUpdateTicks(liquidUpdateTicks);
+        }
         chunkQueueSize = getInt("settings.chunk-queue-size", 200);
         chunkRecalculateMillis = getLong("settings.chunk-recalculate-millis", 120000);
 

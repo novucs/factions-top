@@ -1,23 +1,17 @@
-package net.novucs.ftop.hook;
+package net.novucs.ftop.hook.event;
 
 import com.google.common.collect.Multimap;
 import net.novucs.ftop.ChunkPos;
-import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-public class FactionClaimEvent extends Event {
+public class FactionClaimEvent extends FactionEvent {
 
     private static final HandlerList handlers = new HandlerList();
-    private final String factionId;
     private final Multimap<String, ChunkPos> claims;
 
     public FactionClaimEvent(String factionId, Multimap<String, ChunkPos> claims) {
-        this.factionId = factionId;
+        super(factionId);
         this.claims = claims;
-    }
-
-    public String getFactionId() {
-        return factionId;
     }
 
     public Multimap<String, ChunkPos> getClaims() {

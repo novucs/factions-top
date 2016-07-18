@@ -23,5 +23,14 @@
         <module>factions-1-6</module>
         <module>factions-2-7</module>
         <module>manager</module>
+        <module>essentials</module>
+        <module>vault</module>
     </modules>
+
+    <repositories>
+        <repository>
+            <id>minelink-repo</id>
+            <url>http://repo.minelink.net/content/repositories/public/</url>
+        </repository>
+    </repositories>
 </project>

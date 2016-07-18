@@ -1,8 +1,6 @@
 package net.novucs.ftop;
 
-import net.novucs.ftop.hook.FactionClaimEvent;
-import net.novucs.ftop.hook.FactionDisbandEvent;
-import net.novucs.ftop.hook.FactionRenameEvent;
+import net.novucs.ftop.hook.event.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.event.EventHandler;
@@ -94,5 +92,28 @@ public class WorldListener implements Listener, PluginService {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void renameFaction(FactionRenameEvent event) {
         plugin.getWorthManager().rename(event.getFactionId(), event.getNewName());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void updateWorth(FactionEconomyEvent event) {
+        plugin.getWorthManager().add(event.getFactionId(), WorthType.LIQUID, event.getNewBalance() - event.getOldBalance());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void updateWorth(PlayerEconomyEvent event) {
+        String factionId = plugin.getFactionsHook().getFaction(event.getPlayer());
+        plugin.getWorthManager().add(factionId, WorthType.LIQUID, event.getNewBalance() - event.getOldBalance());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void updateWorth(FactionJoinEvent event) {
+        double balance = plugin.getEconomyHook().getBalance(event.getPlayer());
+        plugin.getWorthManager().add(event.getFactionId(), WorthType.LIQUID, balance);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void updateWorth(FactionLeaveEvent event) {
+        double balance = plugin.getEconomyHook().getBalance(event.getPlayer());
+        plugin.getWorthManager().add(event.getFactionId(), WorthType.LIQUID, -balance);
     }
 }

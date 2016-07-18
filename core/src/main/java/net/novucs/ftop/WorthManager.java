@@ -30,6 +30,15 @@ public final class WorthManager {
     }
 
     /**
+     * Returns all loaded faction IDs.
+     *
+     * @return all faction IDs.
+     */
+    public Set<String> getFactionIds() {
+        return Collections.unmodifiableSet(factions.keySet());
+    }
+
+    /**
      * Adds a faction worth profile to the ordered factions list.
      *
      * @param factionWorth the profile to add.
@@ -278,6 +287,28 @@ public final class WorthManager {
         }
 
         // Adjust faction worth position.
+        sort(factionWorth);
+    }
+
+    /**
+     * Adds to a faction worth.
+     *
+     * @param factionId the faction ID.
+     * @param worthType the worth type.
+     * @param worth     the worth to add.
+     */
+    protected void add(String factionId, WorthType worthType, double worth) {
+        // Do nothing if the worth type must be placed.
+        if (WorthType.isPlaced(worthType)) {
+            return;
+        }
+
+        // Do nothing if faction worth is null.
+        FactionWorth factionWorth = getFactionWorth(factionId);
+        if (factionWorth == null) return;
+
+        // Update faction with the new worth and adjust the worth position.
+        factionWorth.addWorth(worthType, worth);
         sort(factionWorth);
     }
 

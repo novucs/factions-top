@@ -12,4 +12,12 @@ public enum WorthType {
     public static WorthType[] getPlaced() {
         return PLACED;
     }
+
+    public static boolean isPlaced(WorthType worthType) {
+        switch (worthType) {
+            case LIQUID:
+                return false;
+        }
+        return true;
+    }
 }

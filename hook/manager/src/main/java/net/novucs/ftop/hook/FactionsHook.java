@@ -41,7 +41,11 @@ public abstract class FactionsHook implements Listener, PluginService {
 
     public abstract String getFactionAt(String worldName, int chunkX, int chunkZ);
 
+    public abstract String getFaction(Player player);
+
     public abstract String getFactionName(String factionId);
+
+    public abstract boolean isFaction(String factionId);
 
     public abstract ChatColor getRelation(Player player, String factionId);
 }

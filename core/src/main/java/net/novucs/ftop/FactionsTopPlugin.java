@@ -1,8 +1,6 @@
 package net.novucs.ftop;
 
-import net.novucs.ftop.hook.Factions16x;
-import net.novucs.ftop.hook.Factions27x;
-import net.novucs.ftop.hook.FactionsHook;
+import net.novucs.ftop.hook.*;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -25,6 +23,7 @@ public final class FactionsTopPlugin extends JavaPlugin {
     ));
 
     private boolean active;
+    private EconomyHook economyHook;
     private FactionsHook factionsHook;
 
     public Settings getSettings() {
@@ -37,6 +36,10 @@ public final class FactionsTopPlugin extends JavaPlugin {
 
     public WorthManager getWorthManager() {
         return worthManager;
+    }
+
+    public EconomyHook getEconomyHook() {
+        return economyHook;
     }
 
     public FactionsHook getFactionsHook() {
@@ -52,6 +55,10 @@ public final class FactionsTopPlugin extends JavaPlugin {
             return;
         }
 
+        if (loadEconomyHook()) {
+            services.add(economyHook);
+        }
+
         services.add(factionsHook);
         loadSettings();
     }
@@ -60,6 +67,23 @@ public final class FactionsTopPlugin extends JavaPlugin {
     public void onDisable() {
         services.forEach(PluginService::terminate);
         active = false;
+    }
+
+    public boolean loadEconomyHook() {
+        Plugin essentials = getServer().getPluginManager().getPlugin("Essentials");
+        if (essentials != null) {
+            economyHook = new EssentialsEconomyHook(this, factionsHook);
+            getLogger().info("Essentials found, using as economy backend.");
+            return true;
+        }
+
+        Plugin vault = getServer().getPluginManager().getPlugin("Vault");
+        if (vault != null) {
+            economyHook = new VaultEconomyHook(this, worthManager.getFactionIds());
+            getLogger().info("Vault found, using as economy backend.");
+            return true;
+        }
+        return false;
     }
 
     public boolean loadFactionsHook() {

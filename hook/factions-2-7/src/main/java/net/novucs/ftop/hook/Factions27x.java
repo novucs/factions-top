@@ -2,13 +2,17 @@ package net.novucs.ftop.hook;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.massivecraft.factions.entity.*;
-import com.massivecraft.factions.event.EventFactionsChunkChangeType;
+import com.massivecraft.factions.entity.BoardColl;
+import com.massivecraft.factions.entity.Faction;
+import com.massivecraft.factions.entity.FactionColl;
+import com.massivecraft.factions.entity.MPlayer;
 import com.massivecraft.factions.event.EventFactionsChunksChange;
 import com.massivecraft.factions.event.EventFactionsDisband;
+import com.massivecraft.factions.event.EventFactionsMembershipChange;
 import com.massivecraft.factions.event.EventFactionsNameChange;
 import com.massivecraft.massivecore.ps.PS;
 import net.novucs.ftop.ChunkPos;
+import net.novucs.ftop.hook.event.*;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -16,7 +20,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.plugin.Plugin;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -33,8 +36,18 @@ public class Factions27x extends FactionsHook {
     }
 
     @Override
+    public String getFaction(Player player) {
+        return MPlayer.get(player).getFaction().getId();
+    }
+
+    @Override
     public String getFactionName(String factionId) {
         return FactionColl.get().get(factionId).getName();
+    }
+
+    @Override
+    public boolean isFaction(String factionId) {
+        return FactionColl.get().get(factionId) != null;
     }
 
     @Override
@@ -64,6 +77,17 @@ public class Factions27x extends FactionsHook {
         Multimap<String, ChunkPos> claims = HashMultimap.create();
         event.getOldFactionChunks().forEach((faction, chunks) -> claims.putAll(faction.getId(), psToChunkPos(chunks)));
         callEvent(new FactionClaimEvent(event.getNewFaction().getId(), claims));
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onMembershipChange(EventFactionsMembershipChange event) {
+        Player player = event.getMPlayer().getPlayer();
+        Faction oldFaction = event.getMPlayer().getFaction();
+        Faction newFaction = event.getNewFaction();
+        String oldFactionId = event.getMPlayer().getFaction().getId();
+        String newFactionId = oldFaction == newFaction ? FactionColl.get().getNone().getId() : newFaction.getId();
+        callEvent(new FactionLeaveEvent(oldFactionId, player));
+        callEvent(new FactionJoinEvent(newFactionId, player));
     }
 
     private Set<ChunkPos> psToChunkPos(Set<PS> positions) {

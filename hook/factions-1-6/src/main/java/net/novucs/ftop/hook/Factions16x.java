@@ -3,10 +3,11 @@ package net.novucs.ftop.hook;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.massivecraft.factions.*;
-import com.massivecraft.factions.event.LandClaimEvent;
-import com.massivecraft.factions.event.LandUnclaimAllEvent;
-import com.massivecraft.factions.event.LandUnclaimEvent;
+import com.massivecraft.factions.event.*;
 import net.novucs.ftop.ChunkPos;
+import net.novucs.ftop.hook.event.*;
+import net.novucs.ftop.hook.event.FactionDisbandEvent;
+import net.novucs.ftop.hook.event.FactionRenameEvent;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -27,8 +28,18 @@ public class Factions16x extends FactionsHook {
     }
 
     @Override
+    public String getFaction(Player player) {
+        return FPlayers.getInstance().getByPlayer(player).getFaction().getId();
+    }
+
+    @Override
     public String getFactionName(String factionId) {
         return Factions.getInstance().getFactionById(factionId).getTag();
+    }
+
+    @Override
+    public boolean isFaction(String factionId) {
+        return Factions.getInstance().getFactionById(factionId) != null;
     }
 
     @Override
@@ -75,6 +86,20 @@ public class Factions16x extends FactionsHook {
             claims.put(event.getFaction().getId(), getChunkPos(location));
         }
         callEvent(new FactionClaimEvent(Factions.getInstance().getNone().getId(), claims));
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onJoin(FPlayerJoinEvent event) {
+        Player player = event.getfPlayer().getPlayer();
+        String factionId = event.getFaction().getId();
+        callEvent(new FactionJoinEvent(factionId, player));
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onLeave(FPlayerLeaveEvent event) {
+        Player player = event.getfPlayer().getPlayer();
+        String factionId = event.getFaction().getId();
+        callEvent(new FactionLeaveEvent(factionId, player));
     }
 
     private ChunkPos getChunkPos(FLocation location) {
