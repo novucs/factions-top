@@ -26,10 +26,8 @@ public class Settings {
     private List<String> commandAliases;
     private List<String> ignoredFactionIds;
     private int factionsPerPage;
-    private int maxBatchSize;
-    private int maxQueueSize;
+    private int chunkQueueSize;
     private long chunkRecalculateMillis;
-    private long batchRecalculateMillis;
     private Map<WorthType, Boolean> enabled;
     private Map<WorthType, Boolean> detailed;
     private Map<RecalculateReason, Boolean> performRecalculate;
@@ -53,20 +51,12 @@ public class Settings {
         return factionsPerPage;
     }
 
-    public int getMaxBatchSize() {
-        return maxBatchSize;
-    }
-
-    public int getMaxQueueSize() {
-        return maxQueueSize;
+    public int getChunkQueueSize() {
+        return chunkQueueSize;
     }
 
     public long getChunkRecalculateMillis() {
         return chunkRecalculateMillis;
-    }
-
-    public long getBatchRecalculateMillis() {
-        return batchRecalculateMillis;
     }
 
     public boolean isEnabled(WorthType worthType) {
@@ -230,10 +220,8 @@ public class Settings {
         commandAliases = getList("settings.command-aliases", Collections.singletonList("f top"), String.class);
         ignoredFactionIds = getList("settings.ignored-faction-ids", Arrays.asList("none", "safezone", "warzone", "0", "-1", "-2"), String.class);
         factionsPerPage = getInt("settings.hook-per-page", 9);
-        maxBatchSize = getInt("settings.max-batch-size", 10);
-        maxQueueSize = getInt("settings.max-queue-size", 200);
+        chunkQueueSize = getInt("settings.chunk-queue-size", 200);
         chunkRecalculateMillis = getLong("settings.chunk-recalculate-millis", 120000);
-        batchRecalculateMillis = getLong("settings.batch-recalculate-millis", 15000);
 
         addDefaults(WorthType.class, "settings.enabled", true, Collections.singletonList(WorthType.CHEST));
         enabled = parseStateMap(WorthType.class, "settings.enabled", false);

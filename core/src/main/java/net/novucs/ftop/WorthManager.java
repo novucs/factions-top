@@ -209,7 +209,9 @@ public final class WorthManager {
     private void recalculate(ChunkWorth chunkWorth, ChunkPos pos, Chunk chunk, RecalculateReason reason) {
         // Do not recalculate the chunk value if not within the recalculation period.
         if (chunkWorth.getNextRecalculation() >= System.currentTimeMillis() &&
-                !plugin.getSettings().isBypassRecalculateDelay(reason)) {
+                !plugin.getSettings().isBypassRecalculateDelay(reason) ||
+                !plugin.getSettings().isPerformRecalculate(reason) ||
+                plugin.getSettings().getChunkQueueSize() <= plugin.getChunkWorthTask().getQueueSize()) {
             return;
         }
 

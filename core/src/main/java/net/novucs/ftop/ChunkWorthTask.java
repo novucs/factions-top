@@ -33,6 +33,10 @@ public class ChunkWorthTask extends Thread implements PluginService {
         queue.add(snapshot);
     }
 
+    public int getQueueSize() {
+        return queue.size();
+    }
+
     @Override
     public void run() {
         while (running.get()) {
