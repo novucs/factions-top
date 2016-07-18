@@ -11,6 +11,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 
 public class WorldListener implements Listener, PluginService {
 
@@ -38,6 +39,11 @@ public class WorldListener implements Listener, PluginService {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void updateWorth(BlockBreakEvent event) {
         updateWorth(event.getBlock(), RecalculateReason.BREAK, true);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void updateWorth(EntityExplodeEvent event) {
+        event.blockList().forEach(block -> updateWorth(block, RecalculateReason.EXPLODE, true));
     }
 
     private void updateWorth(Block block, RecalculateReason reason, boolean negate) {

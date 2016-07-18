@@ -227,8 +227,12 @@ public final class WorthManager {
         // Occasionally block updates are not updated in the chunk on the
         // same tick, getting the chunk snapshot in the next tick fixes
         // this issue.
-        plugin.getServer().getScheduler().runTask(plugin, () ->
-                plugin.getChunkWorthTask().queue(chunk.getChunkSnapshot()));
+        plugin.getServer().getScheduler().runTask(plugin, () -> {
+            // Clear the recalculate queue in the event of multiple block
+            // changes in the same tick.
+            recalculateQueue.row(pos).clear();
+            plugin.getChunkWorthTask().queue(chunk.getChunkSnapshot());
+        });
     }
 
     /**
