@@ -219,7 +219,7 @@ public class Settings {
         int version = getInt("config-version", 0);
         commandAliases = getList("settings.command-aliases", Collections.singletonList("f top"), String.class);
         ignoredFactionIds = getList("settings.ignored-faction-ids", Arrays.asList("none", "safezone", "warzone", "0", "-1", "-2"), String.class);
-        factionsPerPage = getInt("settings.hook-per-page", 9);
+        factionsPerPage = getInt("settings.factions-per-page", 9);
         chunkQueueSize = getInt("settings.chunk-queue-size", 200);
         chunkRecalculateMillis = getLong("settings.chunk-recalculate-millis", 120000);
 
