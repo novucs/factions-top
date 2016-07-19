@@ -1,8 +1,11 @@
 package net.novucs.ftop.hook;
 
 import com.earth2me.essentials.api.UserDoesNotExistException;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import net.ess3.api.Economy;
 import net.ess3.api.events.UserBalanceUpdateEvent;
+import net.novucs.ftop.WorthType;
 import net.novucs.ftop.hook.event.FactionEconomyEvent;
 import net.novucs.ftop.hook.event.PlayerEconomyEvent;
 import org.bukkit.entity.Player;
@@ -36,6 +39,11 @@ public class EssentialsEconomyHook implements EconomyHook, Listener {
         } catch (UserDoesNotExistException e) {
             return 0;
         }
+    }
+
+    @Override
+    public Table<String, WorthType, Double> getBalances() {
+        return HashBasedTable.create();
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

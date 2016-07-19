@@ -15,7 +15,7 @@ public class ChunkWorth {
 
     public ChunkWorth(EnumMap<WorthType, Double> worth) {
         this.worth = worth;
-        worth.forEach((k, v) -> this.totalWorth += k == WorthType.LIQUID ? 0d : v);
+        worth.forEach((k, v) -> this.totalWorth += WorthType.isPlaced(k) ? v : 0d);
     }
 
     public double getWorth(WorthType worthType) {
@@ -23,7 +23,7 @@ public class ChunkWorth {
     }
 
     public void setWorth(WorthType worthType, double worth) {
-        if (worthType == WorthType.LIQUID) {
+        if (!WorthType.isPlaced(worthType)) {
             throw new IllegalArgumentException("Liquid worth cannot be associated with chunks!");
         }
 

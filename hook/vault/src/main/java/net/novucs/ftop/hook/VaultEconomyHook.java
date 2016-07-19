@@ -1,6 +1,9 @@
 package net.novucs.ftop.hook;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import net.milkbowl.vault.economy.Economy;
+import net.novucs.ftop.WorthType;
 import net.novucs.ftop.hook.event.FactionEconomyEvent;
 import net.novucs.ftop.hook.event.PlayerEconomyEvent;
 import org.bukkit.entity.Player;
@@ -57,6 +60,11 @@ public class VaultEconomyHook extends BukkitRunnable implements EconomyHook, Lis
     @Override
     public double getBalance(Player player) {
         return economy.getBalance(player);
+    }
+
+    @Override
+    public Table<String, WorthType, Double> getBalances() {
+        return HashBasedTable.create();
     }
 
     @Override
