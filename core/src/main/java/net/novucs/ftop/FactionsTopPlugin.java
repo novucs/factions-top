@@ -23,6 +23,7 @@ public final class FactionsTopPlugin extends JavaPlugin {
     ));
 
     private boolean active;
+    private CraftbukkitHook craftbukkitHook;
     private EconomyHook economyHook;
     private FactionsHook factionsHook;
 
@@ -36,6 +37,10 @@ public final class FactionsTopPlugin extends JavaPlugin {
 
     public WorthManager getWorthManager() {
         return worthManager;
+    }
+
+    public CraftbukkitHook getCraftbukkitHook() {
+        return craftbukkitHook;
     }
 
     public EconomyHook getEconomyHook() {
@@ -55,6 +60,8 @@ public final class FactionsTopPlugin extends JavaPlugin {
             return;
         }
 
+        loadCraftbukkitHook();
+
         if (loadEconomyHook()) {
             services.add(economyHook);
         }
@@ -69,7 +76,21 @@ public final class FactionsTopPlugin extends JavaPlugin {
         active = false;
     }
 
-    public boolean loadEconomyHook() {
+    private void loadCraftbukkitHook() {
+        String version = getServer().getClass().getPackage().getName().split("\\.")[3];
+
+        if (version.compareTo("v1_7_R4") <= 0 && version.split("_")[1].length() == 1) {
+            craftbukkitHook = new Craftbukkit17R4();
+        } else if (version.equals("v1_8_R1")) {
+            craftbukkitHook = new Craftbukkit18R1();
+        } else if (version.equals("v1_8_R2")) {
+            craftbukkitHook = new Craftbukkit18R2();
+        } else {
+            craftbukkitHook = new Craftbukkit18R3();
+        }
+    }
+
+    private boolean loadEconomyHook() {
         Plugin essentials = getServer().getPluginManager().getPlugin("Essentials");
         if (essentials != null) {
             economyHook = new EssentialsEconomyHook(this, factionsHook);
@@ -86,7 +107,7 @@ public final class FactionsTopPlugin extends JavaPlugin {
         return false;
     }
 
-    public boolean loadFactionsHook() {
+    private boolean loadFactionsHook() {
         Plugin factions = getServer().getPluginManager().getPlugin("Factions");
         if (factions == null) {
             return false;
@@ -111,7 +132,7 @@ public final class FactionsTopPlugin extends JavaPlugin {
      * the plugin will disable all services until the settings have been
      * corrected.
      */
-    public void loadSettings() {
+    private void loadSettings() {
         try {
             // Attempt to load the plugin settings.
             settings.load();

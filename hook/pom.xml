@@ -20,6 +20,10 @@
     <description>Parent project for all FactionsTop hooks.</description>
 
     <modules>
+        <module>craftbukkit-1-7-r4</module>
+        <module>craftbukkit-1-8-r1</module>
+        <module>craftbukkit-1-8-r2</module>
+        <module>craftbukkit-1-8-r3</module>
         <module>factions-1-6</module>
         <module>factions-2-7</module>
         <module>manager</module>

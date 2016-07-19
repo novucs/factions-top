@@ -4,7 +4,10 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import org.bukkit.Chunk;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.Chest;
 import org.bukkit.block.CreatureSpawner;
+import org.bukkit.entity.EntityType;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
 
@@ -225,8 +228,12 @@ public final class WorthManager {
         }
 
         // Update the chunk spawner worth on the main thread, unfortunately
-        // there is no better method of doing this.
+        // there is no better method of doing this. Same with chests.
         set(pos, WorthType.SPAWNER, getSpawnerWorth(chunk));
+
+        if (plugin.getSettings().isEnabled(WorthType.CHEST)) {
+            set(pos, WorthType.CHEST, getChestWorth(chunk));
+        }
 
         // Add chunk position to the recalculation queue with a dummy value.
         recalculateQueue.put(pos, WorthType.BLOCK, 0d);
@@ -257,6 +264,35 @@ public final class WorthManager {
         for (BlockState blockState : chunk.getTileEntities()) {
             if (blockState instanceof CreatureSpawner) {
                 worth += plugin.getSettings().getSpawnerPrice(((CreatureSpawner) blockState).getSpawnedType());
+            }
+        }
+        return worth;
+    }
+
+    private double getChestWorth(Chunk chunk) {
+        double worth = 0;
+        for (BlockState blockState : chunk.getTileEntities()) {
+            if (blockState instanceof Chest) {
+                worth += getChestWorth((Chest) blockState);
+            }
+        }
+        return worth;
+    }
+
+    private double getChestWorth(Chest chest) {
+        double worth = 0;
+        for (ItemStack item : chest.getBlockInventory()) {
+            if (item == null) {
+                continue;
+            }
+
+            switch (item.getType()) {
+                case MOB_SPAWNER:
+                    EntityType spawnerType = plugin.getCraftbukkitHook().getSpawnerType(item);
+                    worth += plugin.getSettings().getSpawnerPrice(spawnerType) * item.getAmount();
+                    continue;
+                default:
+                    worth += plugin.getSettings().getBlockPrice(item.getType()) * item.getAmount();
             }
         }
         return worth;
