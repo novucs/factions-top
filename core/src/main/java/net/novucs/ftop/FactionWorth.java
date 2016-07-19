@@ -1,23 +1,31 @@
 package net.novucs.ftop;
 
+import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
+
+import java.util.Collections;
 import java.util.EnumMap;
-import java.util.Objects;
+import java.util.Map;
 
 public class FactionWorth implements Comparable<FactionWorth> {
 
     private final String factionId;
-    private final EnumMap<WorthType, Double> worth;
+    private final Map<WorthType, Double> worth;
+    private final Map<Material, Integer> materials;
+    private final Map<EntityType, Integer> spawners;
     private String name;
     private double totalWorth = 0;
 
     public FactionWorth(String factionId, String name) {
-        this(factionId, new EnumMap<>(WorthType.class), name);
+        this(factionId, name, new EnumMap<>(WorthType.class), new EnumMap<>(Material.class), new EnumMap<>(EntityType.class));
     }
 
-    public FactionWorth(String factionId, EnumMap<WorthType, Double> worth, String name) {
+    public FactionWorth(String factionId, String name, Map<WorthType, Double> worth, Map<Material, Integer> materials, Map<EntityType, Integer> spawners) {
         this.factionId = factionId;
-        this.worth = worth;
         this.name = name;
+        this.worth = worth;
+        this.materials = materials;
+        this.spawners = spawners;
         worth.values().forEach(v -> totalWorth += v);
     }
 
@@ -29,6 +37,14 @@ public class FactionWorth implements Comparable<FactionWorth> {
         return worth.getOrDefault(worthType, 0d);
     }
 
+    public Map<Material, Integer> getMaterials() {
+        return Collections.unmodifiableMap(materials);
+    }
+
+    public Map<EntityType, Integer> getSpawners() {
+        return Collections.unmodifiableMap(spawners);
+    }
+
     protected void setWorth(WorthType worthType, double worth) {
         worth = Math.max(0, worth);
         Double prev = this.worth.put(worthType, worth);
@@ -37,6 +53,20 @@ public class FactionWorth implements Comparable<FactionWorth> {
 
     protected void addWorth(WorthType worthType, double worth) {
         setWorth(worthType, getWorth(worthType) + worth);
+    }
+
+    protected void modifyMaterials(Map<Material, Integer> materials, boolean remove) {
+        for (Map.Entry<Material, Integer> material : materials.entrySet()) {
+            int amount = this.materials.getOrDefault(material.getKey(), 0);
+            this.materials.put(material.getKey(), amount + (remove ? -material.getValue() : material.getValue()));
+        }
+    }
+
+    protected void modifySpawners(Map<EntityType, Integer> spawners, boolean remove) {
+        for (Map.Entry<EntityType, Integer> spawner : spawners.entrySet()) {
+            int amount = this.spawners.getOrDefault(spawner.getKey(), 0);
+            this.spawners.put(spawner.getKey(), amount + (remove ? -spawner.getValue() : spawner.getValue()));
+        }
     }
 
     public String getName() {
@@ -54,31 +84,5 @@ public class FactionWorth implements Comparable<FactionWorth> {
     @Override
     public int compareTo(FactionWorth o) {
         return Double.compare(totalWorth, o.totalWorth);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        FactionWorth that = (FactionWorth) o;
-        return Double.compare(that.totalWorth, totalWorth) == 0 &&
-                Objects.equals(factionId, that.factionId) &&
-                Objects.equals(worth, that.worth) &&
-                Objects.equals(name, that.name);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(factionId, worth, name, totalWorth);
-    }
-
-    @Override
-    public String toString() {
-        return "FactionWorth{" +
-                "factionId=" + factionId +
-                ", worth=" + worth +
-                ", name='" + name + '\'' +
-                ", totalWorth=" + totalWorth +
-                '}';
     }
 }

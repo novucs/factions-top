@@ -19,6 +19,7 @@ public final class WorthManager {
     private final Map<String, FactionWorth> factions = new HashMap<>();
     private final List<FactionWorth> orderedFactions = new LinkedList<>();
     private final Table<ChunkPos, WorthType, Double> recalculateQueue = HashBasedTable.create();
+    private final Table<ChunkPos, Material, Integer> materialsQueue = HashBasedTable.create();
 
     public WorthManager(FactionsTopPlugin plugin) {
         this.plugin = plugin;
@@ -176,6 +177,38 @@ public final class WorthManager {
         }
     }
 
+    protected void setMaterials(ChunkPos pos, Map<Material, Integer> materials) {
+        // Do nothing if faction worth is null.
+        FactionWorth factionWorth = getFactionWorth(pos);
+        if (factionWorth == null) return;
+
+        // Update all stats with the new chunk data.
+        ChunkWorth chunkWorth = getChunkWorth(pos);
+        factionWorth.modifyMaterials(chunkWorth.getMaterials(), true);
+        chunkWorth.setMaterials(materials);
+        factionWorth.modifyMaterials(materials, false);
+
+        // Add all back all modifications made since the update was scheduled.
+        if (materialsQueue.containsRow(pos)) {
+            Map<Material, Integer> queued = materialsQueue.row(pos);
+            chunkWorth.modifyMaterials(queued, false);
+            factionWorth.modifyMaterials(queued, false);
+            queued.clear();
+        }
+    }
+
+    protected void setSpawners(ChunkPos pos, Map<EntityType, Integer> spawners) {
+        // Do nothing if faction worth is null.
+        FactionWorth factionWorth = getFactionWorth(pos);
+        if (factionWorth == null) return;
+
+        // Update all stats with the new chunk data.
+        ChunkWorth chunkWorth = getChunkWorth(pos);
+        factionWorth.modifySpawners(chunkWorth.getSpawners(), true);
+        chunkWorth.setSpawners(spawners);
+        factionWorth.modifySpawners(spawners, false);
+    }
+
     /**
      * Adds worth to a chunk.
      *
@@ -184,7 +217,8 @@ public final class WorthManager {
      * @param worthType the worth type.
      * @param worth     the worth value.
      */
-    protected void add(Chunk chunk, RecalculateReason reason, WorthType worthType, double worth) {
+    protected void add(Chunk chunk, RecalculateReason reason, WorthType worthType, double worth,
+                       Map<Material, Integer> materials, Map<EntityType, Integer> spawners) {
         // Do nothing if worth type is disabled or worth is nothing.
         if (!plugin.getSettings().isEnabled(worthType) || worth == 0) {
             return;
@@ -198,13 +232,22 @@ public final class WorthManager {
         // Update all stats with the new chunk data.
         ChunkWorth chunkWorth = getChunkWorth(pos);
         chunkWorth.addWorth(worthType, worth);
+        chunkWorth.modifyMaterials(materials, false);
+        chunkWorth.modifySpawners(spawners, false);
+
         factionWorth.addWorth(worthType, worth);
+        factionWorth.modifyMaterials(materials, false);
+        factionWorth.modifySpawners(spawners, false);
 
         // Adjust faction worth position.
         sort(factionWorth);
 
         // Add this worth to the recalculation queue if the chunk is being
         // recalculated.
+        if (materialsQueue.containsRow(pos)) {
+            materialsQueue.row(pos).putAll(materials);
+        }
+
         if (recalculateQueue.contains(pos, worthType)) {
             double prev = recalculateQueue.get(pos, worthType);
             recalculateQueue.put(pos, worthType, worth + prev);
@@ -233,19 +276,6 @@ public final class WorthManager {
             return;
         }
 
-        // Update the chunk spawner worth on the main thread, unfortunately
-        // there is no better method of doing this. Same with chests.
-        if (plugin.getSettings().isEnabled(WorthType.SPAWNER)) {
-            set(pos, WorthType.SPAWNER, getSpawnerWorth(chunk));
-        }
-
-        if (plugin.getSettings().isEnabled(WorthType.CHEST)) {
-            set(pos, WorthType.CHEST, getChestWorth(chunk));
-        }
-
-        // Add chunk position to the recalculation queue with a dummy value.
-        recalculateQueue.put(pos, WorthType.BLOCK, 0d);
-
         // Next recalculation is scheduled once the chunk worth is re-set.
         chunkWorth.setNextRecalculation(Long.MAX_VALUE);
 
@@ -257,71 +287,107 @@ public final class WorthManager {
             // Clear the recalculate queue in the event of multiple block
             // changes in the same tick.
             recalculateQueue.row(pos).clear();
+
+            // Update the chunk spawner worth on the main thread, unfortunately
+            // there is no better method of doing this. Same with chests.
+            Map<EntityType, Integer> spawners = new EnumMap<>(EntityType.class);
+            Map<Material, Integer> materials = new EnumMap<>(Material.class);
+
+            if (plugin.getSettings().isEnabled(WorthType.SPAWNER)) {
+                set(pos, WorthType.SPAWNER, getSpawnerWorth(chunk, spawners));
+            }
+
+            if (plugin.getSettings().isEnabled(WorthType.CHEST)) {
+                set(pos, WorthType.CHEST, getChestWorth(chunk, materials, spawners));
+            }
+
+            setSpawners(pos, spawners);
+            setMaterials(pos, materials);
+
             plugin.getChunkWorthTask().queue(chunk.getChunkSnapshot());
         });
     }
 
     /**
-     * Gets the total worth of all spawners within a chunk.
+     * Calculates the spawner worth of a chunk.
      *
-     * @param chunk the chunk to calculate.
-     * @return the total value of all spawners in this chunk.
+     * @param chunk    the chunk.
+     * @param spawners the spawner totals to add to.
+     * @return the chunk worth in spawners.
      */
-    private double getSpawnerWorth(Chunk chunk) {
+    private double getSpawnerWorth(Chunk chunk, Map<EntityType, Integer> spawners) {
+        int count;
         double worth = 0;
+        double blockPrice;
+
         for (BlockState blockState : chunk.getTileEntities()) {
-            if (blockState instanceof CreatureSpawner) {
-                worth += plugin.getSettings().getSpawnerPrice(((CreatureSpawner) blockState).getSpawnedType());
+            if (!(blockState instanceof CreatureSpawner)) {
+                continue;
+            }
+
+            EntityType spawnType = ((CreatureSpawner) blockState).getSpawnedType();
+            blockPrice = plugin.getSettings().getSpawnerPrice(spawnType);
+            worth += blockPrice;
+
+            if (blockPrice != 0) {
+                count = spawners.getOrDefault(spawnType, 0);
+                spawners.put(spawnType, count + 1);
             }
         }
+
         return worth;
     }
 
     /**
-     * Gets the total chest worth of a chunk.
+     * Calculates the chest worth of a chunk.
      *
-     * @param chunk the chunk.
-     * @return the chest worth.
+     * @param chunk     the chunk.
+     * @param materials the material totals to add to.
+     * @param spawners  the spawner totals to add to.
+     * @return the chunk worth in materials.
      */
-    private double getChestWorth(Chunk chunk) {
+    private double getChestWorth(Chunk chunk, Map<Material, Integer> materials, Map<EntityType, Integer> spawners) {
+        int count;
         double worth = 0;
+        double materialPrice;
+        EntityType spawnerType;
+
         for (BlockState blockState : chunk.getTileEntities()) {
-            if (blockState instanceof Chest) {
-                worth += getChestWorth((Chest) blockState);
+            if (!(blockState instanceof Chest)) {
+                continue;
+            }
+
+            Chest chest = (Chest) blockState;
+
+            for (ItemStack item : chest.getBlockInventory()) {
+                if (item == null) continue;
+
+                switch (item.getType()) {
+                    case MOB_SPAWNER:
+                        spawnerType = plugin.getCraftbukkitHook().getSpawnerType(item);
+                        materialPrice = plugin.getSettings().getSpawnerPrice(spawnerType) * item.getAmount();
+                        break;
+                    default:
+                        materialPrice = plugin.getSettings().getBlockPrice(item.getType()) * item.getAmount();
+                        spawnerType = null;
+                        break;
+                }
+
+                worth += materialPrice;
+
+                if (materialPrice != 0) {
+                    if (spawnerType == null) {
+                        count = materials.getOrDefault(item.getType(), 0);
+                        materials.put(item.getType(), count + 1);
+                    } else {
+                        count = spawners.getOrDefault(spawnerType, 0);
+                        spawners.put(spawnerType, count + 1);
+                    }
+                }
             }
         }
+
         return worth;
-    }
-
-    /**
-     * Gets the worth of a chest.
-     *
-     * @param chest the chest.
-     * @return the chest worth.
-     */
-    private double getChestWorth(Chest chest) {
-        double worth = 0;
-        for (ItemStack item : chest.getBlockInventory()) {
-            worth += getWorth(item);
-        }
-        return worth;
-    }
-
-    /**
-     * Gets the worth of an item.
-     *
-     * @param item the item.
-     * @return the item worth.
-     */
-    protected double getWorth(ItemStack item) {
-        if (item == null) return 0;
-
-        if (item.getType() == Material.MOB_SPAWNER) {
-            EntityType spawnerType = plugin.getCraftbukkitHook().getSpawnerType(item);
-            return plugin.getSettings().getSpawnerPrice(spawnerType) * item.getAmount();
-        }
-
-        return plugin.getSettings().getBlockPrice(item.getType()) * item.getAmount();
     }
 
     /**

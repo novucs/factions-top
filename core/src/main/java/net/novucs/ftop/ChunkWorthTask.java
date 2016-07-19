@@ -2,7 +2,11 @@ package net.novucs.ftop;
 
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
 
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -48,33 +52,42 @@ public class ChunkWorthTask extends Thread implements PluginService {
             }
 
             ChunkPos pos = ChunkPos.of(snapshot);
-            double worth = getWorth(snapshot);
-            plugin.getServer().getScheduler().runTask(plugin, () -> plugin.getWorthManager().set(pos, WorthType.BLOCK, worth));
-        }
-    }
+            double worth = 0;
+            double blockPrice;
+            Map<Material, Integer> materials = new EnumMap<>(Material.class);
 
-    private double getWorth(ChunkSnapshot snapshot) {
-        double worth = 0;
+            for (int y = 0; y < 256; y++) {
+                // ChunkSnapshot#getHighestBlockYAt(x, y) for whatever reason
+                // provides us with a half complete chunk in Spigot v1.10.x. So
+                // we're testing if the chunk section is empty instead.
+                if (snapshot.isSectionEmpty(y >> 4)) {
+                    y += 15;
+                    continue;
+                }
 
-        for (int y = 0; y < 256; y++) {
-            // ChunkSnapshot#getHighestBlockYAt(x, y) for whatever reason
-            // provides us with a half complete chunk in Spigot v1.10.x. So
-            // we're testing if the chunk section is empty instead.
-            if (snapshot.isSectionEmpty(y >> 4)) {
-                y += 15;
-                continue;
-            }
+                for (int x = 0; x < 16; x++) {
+                    for (int z = 0; z < 16; z++) {
+                        Material material = Material.getMaterial(snapshot.getBlockTypeId(x, y, z));
+                        if (material == null) {
+                            continue;
+                        }
 
-            for (int x = 0; x < 16; x++) {
-                for (int z = 0; z < 16; z++) {
-                    Material material = Material.getMaterial(snapshot.getBlockTypeId(x, y, z));
-                    if (material != null) {
-                        worth += plugin.getSettings().getBlockPrice(material);
+                        blockPrice = plugin.getSettings().getBlockPrice(material);
+                        worth += blockPrice;
+
+                        if (blockPrice != 0) {
+                            int count = materials.getOrDefault(material, 0);
+                            materials.put(material, count + 1);
+                        }
                     }
                 }
             }
-        }
 
-        return worth;
+            final double worthFinal = worth;
+            plugin.getServer().getScheduler().runTask(plugin, () -> {
+                plugin.getWorthManager().set(pos, WorthType.BLOCK, worthFinal);
+                plugin.getWorthManager().setMaterials(pos, materials);
+            });
+        }
     }
 }

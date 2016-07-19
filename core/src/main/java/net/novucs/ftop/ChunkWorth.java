@@ -1,21 +1,26 @@
 package net.novucs.ftop;
 
+import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
+
 import java.util.EnumMap;
-import java.util.Objects;
+import java.util.Map;
 
 public class ChunkWorth {
 
-    private final EnumMap<WorthType, Double> worth;
-    private double totalWorth = 0;
+    private final Map<WorthType, Double> worth;
+    private Map<Material, Integer> materials;
+    private Map<EntityType, Integer> spawners;
     private long nextRecalculation;
 
     public ChunkWorth() {
-        this(new EnumMap<>(WorthType.class));
+        this(new EnumMap<>(WorthType.class), new EnumMap<>(Material.class), new EnumMap<>(EntityType.class));
     }
 
-    public ChunkWorth(EnumMap<WorthType, Double> worth) {
+    public ChunkWorth(Map<WorthType, Double> worth, Map<Material, Integer> materials, Map<EntityType, Integer> spawners) {
         this.worth = worth;
-        worth.forEach((k, v) -> this.totalWorth += WorthType.isPlaced(k) ? v : 0d);
+        this.materials = materials;
+        this.spawners = spawners;
     }
 
     public double getWorth(WorthType worthType) {
@@ -28,16 +33,41 @@ public class ChunkWorth {
         }
 
         worth = Math.max(0, worth);
-        Double prev = this.worth.put(worthType, worth);
-        totalWorth += worth - (prev == null ? 0 : prev);
+        this.worth.put(worthType, worth);
+    }
+
+    protected Map<Material, Integer> getMaterials() {
+        return materials;
+    }
+
+    protected Map<EntityType, Integer> getSpawners() {
+        return spawners;
+    }
+
+    protected void setMaterials(Map<Material, Integer> materials) {
+        this.materials = materials;
+    }
+
+    protected void setSpawners(Map<EntityType, Integer> spawners) {
+        this.spawners = spawners;
+    }
+
+    protected void modifyMaterials(Map<Material, Integer> materials, boolean remove) {
+        for (Map.Entry<Material, Integer> material : materials.entrySet()) {
+            int amount = this.materials.getOrDefault(material.getKey(), 0);
+            this.materials.put(material.getKey(), amount + (remove ? -material.getValue() : material.getValue()));
+        }
+    }
+
+    protected void modifySpawners(Map<EntityType, Integer> spawners, boolean remove) {
+        for (Map.Entry<EntityType, Integer> spawner : spawners.entrySet()) {
+            int amount = this.spawners.getOrDefault(spawner.getKey(), 0);
+            this.spawners.put(spawner.getKey(), amount + (remove ? -spawner.getValue() : spawner.getValue()));
+        }
     }
 
     public void addWorth(WorthType worthType, double worth) {
         setWorth(worthType, getWorth(worthType) + worth);
-    }
-
-    public double getTotalWorth() {
-        return totalWorth;
     }
 
     public long getNextRecalculation() {
@@ -46,29 +76,5 @@ public class ChunkWorth {
 
     public void setNextRecalculation(long nextRecalculation) {
         this.nextRecalculation = nextRecalculation;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ChunkWorth that = (ChunkWorth) o;
-        return Double.compare(that.totalWorth, totalWorth) == 0 &&
-                nextRecalculation == that.nextRecalculation &&
-                Objects.equals(worth, that.worth);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(worth, totalWorth, nextRecalculation);
-    }
-
-    @Override
-    public String toString() {
-        return "ChunkWorth{" +
-                "worth=" + worth +
-                ", totalWorth=" + totalWorth +
-                ", nextRecalculation=" + nextRecalculation +
-                '}';
     }
 }

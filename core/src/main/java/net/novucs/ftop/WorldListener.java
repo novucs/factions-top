@@ -1,10 +1,12 @@
 package net.novucs.ftop;
 
 import net.novucs.ftop.hook.event.*;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.block.DoubleChest;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -18,6 +20,7 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,20 +68,26 @@ public class WorldListener implements Listener, PluginService {
         // Get the worth type and price of this event.
         double price;
         WorthType worthType;
+        Map<Material, Integer> materials = new HashMap<>();
+        Map<EntityType, Integer> spawners = new HashMap<>();
 
         switch (block.getType()) {
             case MOB_SPAWNER:
                 worthType = WorthType.SPAWNER;
-                price = plugin.getSettings().getSpawnerPrice(((CreatureSpawner) block.getState()).getSpawnedType());
+                EntityType spawnType = ((CreatureSpawner) block.getState()).getSpawnedType();
+                price = plugin.getSettings().getSpawnerPrice(spawnType);
+                spawners.put(spawnType, 1);
                 break;
             default:
                 worthType = WorthType.BLOCK;
                 price = plugin.getSettings().getBlockPrice(block.getType());
+                materials.put(block.getType(), 1);
                 break;
         }
 
+
         // Add block price to the count.
-        plugin.getWorthManager().add(block.getChunk(), reason, worthType, negate ? -price : price);
+        plugin.getWorthManager().add(block.getChunk(), reason, worthType, negate ? -price : price, materials, spawners);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -107,9 +116,20 @@ public class WorldListener implements Listener, PluginService {
     private double getInventoryWorth(Inventory inventory) {
         double worth = 0;
         for (ItemStack item : inventory.getStorageContents()) {
-            worth += plugin.getWorthManager().getWorth(item);
+            worth += getWorth(item);
         }
         return worth;
+    }
+
+    private double getWorth(ItemStack item) {
+        if (item == null) return 0;
+
+        if (item.getType() == Material.MOB_SPAWNER) {
+            EntityType spawnerType = plugin.getCraftbukkitHook().getSpawnerType(item);
+            return plugin.getSettings().getSpawnerPrice(spawnerType) * item.getAmount();
+        }
+
+        return plugin.getSettings().getBlockPrice(item.getType()) * item.getAmount();
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -137,9 +157,12 @@ public class WorldListener implements Listener, PluginService {
         Double worth = chestPrices.remove(pos);
         if (worth == null) return;
 
-        // Update chest value.
+        // Update chest value, do not update block totals. Block total
+        // operations can be costly, better keep this to the automatic
+        // check.
         worth = getInventoryWorth(inventory) - worth;
-        plugin.getWorthManager().add(inventory.getLocation().getChunk(), RecalculateReason.CHEST, WorthType.CHEST, worth);
+        plugin.getWorthManager().add(inventory.getLocation().getChunk(), RecalculateReason.CHEST, WorthType.CHEST,
+                worth, Collections.emptyMap(), Collections.emptyMap());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
