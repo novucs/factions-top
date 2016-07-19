@@ -25,6 +25,8 @@ public class VaultEconomyHook extends BukkitRunnable implements EconomyHook, Lis
     private final Set<String> factionIds;
     private final Map<UUID, Double> playerBalances = new HashMap<>();
     private final Map<String, Double> factionBalances = new HashMap<>();
+    private boolean playerEnabled;
+    private boolean factionEnabled;
     private int liquidUpdateTicks;
     private Economy economy;
 
@@ -58,6 +60,16 @@ public class VaultEconomyHook extends BukkitRunnable implements EconomyHook, Lis
     }
 
     @Override
+    public void setPlayerEnabled(boolean enabled) {
+        playerEnabled = enabled;
+    }
+
+    @Override
+    public void setFactionEnabled(boolean enabled) {
+        factionEnabled = enabled;
+    }
+
+    @Override
     public double getBalance(Player player) {
         return economy.getBalance(player);
     }
@@ -69,6 +81,18 @@ public class VaultEconomyHook extends BukkitRunnable implements EconomyHook, Lis
 
     @Override
     public void run() {
+        // Tick players if enabled.
+        if (playerEnabled) {
+            tickPlayers();
+        }
+
+        // Tick factions if enabled.
+        if (factionEnabled) {
+            tickFactions();
+        }
+    }
+
+    private void tickPlayers() {
         Double oldBalance;
         Double newBalance;
         UUID playerId;
@@ -92,6 +116,11 @@ public class VaultEconomyHook extends BukkitRunnable implements EconomyHook, Lis
                 callEvent(new PlayerEconomyEvent(player, oldBalance, newBalance));
             }
         }
+    }
+
+    private void tickFactions() {
+        Double oldBalance;
+        Double newBalance;
 
         // Iterate through every faction on the server.
         for (String factionId : factionIds) {

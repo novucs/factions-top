@@ -235,6 +235,8 @@ public class Settings {
 
         addDefaults(WorthType.class, "settings.enabled", true, Collections.singletonList(WorthType.CHEST));
         enabled = parseStateMap(WorthType.class, "settings.enabled", false);
+        plugin.getEconomyHook().setFactionEnabled(isEnabled(WorthType.FACTION_BALANCE));
+        plugin.getEconomyHook().setPlayerEnabled(isEnabled(WorthType.PLAYER_BALANCE));
 
         addDefaults(WorthType.class, "settings.detailed", true, Collections.emptyList());
         detailed = parseStateMap(WorthType.class, "settings.detailed", false);

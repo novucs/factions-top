@@ -67,7 +67,7 @@ public class WorldListener implements Listener, PluginService {
         }
 
         // Do nothing if price of the placed block is nothing or if this worth type is not enabled.
-        if (price == 0 || !plugin.getSettings().isEnabled(worthType)) {
+        if (price == 0) {
             return;
         }
 

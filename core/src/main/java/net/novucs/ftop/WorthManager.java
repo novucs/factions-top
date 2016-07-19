@@ -184,6 +184,11 @@ public final class WorthManager {
      * @param worth     the worth value.
      */
     protected void add(Chunk chunk, RecalculateReason reason, WorthType worthType, double worth) {
+        // Do nothing if worth type is disabled.
+        if (!plugin.getSettings().isEnabled(worthType)) {
+            return;
+        }
+
         // Do nothing if faction worth is null.
         ChunkPos pos = ChunkPos.of(chunk);
         FactionWorth factionWorth = getFactionWorth(pos);
@@ -229,7 +234,9 @@ public final class WorthManager {
 
         // Update the chunk spawner worth on the main thread, unfortunately
         // there is no better method of doing this. Same with chests.
-        set(pos, WorthType.SPAWNER, getSpawnerWorth(chunk));
+        if (plugin.getSettings().isEnabled(WorthType.SPAWNER)) {
+            set(pos, WorthType.SPAWNER, getSpawnerWorth(chunk));
+        }
 
         if (plugin.getSettings().isEnabled(WorthType.CHEST)) {
             set(pos, WorthType.CHEST, getChestWorth(chunk));
@@ -269,6 +276,12 @@ public final class WorthManager {
         return worth;
     }
 
+    /**
+     * Gets the total chest worth of a chunk.
+     *
+     * @param chunk the chunk.
+     * @return the chest worth.
+     */
     private double getChestWorth(Chunk chunk) {
         double worth = 0;
         for (BlockState blockState : chunk.getTileEntities()) {
@@ -279,6 +292,12 @@ public final class WorthManager {
         return worth;
     }
 
+    /**
+     * Gets the worth of a chest.
+     *
+     * @param chest the chest.
+     * @return the chest worth.
+     */
     private double getChestWorth(Chest chest) {
         double worth = 0;
         for (ItemStack item : chest.getBlockInventory()) {
@@ -334,8 +353,8 @@ public final class WorthManager {
      * @param worth     the worth to add.
      */
     protected void add(String factionId, WorthType worthType, double worth) {
-        // Do nothing if the worth type must be placed.
-        if (WorthType.isPlaced(worthType)) {
+        // Do nothing if the worth type is placed or disabled.
+        if (WorthType.isPlaced(worthType) || !plugin.getSettings().isEnabled(worthType)) {
             return;
         }
 

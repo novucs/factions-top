@@ -7,6 +7,10 @@ import org.bukkit.entity.Player;
 
 public interface EconomyHook extends PluginService {
 
+    void setPlayerEnabled(boolean enabled);
+
+    void setFactionEnabled(boolean enabled);
+
     double getBalance(Player player);
 
     Table<String, WorthType, Double> getBalances();

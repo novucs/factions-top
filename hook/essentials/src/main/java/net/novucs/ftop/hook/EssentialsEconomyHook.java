@@ -16,6 +16,8 @@ public class EssentialsEconomyHook implements EconomyHook, Listener {
 
     private final Plugin plugin;
     private final FactionsHook factionsHook;
+    private boolean playerEnabled;
+    private boolean factionEnabled;
 
     public EssentialsEconomyHook(Plugin plugin, FactionsHook factionsHook) {
         this.plugin = plugin;
@@ -30,6 +32,16 @@ public class EssentialsEconomyHook implements EconomyHook, Listener {
     @Override
     public void terminate() {
         HandlerList.unregisterAll(this);
+    }
+
+    @Override
+    public void setPlayerEnabled(boolean enabled) {
+        playerEnabled = enabled;
+    }
+
+    @Override
+    public void setFactionEnabled(boolean enabled) {
+        factionEnabled = enabled;
     }
 
     @Override
@@ -52,10 +64,13 @@ public class EssentialsEconomyHook implements EconomyHook, Listener {
         double newBalance = event.getNewBalance().doubleValue();
 
         Player player = event.getPlayer();
-        if (player.getName().startsWith("faction_")) {
+        if (!player.isOnline() && player.getName().startsWith("faction_")) {
             String factionId = player.getName().substring(8);
             if (factionsHook.isFaction(factionId)) {
-                callEvent(new FactionEconomyEvent(factionId, oldBalance, newBalance));
+                if (factionEnabled) {
+                    callEvent(new FactionEconomyEvent(factionId, oldBalance, newBalance));
+                }
+                return;
             }
         }
 
@@ -66,7 +81,9 @@ public class EssentialsEconomyHook implements EconomyHook, Listener {
         } catch (UserDoesNotExistException ignore) {
         }
 
-        callEvent(new PlayerEconomyEvent(player, oldBalance, newBalance));
+        if (playerEnabled) {
+            callEvent(new PlayerEconomyEvent(player, oldBalance, newBalance));
+        }
     }
 
     private void callEvent(Event event) {
