@@ -241,7 +241,7 @@ public class Settings {
         addDefaults(WorthType.class, "settings.detailed", true, Collections.emptyList());
         detailed = parseStateMap(WorthType.class, "settings.detailed", false);
 
-        addDefaults(RecalculateReason.class, "settings.perform-recalculate", true, Collections.emptyList());
+        addDefaults(RecalculateReason.class, "settings.perform-recalculate", true, Collections.singletonList(RecalculateReason.CHEST));
         performRecalculate = parseStateMap(RecalculateReason.class, "settings.perform-recalculate", false);
 
         addDefaults(RecalculateReason.class, "settings.bypass-recalculate-delay", false, Arrays.asList(RecalculateReason.UNLOAD, RecalculateReason.CLAIM));

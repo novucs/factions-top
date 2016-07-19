@@ -3,6 +3,7 @@ package net.novucs.ftop;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import org.bukkit.Chunk;
+import org.bukkit.Material;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.block.CreatureSpawner;
@@ -184,8 +185,8 @@ public final class WorthManager {
      * @param worth     the worth value.
      */
     protected void add(Chunk chunk, RecalculateReason reason, WorthType worthType, double worth) {
-        // Do nothing if worth type is disabled.
-        if (!plugin.getSettings().isEnabled(worthType)) {
+        // Do nothing if worth type is disabled or worth is nothing.
+        if (!plugin.getSettings().isEnabled(worthType) || worth == 0) {
             return;
         }
 
@@ -301,20 +302,26 @@ public final class WorthManager {
     private double getChestWorth(Chest chest) {
         double worth = 0;
         for (ItemStack item : chest.getBlockInventory()) {
-            if (item == null) {
-                continue;
-            }
-
-            switch (item.getType()) {
-                case MOB_SPAWNER:
-                    EntityType spawnerType = plugin.getCraftbukkitHook().getSpawnerType(item);
-                    worth += plugin.getSettings().getSpawnerPrice(spawnerType) * item.getAmount();
-                    continue;
-                default:
-                    worth += plugin.getSettings().getBlockPrice(item.getType()) * item.getAmount();
-            }
+            worth += getWorth(item);
         }
         return worth;
+    }
+
+    /**
+     * Gets the worth of an item.
+     *
+     * @param item the item.
+     * @return the item worth.
+     */
+    protected double getWorth(ItemStack item) {
+        if (item == null) return 0;
+
+        if (item.getType() == Material.MOB_SPAWNER) {
+            EntityType spawnerType = plugin.getCraftbukkitHook().getSpawnerType(item);
+            return plugin.getSettings().getSpawnerPrice(spawnerType) * item.getAmount();
+        }
+
+        return plugin.getSettings().getBlockPrice(item.getType()) * item.getAmount();
     }
 
     /**
@@ -353,8 +360,8 @@ public final class WorthManager {
      * @param worth     the worth to add.
      */
     protected void add(String factionId, WorthType worthType, double worth) {
-        // Do nothing if the worth type is placed or disabled.
-        if (WorthType.isPlaced(worthType) || !plugin.getSettings().isEnabled(worthType)) {
+        // Do nothing if the worth type is placed or disabled or worth is equal to nothing.
+        if (WorthType.isPlaced(worthType) || !plugin.getSettings().isEnabled(worthType) || worth == 0) {
             return;
         }
 

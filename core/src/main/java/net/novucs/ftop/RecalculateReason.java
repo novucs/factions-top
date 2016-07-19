@@ -7,6 +7,7 @@ public enum RecalculateReason {
     BREAK,
     PLACE,
     EXPLODE,
-    PISTON
+    PISTON,
+    CHEST
 
 }
