@@ -3,7 +3,8 @@ package net.novucs.ftop;
 public enum WorthType {
 
     CHEST,
-    LIQUID,
+    PLAYER_BALANCE,
+    FACTION_BALANCE,
     SPAWNER,
     BLOCK;
 
@@ -15,7 +16,8 @@ public enum WorthType {
 
     public static boolean isPlaced(WorthType worthType) {
         switch (worthType) {
-            case LIQUID:
+            case PLAYER_BALANCE:
+            case FACTION_BALANCE:
                 return false;
         }
         return true;

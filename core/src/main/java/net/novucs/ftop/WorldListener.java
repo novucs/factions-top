@@ -96,24 +96,24 @@ public class WorldListener implements Listener, PluginService {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void updateWorth(FactionEconomyEvent event) {
-        plugin.getWorthManager().add(event.getFactionId(), WorthType.LIQUID, event.getNewBalance() - event.getOldBalance());
+        plugin.getWorthManager().add(event.getFactionId(), WorthType.FACTION_BALANCE, event.getNewBalance() - event.getOldBalance());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void updateWorth(PlayerEconomyEvent event) {
         String factionId = plugin.getFactionsHook().getFaction(event.getPlayer());
-        plugin.getWorthManager().add(factionId, WorthType.LIQUID, event.getNewBalance() - event.getOldBalance());
+        plugin.getWorthManager().add(factionId, WorthType.PLAYER_BALANCE, event.getNewBalance() - event.getOldBalance());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void updateWorth(FactionJoinEvent event) {
         double balance = plugin.getEconomyHook().getBalance(event.getPlayer());
-        plugin.getWorthManager().add(event.getFactionId(), WorthType.LIQUID, balance);
+        plugin.getWorthManager().add(event.getFactionId(), WorthType.PLAYER_BALANCE, balance);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void updateWorth(FactionLeaveEvent event) {
         double balance = plugin.getEconomyHook().getBalance(event.getPlayer());
-        plugin.getWorthManager().add(event.getFactionId(), WorthType.LIQUID, -balance);
+        plugin.getWorthManager().add(event.getFactionId(), WorthType.PLAYER_BALANCE, -balance);
     }
 }
