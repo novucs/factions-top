@@ -1,7 +1,10 @@
 package net.novucs.ftop;
 
 import net.novucs.ftop.hook.event.*;
-import org.bukkit.block.*;
+import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
+import org.bukkit.block.CreatureSpawner;
+import org.bukkit.block.DoubleChest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -18,11 +21,8 @@ import org.bukkit.inventory.ItemStack;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.bukkit.block.BlockFace.*;
-
 public class WorldListener implements Listener, PluginService {
 
-    private static final BlockFace[] CHEST_JOIN_FACES = {NORTH, EAST, SOUTH, WEST};
     private final FactionsTopPlugin plugin;
     private final Map<BlockPos, Double> chestPrices = new HashMap<>();
 
