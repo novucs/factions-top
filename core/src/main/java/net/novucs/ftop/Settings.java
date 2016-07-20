@@ -1,6 +1,9 @@
 package net.novucs.ftop;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import net.novucs.ftop.hook.VaultEconomyHook;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -11,6 +14,7 @@ import org.bukkit.entity.EntityType;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -30,6 +34,7 @@ public class Settings {
     private int liquidUpdateTicks;
     private int chunkQueueSize;
     private long chunkRecalculateMillis;
+    private HikariConfig hikariConfig;
     private Map<WorthType, Boolean> enabled;
     private Map<WorthType, Boolean> detailed;
     private Map<RecalculateReason, Boolean> performRecalculate;
@@ -145,21 +150,12 @@ public class Settings {
         return toCast.stream().map(type::cast).collect(Collectors.toList());
     }
 
-    private <T extends Enum<T>> Optional<T> parseEnum(Class<T> type, String name) {
-        name = name.toUpperCase().replaceAll("\\s+", "_").replaceAll("\\W", "");
-        try {
-            return Optional.of(Enum.valueOf(type, name));
-        } catch (IllegalArgumentException | NullPointerException e) {
-            return Optional.empty();
-        }
-    }
-
     private <T extends Enum<T>> EnumMap<T, Boolean> parseStateMap(Class<T> type, String key, boolean def) {
         EnumMap<T, Boolean> target = new EnumMap<>(type);
         ConfigurationSection section = getOrDefaultSection(key);
         for (String name : section.getKeys(false)) {
             // Warn user if unable to parse enum.
-            Optional<T> parsed = parseEnum(type, name);
+            Optional<T> parsed = StringUtils.parseEnum(type, name);
             if (!parsed.isPresent()) {
                 plugin.getLogger().warning("Invalid " + type.getSimpleName() + ": " + name);
                 continue;
@@ -183,7 +179,7 @@ public class Settings {
         ConfigurationSection section = getOrDefaultSection(key);
         for (String name : section.getKeys(false)) {
             // Warn user if unable to parse enum.
-            Optional<T> parsed = parseEnum(type, name);
+            Optional<T> parsed = StringUtils.parseEnum(type, name);
             if (!parsed.isPresent()) {
                 plugin.getLogger().warning("Invalid " + type.getSimpleName() + ": " + name);
                 continue;
@@ -203,12 +199,26 @@ public class Settings {
     private <T extends Enum<T>> EnumMap<T, Double> parseDefPrices(Class<T> type, Map<String, Double> def) {
         EnumMap<T, Double> target = new EnumMap<>(type);
         def.forEach((name, price) -> {
-            Optional<T> parsed = parseEnum(type, name);
+            Optional<T> parsed = StringUtils.parseEnum(type, name);
             if (parsed.isPresent()) {
                 target.put(parsed.get(), price);
             }
         });
         return target;
+    }
+
+    private HikariConfig loadHikariConfig() {
+        HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl(getString("settings.database.jdbc-url", "jdbc:mysql://localhost:3306/minecraft"));
+        hikariConfig.setUsername(getString("settings.database.username", "root"));
+        hikariConfig.setPassword(getString("settings.database.password", "pa$$w0rd"));
+        hikariConfig.setMaximumPoolSize(getInt("settings.database.maximum-pool-size", 10));
+        hikariConfig.setMaxLifetime(getLong("settings.database.max-lifetime", 5000));
+        hikariConfig.setIdleTimeout(getLong("settings.database.idle-timeout", 5000));
+        hikariConfig.setConnectionTimeout(getLong("settings.database.connection-timeout", 5000));
+        hikariConfig.setThreadFactory(new ThreadFactoryBuilder().setDaemon(true)
+                .setNameFormat("factions-top-sql-pool-%d").build());
+        return hikariConfig;
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -232,6 +242,8 @@ public class Settings {
         }
         chunkQueueSize = getInt("settings.chunk-queue-size", 200);
         chunkRecalculateMillis = getLong("settings.chunk-recalculate-millis", 120000);
+
+        hikariConfig = loadHikariConfig();
 
         addDefaults(WorthType.class, "settings.enabled", true, Collections.singletonList(WorthType.CHEST));
         enabled = parseStateMap(WorthType.class, "settings.enabled", false);

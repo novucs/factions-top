@@ -18,7 +18,7 @@ public class ChunkWorthTask extends Thread implements PluginService {
     private final BlockingQueue<ChunkSnapshot> queue = new LinkedBlockingQueue<>();
 
     public ChunkWorthTask(FactionsTopPlugin plugin) {
-        super("ChunkWorthTask");
+        super("factions-top-chunk-task");
         this.plugin = plugin;
     }
 
