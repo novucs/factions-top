@@ -5,7 +5,19 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -13,6 +25,8 @@ import java.util.logging.Level;
 
 public final class FactionsTopPlugin extends JavaPlugin {
 
+    private static final String H2_VERSION = "1.4.192";
+    private static final String H2_FILENAME = "h2-" + H2_VERSION + ".jar";
     private final Settings settings = new Settings(this);
     private final ChunkWorthTask chunkWorthTask = new ChunkWorthTask(this);
     private final WorthManager worthManager = new WorthManager(this);
@@ -68,12 +82,61 @@ public final class FactionsTopPlugin extends JavaPlugin {
 
         services.add(factionsHook);
         loadSettings();
+        loadDatabase();
     }
 
     @Override
     public void onDisable() {
         services.forEach(PluginService::terminate);
         active = false;
+    }
+
+    private void loadDatabase() {
+        boolean usingH2 = settings.getHikariConfig().getJdbcUrl().startsWith("jdbc:h2");
+
+        if (usingH2) {
+            try {
+                setupH2();
+            } catch (Exception e) {
+                getLogger().severe("H2 was unable to be loaded.");
+                getLogger().log(Level.SEVERE, "The errors are as follows:", e);
+                getLogger().severe("Disabling FactionsTop . . .");
+                getServer().getPluginManager().disablePlugin(this);
+                return;
+            }
+        }
+
+        try {
+            DatabaseManager.create(settings.getHikariConfig()).load();
+        } catch (SQLException e) {
+            getLogger().severe("Failed to correctly communicate with database!");
+            getLogger().log(Level.SEVERE, "The errors are as follows:", e);
+            getLogger().severe("Disabling FactionsTop . . .");
+            getServer().getPluginManager().disablePlugin(this);
+        }
+    }
+
+    private void setupH2() throws Exception {
+        // Get the H2 library file.
+        String pathName = "lib" + File.separator + H2_FILENAME;
+        File library = new File(pathName);
+
+        // Download the H2 library from maven into the libs folder if none already exists.
+        if (!library.exists()) {
+            getLogger().info("Downloading H2 dependency . . .");
+            library.mkdirs();
+            library.createNewFile();
+            URL repo = new URL("http://repo2.maven.org/maven2/com/h2database/h2/" + H2_VERSION + "/" + H2_FILENAME);
+            ReadableByteChannel rbc = Channels.newChannel(repo.openStream());
+            FileOutputStream fos = new FileOutputStream(pathName);
+            fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+            getLogger().info("H2 successfully downloaded!");
+        }
+
+        // Load H2 into the JVM.
+        Method method = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+        method.setAccessible(true);
+        method.invoke(ClassLoader.getSystemClassLoader(), library.toURI().toURL());
     }
 
     private void loadCraftbukkitHook() {

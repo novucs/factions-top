@@ -70,6 +70,10 @@ public class Settings {
         return chunkRecalculateMillis;
     }
 
+    public HikariConfig getHikariConfig() {
+        return hikariConfig;
+    }
+
     public boolean isEnabled(WorthType worthType) {
         return enabled.getOrDefault(worthType, false);
     }

@@ -84,7 +84,7 @@ public class DatabaseManager {
         statement.executeUpdate();
     }
 
-    private Map<ChunkPos, ChunkWorth> load() throws SQLException {
+    public Map<ChunkPos, ChunkWorth> load() throws SQLException {
         Map<ChunkPos, ChunkWorth> target = new HashMap<>();
 
         Map<WorthType, Double> worth;
