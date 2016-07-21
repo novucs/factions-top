@@ -124,7 +124,7 @@ public final class FactionsTopPlugin extends JavaPlugin {
         // Download the H2 library from maven into the libs folder if none already exists.
         if (!library.exists()) {
             getLogger().info("Downloading H2 dependency . . .");
-            library.mkdirs();
+            library.getParentFile().mkdirs();
             library.createNewFile();
             URL repo = new URL("http://repo2.maven.org/maven2/com/h2database/h2/" + H2_VERSION + "/" + H2_FILENAME);
             ReadableByteChannel rbc = Channels.newChannel(repo.openStream());
