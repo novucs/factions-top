@@ -213,7 +213,7 @@ public class Settings {
 
     private HikariConfig loadHikariConfig() {
         HikariConfig hikariConfig = new HikariConfig();
-        hikariConfig.setJdbcUrl(getString("settings.database.jdbc-url", "jdbc:mysql://localhost:3306/minecraft"));
+        hikariConfig.setJdbcUrl(getString("settings.database.jdbc-url", "jdbc:h2:./plugins/FactionsTop/database"));
         hikariConfig.setUsername(getString("settings.database.username", "root"));
         hikariConfig.setPassword(getString("settings.database.password", "pa$$w0rd"));
         hikariConfig.setMaximumPoolSize(getInt("settings.database.maximum-pool-size", 10));
