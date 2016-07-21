@@ -36,51 +36,66 @@ public class DatabaseManager {
 
     private void init(Connection connection) throws SQLException {
         PreparedStatement statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `world` (" +
-                "`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY," +
-                "`name` VARCHAR(40) NOT NULL)");
+                "`id` INT NOT NULL AUTO_INCREMENT," +
+                "`name` VARCHAR(40) NOT NULL," +
+                "PRIMARY KEY (`id`))");
         statement.executeUpdate();
 
         statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `chunk` (" +
-                "`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY," +
-                "`world_id` INT FOREIGN KEY REFERENCES world(`id`)," +
+                "`id` INT NOT NULL AUTO_INCREMENT," +
+                "`world_id` INT NOT NULL," +
                 "`x` INT NOT NULL," +
-                "`z` INT NOT NULL)");
+                "`z` INT NOT NULL," +
+                "PRIMARY KEY (`id`)," +
+                "FOREIGN KEY (`world_id`) REFERENCES world(`id`))");
         statement.executeUpdate();
 
         statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `worth` (" +
-                "`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY," +
-                "`name` VARCHAR (40) NOT NULL)");
+                "`id` INT NOT NULL AUTO_INCREMENT," +
+                "`name` VARCHAR (40) NOT NULL," +
+                "PRIMARY KEY (`id`))");
         statement.executeUpdate();
 
         statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `chunk_worth` (" +
                 "`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY," +
-                "`chunk_id` INT FOREIGN KEY REFERENCES chunk(`id`)," +
-                "`worth_id` INT FOREIGN KEY REFERENCES worth(`id`)," +
-                "`worth` FLOAT NOT NULL)");
+                "`chunk_id` INT NOT NULL," +
+                "`worth_id` INT NOT NULL," +
+                "`worth` FLOAT NOT NULL," +
+                "PRIMARY KEY (`id`)," +
+                "FOREIGN KEY (`chunk_id`) REFERENCES chunk(`id`)," +
+                "FOREIGN KEY (`worth_id`) REFERENCES worth(`id`))");
         statement.executeUpdate();
 
         statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `material` (" +
-                "`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY," +
-                "`name` VARCHAR(40) NOT NULL)");
+                "`id` INT NOT NULL AUTO_INCREMENT," +
+                "`name` VARCHAR(40) NOT NULL," +
+                "PRIMARY KEY (`id`))");
         statement.executeUpdate();
 
         statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `chunk_material_count` (" +
-                "`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY," +
-                "`chunk_id` INT FOREIGN KEY REFERENCES chunk(`id`)," +
-                "`material_id` INT FOREIGN KEY REFERENCES material(`id`)," +
-                "`count` INT NOT NULL)");
+                "`id` INT NOT NULL AUTO_INCREMENT," +
+                "`chunk_id` INT NOT NULL," +
+                "`material_id` INT NOT NULL," +
+                "`count` INT NOT NULL," +
+                "PRIMARY KEY (`id`)," +
+                "FOREIGN KEY (`chunk_id`) REFERENCES chunk(`id`)," +
+                "FOREIGN KEY (`material_id`) REFERENCES material(`id`))");
         statement.executeUpdate();
 
         statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `spawner` (" +
-                "`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY," +
-                "`name` VARCHAR(40) NOT NULL)");
+                "`id` INT NOT NULL AUTO_INCREMENT," +
+                "`name` VARCHAR(40) NOT NULL," +
+                "PRIMARY KEY (`id`))");
         statement.executeUpdate();
 
         statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `chunk_spawner_count` (" +
-                "`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY," +
-                "`chunk_id` INT FOREIGN KEY REFERENCES chunk(`id`)," +
-                "`spawner_id` INT FOREIGN KEY REFERENCES spawner(`id`)," +
-                "`count` INT NOT NULL )");
+                "`id` INT NOT NULL AUTO_INCREMENT," +
+                "`chunk_id` INT NOT NULL," +
+                "`spawner_id` INT NOT NULL," +
+                "`count` INT NOT NULL," +
+                "PRIMARY KEY (`id`)," +
+                "FOREIGN KEY (`chunk_id`) REFERENCES chunk(`id`)," +
+                "FOREIGN KEY (`spawner_id`) REFERENCES spawner(`id`))");
         statement.executeUpdate();
     }
 
