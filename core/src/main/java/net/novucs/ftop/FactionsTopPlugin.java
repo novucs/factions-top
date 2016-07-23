@@ -76,6 +76,7 @@ public final class FactionsTopPlugin extends JavaPlugin {
             services.add(economyHook);
         }
 
+        setupSlf4j();
         services.add(factionsHook);
         loadSettings();
         loadDatabase();
@@ -113,6 +114,14 @@ public final class FactionsTopPlugin extends JavaPlugin {
 
         worthManager.loadChunks(loaded);
         worthManager.updateAllFactions();
+    }
+
+    private void setupSlf4j() {
+        try {
+            loadLibrary("http://repo2.maven.org/maven2/org/slf4j/slf4j-api/1.7.9/slf4j-api-1.7.9.jar");
+            loadLibrary("http://repo2.maven.org/maven2/org/slf4j/slf4j-nop/1.7.9/slf4j-nop-1.7.9.jar");
+        } catch (Exception ignore) {
+        }
     }
 
     private void setupH2() {
