@@ -36,6 +36,10 @@ public class ChunkWorth {
         this.worth.put(worthType, worth);
     }
 
+    protected Map<WorthType, Double> getWorth() {
+        return worth;
+    }
+
     protected Map<Material, Integer> getMaterials() {
         return materials;
     }

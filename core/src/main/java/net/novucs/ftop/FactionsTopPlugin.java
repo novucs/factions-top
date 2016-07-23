@@ -21,8 +21,6 @@ import java.util.logging.Level;
 
 public final class FactionsTopPlugin extends JavaPlugin {
 
-    private static final String H2_VERSION = "1.4.192";
-    private static final String H2_FILENAME = "h2-" + H2_VERSION + ".jar";
     private final Settings settings = new Settings(this);
     private final ChunkWorthTask chunkWorthTask = new ChunkWorthTask(this);
     private final WorthManager worthManager = new WorthManager(this);
@@ -36,6 +34,7 @@ public final class FactionsTopPlugin extends JavaPlugin {
     private CraftbukkitHook craftbukkitHook;
     private EconomyHook economyHook;
     private FactionsHook factionsHook;
+    private DatabaseManager databaseManager;
 
     public Settings getSettings() {
         return settings;
@@ -83,6 +82,11 @@ public final class FactionsTopPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        try {
+            databaseManager.save(worthManager.getChunks());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         services.forEach(PluginService::terminate);
         active = false;
     }
@@ -91,19 +95,12 @@ public final class FactionsTopPlugin extends JavaPlugin {
         boolean usingH2 = settings.getHikariConfig().getJdbcUrl().startsWith("jdbc:h2");
 
         if (usingH2) {
-            try {
-                setupH2();
-            } catch (Exception e) {
-                getLogger().severe("H2 was unable to be loaded.");
-                getLogger().log(Level.SEVERE, "The errors are as follows:", e);
-                getLogger().severe("Disabling FactionsTop . . .");
-                getServer().getPluginManager().disablePlugin(this);
-                return;
-            }
+            setupH2();
         }
 
         try {
-            DatabaseManager.create(settings.getHikariConfig()).load();
+            databaseManager = DatabaseManager.create(settings.getHikariConfig());
+            databaseManager.load();
         } catch (SQLException e) {
             getLogger().severe("Failed to correctly communicate with database!");
             getLogger().log(Level.SEVERE, "The errors are as follows:", e);
@@ -112,24 +109,36 @@ public final class FactionsTopPlugin extends JavaPlugin {
         }
     }
 
-    private void setupH2() throws Exception {
-        // Get the H2 library file.
-        String pathName = "lib" + File.separator + H2_FILENAME;
+    private void setupH2() {
+        try {
+            loadLibrary("http://repo2.maven.org/maven2/com/h2database/h2/1.4.192/h2-1.4.192.jar");
+        } catch (Exception e) {
+            getLogger().severe("H2 was unable to be loaded.");
+            getLogger().log(Level.SEVERE, "The errors are as follows:", e);
+            getLogger().severe("Disabling FactionsTop . . .");
+            getServer().getPluginManager().disablePlugin(this);
+        }
+    }
+
+    private void loadLibrary(String url) throws Exception {
+        // Get the library file.
+        String fileName = url.substring(url.lastIndexOf('/') + 1);
+        String pathName = "lib" + File.separator + fileName;
         File library = new File(pathName);
 
-        // Download the H2 library from maven into the libs folder if none already exists.
+        // Download the library from maven into the libs folder if none already exists.
         if (!library.exists()) {
-            getLogger().info("Downloading H2 dependency . . .");
+            getLogger().info("Downloading " + fileName + " dependency . . .");
             library.getParentFile().mkdirs();
             library.createNewFile();
-            URL repo = new URL("http://repo2.maven.org/maven2/com/h2database/h2/" + H2_VERSION + "/" + H2_FILENAME);
+            URL repo = new URL(url);
             ReadableByteChannel rbc = Channels.newChannel(repo.openStream());
             FileOutputStream fos = new FileOutputStream(pathName);
             fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-            getLogger().info("H2 successfully downloaded!");
+            getLogger().info(fileName + " successfully downloaded!");
         }
 
-        // Load H2 into the JVM.
+        // Load library to JVM.
         Method method = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
         method.setAccessible(true);
         method.invoke(ClassLoader.getSystemClassLoader(), library.toURI().toURL());

@@ -43,6 +43,10 @@ public final class WorthManager {
         return Collections.unmodifiableSet(factions.keySet());
     }
 
+    protected Map<ChunkPos, ChunkWorth> getChunks() {
+        return chunks;
+    }
+
     /**
      * Adds a faction worth profile to the ordered factions list.
      *

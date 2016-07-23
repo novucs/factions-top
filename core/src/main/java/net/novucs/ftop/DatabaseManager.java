@@ -37,7 +37,7 @@ public class DatabaseManager {
     private void init(Connection connection) throws SQLException {
         PreparedStatement statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `world` (" +
                 "`id` INT NOT NULL AUTO_INCREMENT," +
-                "`name` VARCHAR(40) NOT NULL," +
+                "`name` VARCHAR(40) NOT NULL UNIQUE," +
                 "PRIMARY KEY (`id`))");
         statement.executeUpdate();
 
@@ -47,12 +47,13 @@ public class DatabaseManager {
                 "`x` INT NOT NULL," +
                 "`z` INT NOT NULL," +
                 "PRIMARY KEY (`id`)," +
-                "FOREIGN KEY (`world_id`) REFERENCES world(`id`))");
+                "FOREIGN KEY (`world_id`) REFERENCES world(`id`)," +
+                "UNIQUE (`world_id`, `x`, `z`))");
         statement.executeUpdate();
 
         statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `worth` (" +
                 "`id` INT NOT NULL AUTO_INCREMENT," +
-                "`name` VARCHAR (40) NOT NULL," +
+                "`name` VARCHAR (40) NOT NULL UNIQUE," +
                 "PRIMARY KEY (`id`))");
         statement.executeUpdate();
 
@@ -63,12 +64,13 @@ public class DatabaseManager {
                 "`worth` FLOAT NOT NULL," +
                 "PRIMARY KEY (`id`)," +
                 "FOREIGN KEY (`chunk_id`) REFERENCES chunk(`id`)," +
-                "FOREIGN KEY (`worth_id`) REFERENCES worth(`id`))");
+                "FOREIGN KEY (`worth_id`) REFERENCES worth(`id`)," +
+                "UNIQUE(`chunk_id`, `worth_id`))");
         statement.executeUpdate();
 
         statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `material` (" +
                 "`id` INT NOT NULL AUTO_INCREMENT," +
-                "`name` VARCHAR(40) NOT NULL," +
+                "`name` VARCHAR(40) NOT NULL UNIQUE," +
                 "PRIMARY KEY (`id`))");
         statement.executeUpdate();
 
@@ -79,12 +81,13 @@ public class DatabaseManager {
                 "`count` INT NOT NULL," +
                 "PRIMARY KEY (`id`)," +
                 "FOREIGN KEY (`chunk_id`) REFERENCES chunk(`id`)," +
-                "FOREIGN KEY (`material_id`) REFERENCES material(`id`))");
+                "FOREIGN KEY (`material_id`) REFERENCES material(`id`)," +
+                "UNIQUE (`chunk_id`, `material_id`))");
         statement.executeUpdate();
 
         statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `spawner` (" +
                 "`id` INT NOT NULL AUTO_INCREMENT," +
-                "`name` VARCHAR(40) NOT NULL," +
+                "`name` VARCHAR(40) NOT NULL UNIQUE," +
                 "PRIMARY KEY (`id`))");
         statement.executeUpdate();
 
@@ -95,7 +98,8 @@ public class DatabaseManager {
                 "`count` INT NOT NULL," +
                 "PRIMARY KEY (`id`)," +
                 "FOREIGN KEY (`chunk_id`) REFERENCES chunk(`id`)," +
-                "FOREIGN KEY (`spawner_id`) REFERENCES spawner(`id`))");
+                "FOREIGN KEY (`spawner_id`) REFERENCES spawner(`id`)," +
+                "UNIQUE (`chunk_id`, `spawner_id`))");
         statement.executeUpdate();
     }
 
@@ -146,10 +150,9 @@ public class DatabaseManager {
         Map<T, Integer> target = new EnumMap<>(clazz);
         Map<Integer, T> supportMap = getEnumMap(connection, clazz, countType);
 
-        PreparedStatement statement = connection.prepareStatement("SELECT ?,`count` FROM ? WHERE `chunk_id`=?");
-        statement.setString(1, countType + "_id");
-        statement.setString(2, "chunk_" + countType + "_count");
-        statement.setInt(3, chunkId);
+        PreparedStatement statement = connection.prepareStatement("SELECT `" + countType + "_id`,`count` " +
+                "FROM `chunk_" + countType + "_count` WHERE `chunk_id`=?");
+        statement.setInt(1, chunkId);
         ResultSet set = statement.executeQuery();
 
         while (set.next()) {
@@ -175,8 +178,7 @@ public class DatabaseManager {
     private <T extends Enum<T>> Map<Integer, T> getEnumMap(Connection connection, Class<T> clazz, String table) throws SQLException {
         Map<Integer, T> target = new HashMap<>();
 
-        PreparedStatement statement = connection.prepareStatement("SELECT * FROM ?");
-        statement.setString(1, table);
+        PreparedStatement statement = connection.prepareStatement("SELECT * FROM " + table);
         ResultSet set = statement.executeQuery();
 
         while (set.next()) {
@@ -243,5 +245,205 @@ public class DatabaseManager {
         statement.close();
 
         return target;
+    }
+
+    public void save(Map<ChunkPos, ChunkWorth> chunkWorthMap) throws SQLException {
+        Connection connection = dataSource.getConnection();
+        init(connection);
+
+        for (Map.Entry<ChunkPos, ChunkWorth> entry : chunkWorthMap.entrySet()) {
+            int chunkId = saveChunk(connection, entry.getKey());
+            saveChunkWorth(connection, chunkId, entry.getValue());
+        }
+    }
+
+    private void saveChunkWorth(Connection connection, int chunkId, ChunkWorth chunkWorth) throws SQLException {
+        for (Map.Entry<WorthType, Double> entry : chunkWorth.getWorth().entrySet()) {
+            saveChunkWorth(connection, chunkId, entry.getKey(), entry.getValue());
+        }
+
+        for (Map.Entry<Material, Integer> entry : chunkWorth.getMaterials().entrySet()) {
+            saveChunkMaterial(connection, chunkId, entry.getKey(), entry.getValue());
+        }
+
+        for (Map.Entry<EntityType, Integer> entry : chunkWorth.getSpawners().entrySet()) {
+            saveChunkSpawner(connection, chunkId, entry.getKey(), entry.getValue());
+        }
+    }
+
+    private int saveChunkMaterial(Connection connection, int chunkId, Material material, int count) throws SQLException {
+        int materialId = saveMaterial(connection, material);
+        int id = getChunkMaterialId(connection, chunkId, materialId);
+        if (id > 0) {
+            PreparedStatement statement = connection.prepareStatement("UPDATE `chunk_material_count` SET `count` = ? WHERE `id` = ?");
+            statement.setInt(1, count);
+            statement.setInt(2, id);
+            return id;
+        }
+
+        PreparedStatement statement = connection.prepareStatement("INSERT INTO `chunk_material_count` (`chunk_id`, `spawner_id`, `count`) VALUES(?, ?, ?)");
+        statement.setInt(1, chunkId);
+        statement.setInt(2, materialId);
+        statement.setInt(3, count);
+
+        statement.executeUpdate();
+        ResultSet set = statement.getGeneratedKeys();
+
+        set.next();
+        return set.getInt(1);
+    }
+
+    private int getChunkMaterialId(Connection connection, int chunkId, int materialId) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement("SELECT `id` FROM `material` WHERE `chunk_id` = ? AND `material_id` = ?");
+        statement.setInt(1, chunkId);
+        statement.setInt(2, materialId);
+        ResultSet set = statement.executeQuery();
+        if (set.next()) {
+            return set.getInt("id");
+        }
+
+        return -1;
+    }
+
+    private int saveChunkSpawner(Connection connection, int chunkId, EntityType spawner, int count) throws SQLException {
+        int spawnerId = saveSpawner(connection, spawner);
+        int id = getChunkSpawnerId(connection, chunkId, spawnerId);
+        if (id > 0) {
+            PreparedStatement statement = connection.prepareStatement("UPDATE `chunk_spawner_count` SET `count` = ? WHERE `id` = ?");
+            statement.setInt(1, count);
+            statement.setInt(2, id);
+            return id;
+        }
+
+        PreparedStatement statement = connection.prepareStatement("INSERT INTO `chunk_spawner_count` (`chunk_id`, `spawner_id`, `count`) VALUES(?, ?, ?)");
+        statement.setInt(1, chunkId);
+        statement.setInt(2, spawnerId);
+        statement.setInt(3, count);
+
+        statement.executeUpdate();
+        ResultSet set = statement.getGeneratedKeys();
+
+        set.next();
+        return set.getInt(1);
+    }
+
+    private int getChunkSpawnerId(Connection connection, int chunkId, int spawnerId) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement("SELECT `id` FROM `spawner` WHERE `chunk_id` = ? AND `spawner_id` = ?");
+        statement.setInt(1, chunkId);
+        statement.setInt(2, spawnerId);
+        ResultSet set = statement.executeQuery();
+        if (set.next()) {
+            return set.getInt("id");
+        }
+
+        return -1;
+    }
+
+    private int saveChunkWorth(Connection connection, int chunkId, WorthType worthType, double worth) throws SQLException {
+        int worthId = saveWorth(connection, worthType);
+        int id = getChunkWorthId(connection, chunkId, worthId);
+        if (id > 0) {
+            PreparedStatement statement = connection.prepareStatement("UPDATE `chunk_worth` SET `worth` = ? WHERE `id` = ?");
+            statement.setDouble(1, worth);
+            statement.setInt(2, id);
+            return id;
+        }
+
+        PreparedStatement statement = connection.prepareStatement("INSERT INTO `chunk_worth` (`chunk_id`, `worth_id`, `worth`) VALUES(?, ?, ?)");
+        statement.setInt(1, chunkId);
+        statement.setInt(2, worthId);
+        statement.setDouble(3, worth);
+
+        statement.executeUpdate();
+        ResultSet set = statement.getGeneratedKeys();
+
+        set.next();
+        return set.getInt(1);
+    }
+
+    private int getChunkWorthId(Connection connection, int chunkId, int worthId) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement("SELECT `id` FROM `worth` WHERE `chunk_id` = ? AND `worth_id` = ?");
+        statement.setInt(1, chunkId);
+        statement.setInt(2, worthId);
+        ResultSet set = statement.executeQuery();
+        if (set.next()) {
+            return set.getInt("id");
+        }
+
+        return -1;
+    }
+
+    private int saveChunk(Connection connection, ChunkPos pos) throws SQLException {
+        int worldId = saveWorld(connection, pos.getWorld());
+        int id = getChunkId(connection, worldId, pos.getX(), pos.getZ());
+        if (id > 0) {
+            return id;
+        }
+
+        PreparedStatement statement = connection.prepareStatement("INSERT INTO `chunk` (`world_id`, `x`, `z`) VALUES(?, ?, ?)");
+        statement.setInt(1, worldId);
+        statement.setInt(2, pos.getX());
+        statement.setInt(3, pos.getZ());
+
+        statement.executeUpdate();
+        ResultSet set = statement.getGeneratedKeys();
+
+        set.next();
+        return set.getInt(1);
+    }
+
+    private int getChunkId(Connection connection, int worldId, int x, int z) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement("SELECT `id` FROM `chunk` WHERE `world_id` = ? AND `x` = ? AND `z` = ?");
+        statement.setInt(1, worldId);
+        statement.setInt(2, x);
+        statement.setInt(3, z);
+        ResultSet set = statement.executeQuery();
+        if (set.next()) {
+            return set.getInt("id");
+        }
+
+        return -1;
+    }
+
+    private int saveName(Connection connection, String table, String name) throws SQLException {
+        int id = getNameId(connection, table, name);
+        if (id > 0) {
+            return id;
+        }
+
+        PreparedStatement statement = connection.prepareStatement("INSERT INTO `" + table + "` (`name`) VALUES(?)");
+        statement.setString(1, name);
+        statement.executeUpdate();
+
+        ResultSet set = statement.getGeneratedKeys();
+        set.next();
+        return set.getInt(1);
+    }
+
+    private int getNameId(Connection connection, String table, String name) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement("SELECT `id` FROM `" + table + "` WHERE `name` = ?");
+        statement.setString(1, name);
+        ResultSet set = statement.executeQuery();
+        if (set.next()) {
+            return set.getInt("id");
+        }
+
+        return -1;
+    }
+
+    private int saveMaterial(Connection connection, Material material) throws SQLException {
+        return saveName(connection, "material", material.name());
+    }
+
+    private int saveSpawner(Connection connection, EntityType spawner) throws SQLException {
+        return saveName(connection, "spawner", spawner.name());
+    }
+
+    private int saveWorld(Connection connection, String world) throws SQLException {
+        return saveName(connection, "world", world);
+    }
+
+    private int saveWorth(Connection connection, WorthType worthType) throws SQLException {
+        return saveName(connection, "worth", worthType.name());
     }
 }
