@@ -9,16 +9,18 @@ import org.bukkit.block.Chest;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public final class WorthManager {
+public final class WorthManager extends BukkitRunnable implements PluginService {
 
     private final FactionsTopPlugin plugin;
     private final Map<ChunkPos, ChunkWorth> chunks = new HashMap<>();
     private final Map<String, FactionWorth> factions = new HashMap<>();
     private final List<FactionWorth> orderedFactions = new LinkedList<>();
+    private final List<FactionWorth> sortQueue = new LinkedList<>();
     private final Table<ChunkPos, WorthType, Double> recalculateQueue = HashBasedTable.create();
     private final Table<ChunkPos, Material, Integer> materialsQueue = HashBasedTable.create();
 
@@ -42,6 +44,25 @@ public final class WorthManager {
      */
     public Set<String> getFactionIds() {
         return Collections.unmodifiableSet(factions.keySet());
+    }
+
+    @Override
+    public void initialize() {
+        runTaskTimer(plugin, 1, 1);
+    }
+
+    @Override
+    public void terminate() {
+        cancel();
+    }
+
+    @Override
+    public void run() {
+        ListIterator<FactionWorth> it = sortQueue.listIterator();
+        while (it.hasNext()) {
+            sort(it.next());
+            it.remove();
+        }
     }
 
     protected Map<ChunkPos, ChunkWorth> getChunks() {
@@ -190,7 +211,7 @@ public final class WorthManager {
         factionWorth.addWorth(worthType, worth - oldWorth);
 
         // Adjust faction worth position.
-        sort(factionWorth);
+        sortQueue.add(factionWorth);
 
         // If this position was added to the recalculate queue, add all queued
         // updates while the chunk was recalculated and set the next time to
@@ -266,7 +287,7 @@ public final class WorthManager {
         factionWorth.modifySpawners(spawners, false);
 
         // Adjust faction worth position.
-        sort(factionWorth);
+        sortQueue.add(factionWorth);
 
         // Add this worth to the recalculation queue if the chunk is being
         // recalculated.
@@ -456,7 +477,7 @@ public final class WorthManager {
         }
 
         // Adjust faction worth position.
-        sort(factionWorth);
+        sortQueue.add(factionWorth);
     }
 
     /**
@@ -478,7 +499,7 @@ public final class WorthManager {
 
         // Update faction with the new worth and adjust the worth position.
         factionWorth.addWorth(worthType, worth);
-        sort(factionWorth);
+        sortQueue.add(factionWorth);
     }
 
     /**

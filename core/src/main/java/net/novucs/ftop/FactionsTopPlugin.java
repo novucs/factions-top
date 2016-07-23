@@ -28,7 +28,8 @@ public final class FactionsTopPlugin extends JavaPlugin {
     private final Set<PluginService> services = new HashSet<>(Arrays.asList(
             chunkWorthTask,
             new FactionsTopCommand(this),
-            new WorldListener(this)
+            new WorldListener(this),
+            worthManager
     ));
 
     private boolean active;
