@@ -293,6 +293,8 @@ public final class WorthManager {
      */
     protected void recalculate(Chunk chunk, RecalculateReason reason) {
         ChunkPos pos = ChunkPos.of(chunk);
+        if (getFactionWorth(pos) == null) return;
+
         ChunkWorth chunkWorth = getChunkWorth(pos);
         recalculate(chunkWorth, pos, chunk, reason);
     }
