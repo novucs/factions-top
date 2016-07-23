@@ -11,3 +11,5 @@ commands:
     permission: "factionstop.use"
     permission-message: "§cYou do not have permission."
     usage: /<command> [page]
+permissions:
+  factionstop.use: {default: true}
