@@ -16,6 +16,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -98,15 +99,20 @@ public final class FactionsTopPlugin extends JavaPlugin {
             setupH2();
         }
 
+        Map<ChunkPos, ChunkWorth> loaded;
         try {
             databaseManager = DatabaseManager.create(settings.getHikariConfig());
-            databaseManager.load();
+            loaded = databaseManager.load();
         } catch (SQLException e) {
             getLogger().severe("Failed to correctly communicate with database!");
             getLogger().log(Level.SEVERE, "The errors are as follows:", e);
             getLogger().severe("Disabling FactionsTop . . .");
             getServer().getPluginManager().disablePlugin(this);
+            return;
         }
+
+        worthManager.loadChunks(loaded);
+        worthManager.updateAllFactions();
     }
 
     private void setupH2() {

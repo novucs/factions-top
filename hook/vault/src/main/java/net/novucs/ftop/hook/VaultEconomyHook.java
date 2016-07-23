@@ -1,7 +1,5 @@
 package net.novucs.ftop.hook;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
 import net.milkbowl.vault.economy.Economy;
 import net.novucs.ftop.WorthType;
 import net.novucs.ftop.hook.event.FactionEconomyEvent;
@@ -14,10 +12,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class VaultEconomyHook extends BukkitRunnable implements EconomyHook, Listener {
 
@@ -75,8 +70,17 @@ public class VaultEconomyHook extends BukkitRunnable implements EconomyHook, Lis
     }
 
     @Override
-    public Table<String, WorthType, Double> getBalances() {
-        return HashBasedTable.create();
+    public Map<WorthType, Double> getBalances(String factionId, List<UUID> members) {
+        Map<WorthType, Double> target = new EnumMap<>(WorthType.class);
+        target.put(WorthType.FACTION_BALANCE, economy.getBalance(factionId));
+
+        double playerBalance = 0;
+        for (UUID playerId : members) {
+            playerBalance += economy.getBalance(plugin.getServer().getOfflinePlayer(playerId));
+        }
+
+        target.put(WorthType.PLAYER_BALANCE, playerBalance);
+        return target;
     }
 
     @Override

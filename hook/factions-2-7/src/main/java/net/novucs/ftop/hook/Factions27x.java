@@ -11,6 +11,7 @@ import com.massivecraft.factions.event.EventFactionsDisband;
 import com.massivecraft.factions.event.EventFactionsMembershipChange;
 import com.massivecraft.factions.event.EventFactionsNameChange;
 import com.massivecraft.massivecore.ps.PS;
+import com.massivecraft.massivecore.store.SenderEntity;
 import net.novucs.ftop.ChunkPos;
 import net.novucs.ftop.hook.event.*;
 import org.bukkit.ChatColor;
@@ -20,7 +21,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.plugin.Plugin;
 
+import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class Factions27x extends FactionsHook {
@@ -55,6 +58,13 @@ public class Factions27x extends FactionsHook {
         MPlayer mplayer = MPlayer.get(player);
         Faction faction = Faction.get(factionId);
         return mplayer.getFaction().getRelationTo(faction).getColor();
+    }
+
+    @Override
+    public List<UUID> getMembers(String factionId) {
+        return FactionColl.get().get(factionId).getMPlayers().stream()
+                .map(SenderEntity::getUuid)
+                .collect(Collectors.toList());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

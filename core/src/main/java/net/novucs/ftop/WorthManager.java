@@ -8,9 +8,11 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public final class WorthManager {
 
@@ -45,6 +47,27 @@ public final class WorthManager {
 
     protected Map<ChunkPos, ChunkWorth> getChunks() {
         return chunks;
+    }
+
+    protected void loadChunks(Map<ChunkPos, ChunkWorth> chunks) {
+        this.chunks.clear();
+        this.chunks.putAll(chunks);
+    }
+
+    protected void updateAllFactions() {
+        factions.clear();
+        for (Map.Entry<ChunkPos, ChunkWorth> chunk : chunks.entrySet()) {
+            FactionWorth worth = getFactionWorth(chunk.getKey());
+            worth.addAll(chunk.getValue());
+        }
+
+        for (Map.Entry<String, FactionWorth> faction : factions.entrySet()) {
+            List<UUID> members = plugin.getFactionsHook().getMembers(faction.getKey());
+            plugin.getEconomyHook().getBalances(faction.getKey(), members).forEach(faction.getValue()::addWorth);
+        }
+
+        orderedFactions.clear();
+        orderedFactions.addAll(factions.values().stream().sorted().collect(Collectors.toList()));
     }
 
     /**
@@ -86,13 +109,13 @@ public final class WorthManager {
 
         // Locate where the value should be ordered.
         while (it.hasPrevious()) {
-            if (it.previous().compareTo(factionWorth) >= 0) {
+            if (it.previous().compareTo(factionWorth) <= 0) {
                 break;
             }
         }
 
         while (it.hasNext()) {
-            if (it.next().compareTo(factionWorth) <= 0) {
+            if (it.next().compareTo(factionWorth) >= 0) {
                 it.previous();
                 break;
             }

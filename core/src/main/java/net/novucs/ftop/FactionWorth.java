@@ -69,6 +69,20 @@ public class FactionWorth implements Comparable<FactionWorth> {
         }
     }
 
+    protected void modifyWorth(Map<WorthType, Double> worth, boolean remove) {
+        for (Map.Entry<WorthType, Double> entry : worth.entrySet()) {
+            double amount = this.worth.getOrDefault(entry.getKey(), 0d);
+            totalWorth += remove ? -entry.getValue() : entry.getValue();
+            this.worth.put(entry.getKey(), amount + (remove ? -entry.getValue() : entry.getValue()));
+        }
+    }
+
+    protected void addAll(ChunkWorth chunkWorth) {
+        modifyMaterials(chunkWorth.getMaterials(), false);
+        modifySpawners(chunkWorth.getSpawners(), false);
+        modifyWorth(chunkWorth.getWorth(), false);
+    }
+
     public String getName() {
         return name;
     }
@@ -83,6 +97,18 @@ public class FactionWorth implements Comparable<FactionWorth> {
 
     @Override
     public int compareTo(FactionWorth o) {
-        return Double.compare(totalWorth, o.totalWorth);
+        return Double.compare(o.totalWorth, totalWorth);
+    }
+
+    @Override
+    public String toString() {
+        return "FactionWorth{" +
+                "factionId='" + factionId + '\'' +
+                ", worth=" + worth +
+                ", materials=" + materials +
+                ", spawners=" + spawners +
+                ", name='" + name + '\'' +
+                ", totalWorth=" + totalWorth +
+                '}';
     }
 }

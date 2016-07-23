@@ -81,4 +81,14 @@ public class ChunkWorth {
     public void setNextRecalculation(long nextRecalculation) {
         this.nextRecalculation = nextRecalculation;
     }
+
+    @Override
+    public String toString() {
+        return "ChunkWorth{" +
+                "worth=" + worth +
+                ", materials=" + materials +
+                ", spawners=" + spawners +
+                ", nextRecalculation=" + nextRecalculation +
+                '}';
+    }
 }

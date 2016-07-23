@@ -9,6 +9,9 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 
+import java.util.List;
+import java.util.UUID;
+
 public abstract class FactionsHook implements Listener, PluginService {
 
     private final Plugin plugin;
@@ -48,4 +51,6 @@ public abstract class FactionsHook implements Listener, PluginService {
     public abstract boolean isFaction(String factionId);
 
     public abstract ChatColor getRelation(Player player, String factionId);
+
+    public abstract List<UUID> getMembers(String factionId);
 }

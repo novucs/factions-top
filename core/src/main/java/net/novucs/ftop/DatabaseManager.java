@@ -278,10 +278,11 @@ public class DatabaseManager {
             PreparedStatement statement = connection.prepareStatement("UPDATE `chunk_material_count` SET `count` = ? WHERE `id` = ?");
             statement.setInt(1, count);
             statement.setInt(2, id);
+            statement.executeUpdate();
             return id;
         }
 
-        PreparedStatement statement = connection.prepareStatement("INSERT INTO `chunk_material_count` (`chunk_id`, `spawner_id`, `count`) VALUES(?, ?, ?)");
+        PreparedStatement statement = connection.prepareStatement("INSERT INTO `chunk_material_count` (`chunk_id`, `material_id`, `count`) VALUES(?, ?, ?)");
         statement.setInt(1, chunkId);
         statement.setInt(2, materialId);
         statement.setInt(3, count);
@@ -294,7 +295,7 @@ public class DatabaseManager {
     }
 
     private int getChunkMaterialId(Connection connection, int chunkId, int materialId) throws SQLException {
-        PreparedStatement statement = connection.prepareStatement("SELECT `id` FROM `material` WHERE `chunk_id` = ? AND `material_id` = ?");
+        PreparedStatement statement = connection.prepareStatement("SELECT `id` FROM `chunk_material_count` WHERE `chunk_id` = ? AND `material_id` = ?");
         statement.setInt(1, chunkId);
         statement.setInt(2, materialId);
         ResultSet set = statement.executeQuery();
@@ -312,6 +313,7 @@ public class DatabaseManager {
             PreparedStatement statement = connection.prepareStatement("UPDATE `chunk_spawner_count` SET `count` = ? WHERE `id` = ?");
             statement.setInt(1, count);
             statement.setInt(2, id);
+            statement.executeUpdate();
             return id;
         }
 
@@ -328,7 +330,7 @@ public class DatabaseManager {
     }
 
     private int getChunkSpawnerId(Connection connection, int chunkId, int spawnerId) throws SQLException {
-        PreparedStatement statement = connection.prepareStatement("SELECT `id` FROM `spawner` WHERE `chunk_id` = ? AND `spawner_id` = ?");
+        PreparedStatement statement = connection.prepareStatement("SELECT `id` FROM `chunk_spawner_count` WHERE `chunk_id` = ? AND `spawner_id` = ?");
         statement.setInt(1, chunkId);
         statement.setInt(2, spawnerId);
         ResultSet set = statement.executeQuery();
@@ -346,6 +348,7 @@ public class DatabaseManager {
             PreparedStatement statement = connection.prepareStatement("UPDATE `chunk_worth` SET `worth` = ? WHERE `id` = ?");
             statement.setDouble(1, worth);
             statement.setInt(2, id);
+            statement.executeUpdate();
             return id;
         }
 
@@ -362,7 +365,7 @@ public class DatabaseManager {
     }
 
     private int getChunkWorthId(Connection connection, int chunkId, int worthId) throws SQLException {
-        PreparedStatement statement = connection.prepareStatement("SELECT `id` FROM `worth` WHERE `chunk_id` = ? AND `worth_id` = ?");
+        PreparedStatement statement = connection.prepareStatement("SELECT `id` FROM `chunk_worth` WHERE `chunk_id` = ? AND `worth_id` = ?");
         statement.setInt(1, chunkId);
         statement.setInt(2, worthId);
         ResultSet set = statement.executeQuery();

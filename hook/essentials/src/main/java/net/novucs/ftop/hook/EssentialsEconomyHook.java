@@ -1,16 +1,22 @@
 package net.novucs.ftop.hook;
 
+import com.earth2me.essentials.IEssentials;
+import com.earth2me.essentials.User;
 import com.earth2me.essentials.api.UserDoesNotExistException;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
 import net.ess3.api.Economy;
 import net.ess3.api.events.UserBalanceUpdateEvent;
 import net.novucs.ftop.WorthType;
 import net.novucs.ftop.hook.event.FactionEconomyEvent;
 import net.novucs.ftop.hook.event.PlayerEconomyEvent;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.*;
 import org.bukkit.plugin.Plugin;
+
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class EssentialsEconomyHook implements EconomyHook, Listener {
 
@@ -18,6 +24,7 @@ public class EssentialsEconomyHook implements EconomyHook, Listener {
     private final FactionsHook factionsHook;
     private boolean playerEnabled;
     private boolean factionEnabled;
+    private IEssentials essentials = null;
 
     public EssentialsEconomyHook(Plugin plugin, FactionsHook factionsHook) {
         this.plugin = plugin;
@@ -27,6 +34,7 @@ public class EssentialsEconomyHook implements EconomyHook, Listener {
     @Override
     public void initialize() {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
+        essentials = (IEssentials) plugin.getServer().getPluginManager().getPlugin("Essentials");
     }
 
     @Override
@@ -54,8 +62,24 @@ public class EssentialsEconomyHook implements EconomyHook, Listener {
     }
 
     @Override
-    public Table<String, WorthType, Double> getBalances() {
-        return HashBasedTable.create();
+    public Map<WorthType, Double> getBalances(String factionId, List<UUID> members) {
+        Map<WorthType, Double> target = new EnumMap<>(WorthType.class);
+
+        try {
+            target.put(WorthType.FACTION_BALANCE, Economy.getMoneyExact("faction_" + factionId).doubleValue());
+        } catch (UserDoesNotExistException ignore) {
+        }
+
+        double playerBalance = 0;
+        for (UUID playerId : members) {
+            User user = essentials.getUser(playerId);
+            if (user != null) {
+                playerBalance += user.getMoney().doubleValue();
+            }
+        }
+
+        target.put(WorthType.PLAYER_BALANCE, playerBalance);
+        return target;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

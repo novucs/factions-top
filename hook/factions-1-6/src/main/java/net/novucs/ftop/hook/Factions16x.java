@@ -15,6 +15,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.plugin.Plugin;
 
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 public class Factions16x extends FactionsHook {
 
     public Factions16x(Plugin plugin) {
@@ -47,6 +51,13 @@ public class Factions16x extends FactionsHook {
         FPlayer fplayer = FPlayers.getInstance().getByPlayer(player);
         Faction faction = Factions.getInstance().getFactionById(factionId);
         return fplayer.getFaction().getRelationTo(faction).getColor();
+    }
+
+    @Override
+    public List<UUID> getMembers(String factionId) {
+        return Factions.getInstance().getFactionById(factionId).getFPlayers().stream()
+                .map(fplayer -> UUID.fromString(fplayer.getId()))
+                .collect(Collectors.toList());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
