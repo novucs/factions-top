@@ -3,7 +3,6 @@ package net.novucs.ftop;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import net.novucs.ftop.hook.VaultEconomyHook;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -14,7 +13,6 @@ import org.bukkit.entity.EntityType;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -249,7 +247,7 @@ public class Settings {
 
         hikariConfig = loadHikariConfig();
 
-        addDefaults(WorthType.class, "settings.enabled", true, Collections.singletonList(WorthType.CHEST));
+        addDefaults(WorthType.class, "settings.enabled", true, Collections.emptyList());
         enabled = parseStateMap(WorthType.class, "settings.enabled", false);
         plugin.getEconomyHook().setFactionEnabled(isEnabled(WorthType.FACTION_BALANCE));
         plugin.getEconomyHook().setPlayerEnabled(isEnabled(WorthType.PLAYER_BALANCE));
@@ -257,7 +255,7 @@ public class Settings {
         addDefaults(WorthType.class, "settings.detailed", true, Collections.emptyList());
         detailed = parseStateMap(WorthType.class, "settings.detailed", false);
 
-        addDefaults(RecalculateReason.class, "settings.perform-recalculate", true, Collections.singletonList(RecalculateReason.CHEST));
+        addDefaults(RecalculateReason.class, "settings.perform-recalculate", true, Collections.emptyList());
         performRecalculate = parseStateMap(RecalculateReason.class, "settings.perform-recalculate", false);
 
         addDefaults(RecalculateReason.class, "settings.bypass-recalculate-delay", false, Arrays.asList(RecalculateReason.UNLOAD, RecalculateReason.CLAIM));

@@ -17,6 +17,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -84,7 +85,6 @@ public class WorldListener implements Listener, PluginService {
                 materials.put(block.getType(), 1);
                 break;
         }
-
 
         // Add block price to the count.
         plugin.getWorthManager().add(block.getChunk(), reason, worthType, negate ? -price : price, materials, spawners);
@@ -205,5 +205,10 @@ public class WorldListener implements Listener, PluginService {
     public void updateWorth(FactionLeaveEvent event) {
         double balance = plugin.getEconomyHook().getBalance(event.getPlayer());
         plugin.getWorthManager().add(event.getFactionId(), WorthType.PLAYER_BALANCE, -balance);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void recalculate(ChunkUnloadEvent event) {
+        plugin.getWorthManager().recalculate(event.getChunk(), RecalculateReason.UNLOAD);
     }
 }

@@ -8,7 +8,6 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
@@ -282,6 +281,19 @@ public final class WorthManager {
         }
 
         // Schedule chunk for recalculation.
+        recalculate(chunkWorth, pos, chunk, reason);
+    }
+
+    /**
+     * Attempts to schedule a chunk for recalculation if the chunk is allowed
+     * to be recalculated at this time.
+     *
+     * @param chunk  the chunk.
+     * @param reason the reason for recalculating.
+     */
+    protected void recalculate(Chunk chunk, RecalculateReason reason) {
+        ChunkPos pos = ChunkPos.of(chunk);
+        ChunkWorth chunkWorth = getChunkWorth(pos);
         recalculate(chunkWorth, pos, chunk, reason);
     }
 
