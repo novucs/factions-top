@@ -15,6 +15,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -25,6 +26,7 @@ public class SignManager extends BukkitRunnable implements PluginService, Listen
     private static final Pattern signRegex = Pattern.compile("\\[f(|actions)top\\]");
     private final FactionsTopPlugin plugin;
     private final Multimap<Integer, BlockPos> signs = HashMultimap.create();
+    private final Map<Integer, Double> previous = new HashMap<>();
 
     public SignManager(FactionsTopPlugin plugin) {
         this.plugin = plugin;
@@ -54,10 +56,18 @@ public class SignManager extends BukkitRunnable implements PluginService, Listen
 
         for (Map.Entry<Integer, Collection<BlockPos>> entry : signs.asMap().entrySet()) {
             // Do nothing if rank is higher than factions size.
-            if (entry.getKey() > factions.size()) continue;
+            if (entry.getKey() >= factions.size()) continue;
 
             // Get the faction worth.
             FactionWorth worth = factions.get(entry.getKey());
+
+            // Do not update signs if previous value is unchanged.
+            double previousWorth = previous.getOrDefault(entry.getKey(), 0d);
+            if (previousWorth == worth.getTotalWorth()) {
+                continue;
+            }
+
+            previous.put(entry.getKey(), worth.getTotalWorth());
 
             // Update all signs.
             for (BlockPos pos : entry.getValue()) {
