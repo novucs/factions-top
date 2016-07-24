@@ -177,7 +177,7 @@ public class Settings {
     private <T extends Enum<T>> void addDefaults(Class<T> type, String key, boolean def, List<T> exempt) {
         ConfigurationSection section = getOrCreateSection(key);
         for (T target : type.getEnumConstants()) {
-            section.addDefault(target.name(), exempt.contains(target) != def);
+            section.addDefault(target.name().toLowerCase(), exempt.contains(target) != def);
         }
     }
 
@@ -200,7 +200,7 @@ public class Settings {
 
     private <T extends Enum<T>> void addDefaults(String key, Map<T, Double> prices) {
         ConfigurationSection section = getOrCreateSection(key);
-        prices.forEach((type, price) -> section.addDefault(type.name(), price));
+        prices.forEach((type, price) -> section.addDefault(type.name().toLowerCase(), price));
     }
 
     private <T extends Enum<T>> EnumMap<T, Double> parseDefPrices(Class<T> type, Map<String, Double> def) {
