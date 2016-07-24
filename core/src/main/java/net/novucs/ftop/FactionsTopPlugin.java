@@ -232,7 +232,7 @@ public final class FactionsTopPlugin extends JavaPlugin {
      * the plugin will disable all services until the settings have been
      * corrected.
      */
-    private void loadSettings() {
+    protected void loadSettings() {
         try {
             // Attempt to load the plugin settings.
             settings.load();

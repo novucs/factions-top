@@ -42,6 +42,15 @@ public class FactionsTopCommand implements CommandExecutor, Listener, PluginServ
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) {
             sendTop(sender, 0);
+        } else if (args[0].equalsIgnoreCase("reload")) {
+            if (!sender.hasPermission("factionstop.reload")) {
+                sender.sendMessage(ChatColor.RED + "You do not have permission.");
+                return true;
+            }
+
+            plugin.loadSettings();
+            sender.sendMessage(ChatColor.YELLOW + "FactionsTop settings have been successfully reloaded.");
+            sender.sendMessage(ChatColor.YELLOW + "New faction worth values will take a while to register.");
         } else {
             sendTop(sender, NumberUtils.toInt(args[0]));
         }
