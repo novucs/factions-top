@@ -19,7 +19,29 @@ import java.util.stream.Collectors;
 public class Settings {
 
     private static final int LATEST_VERSION = 1;
-    private static final String HEADER = "FactionsTop configuration.\n";
+    private static final String HEADER = "FactionsTop by novucs.\n" +
+            "\n" +
+            "Configuration walkthrough:\n" +
+            "- config-version: Should not be touched, determines config version.\n" +
+            "- command-aliases: List of commands to rebind to \"/ftop\".\n" +
+            "- ignored-faction-ids: Faction IDs to not calculate for factions top.\n" +
+            "- factions-per-page: Number of factions displayed per page in \"/ftop\".\n" +
+            "- sign-update-ticks: Duration in ticks between sign updates.\n" +
+            "- liquid-update-ticks: Duration in ticks between liquid economy updates.\n" +
+            "- chunk-queue-size: Hard-limit maximum chunks to be queued for recalculation.\n" +
+            "- chunk-recalculate-millis: Duration in millis between chunk recalculations.\n" +
+            "- database: Various database settings, MySQL and H2 are supported.\n" +
+            "- enabled: Toggles whether specific worth types should be recalculated.\n" +
+            "- perform-recalculate: Toggles chunk recalculation for the listed reasons.\n" +
+            "- bypass-recalculate-delay: Toggles which reason bypasses the delay.\n" +
+            "- spawner-prices: Value for specific spawners.\n" +
+            "- block-prices: Value for specific blocks.\n" +
+            "\n" +
+            "Valid spawners (Case insensitive):\n" +
+            "https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/entity/EntityType.html\n" +
+            "\n" +
+            "Valid materials (Case insensitive):\n" +
+            "https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html\n";
 
     private final FactionsTopPlugin plugin;
     private FileConfiguration config;
@@ -35,7 +57,6 @@ public class Settings {
     private long chunkRecalculateMillis;
     private HikariConfig hikariConfig;
     private Map<WorthType, Boolean> enabled;
-    private Map<WorthType, Boolean> detailed;
     private Map<RecalculateReason, Boolean> performRecalculate;
     private Map<RecalculateReason, Boolean> bypassRecalculateDelay;
     private Map<EntityType, Double> spawnerPrices;
@@ -79,10 +100,6 @@ public class Settings {
 
     public boolean isEnabled(WorthType worthType) {
         return enabled.getOrDefault(worthType, false);
-    }
-
-    public boolean isDetailed(WorthType worthType) {
-        return detailed.getOrDefault(worthType, false);
     }
 
     public boolean isPerformRecalculate(RecalculateReason reason) {
@@ -257,9 +274,6 @@ public class Settings {
         enabled = parseStateMap(WorthType.class, "settings.enabled", false);
         plugin.getEconomyHook().setFactionEnabled(isEnabled(WorthType.FACTION_BALANCE));
         plugin.getEconomyHook().setPlayerEnabled(isEnabled(WorthType.PLAYER_BALANCE));
-
-        addDefaults(WorthType.class, "settings.detailed", true, Collections.emptyList());
-        detailed = parseStateMap(WorthType.class, "settings.detailed", false);
 
         addDefaults(RecalculateReason.class, "settings.perform-recalculate", true, Collections.emptyList());
         performRecalculate = parseStateMap(RecalculateReason.class, "settings.perform-recalculate", false);
