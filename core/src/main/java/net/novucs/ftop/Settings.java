@@ -268,7 +268,10 @@ public class Settings {
         chunkQueueSize = getInt("settings.chunk-queue-size", 200);
         chunkRecalculateMillis = getLong("settings.chunk-recalculate-millis", 120000);
 
-        hikariConfig = loadHikariConfig();
+        // Do not reload hikari configuration if already loaded.
+        if (hikariConfig == null) {
+            hikariConfig = loadHikariConfig();
+        }
 
         addDefaults(WorthType.class, "settings.enabled", true, Collections.emptyList());
         enabled = parseStateMap(WorthType.class, "settings.enabled", false);
