@@ -92,7 +92,7 @@ public class SignManager extends BukkitRunnable implements PluginService, Listen
 
         event.setLine(0, ChatColor.DARK_BLUE + "[FactionsTop]");
         event.setLine(1, "#" + Math.min(rank, 1));
-        saveSign(BlockPos.of(event.getBlock()), Math.max(rank - 1, 1));
+        saveSign(BlockPos.of(event.getBlock()), Math.max(rank - 1, 0));
     }
 
     private void saveSign(BlockPos pos, int rank) {

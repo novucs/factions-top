@@ -3,9 +3,11 @@ package net.novucs.ftop;
 import mkremins.fanciful.FancyMessage;
 import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -14,9 +16,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.server.ServerCommandEvent;
 
-import java.text.DecimalFormat;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
 
 public class FactionsTopCommand implements CommandExecutor, Listener, PluginService {
 
@@ -82,39 +82,83 @@ public class FactionsTopCommand implements CommandExecutor, Listener, PluginServ
         // Do not attempt to send hook worth if page requested is beyond the limit.
         int entries = plugin.getSettings().getFactionsPerPage();
         List<FactionWorth> factions = plugin.getWorthManager().getOrderedFactions();
-        int maxPage = factions.size() / entries;
-        page = Math.max(0, Math.min(maxPage, page));
+        int maxPage = Math.max(factions.size() / entries, 1);
+        page = Math.max(1, Math.min(maxPage, page));
 
         FancyMessage header = new FancyMessage("________.[ ").color(ChatColor.GOLD)
                 .then("Top Factions ").color(ChatColor.DARK_GREEN)
-                .then("[<] ").color(page == 0 ? ChatColor.GRAY : ChatColor.AQUA).command("/ftop " + (page - 1))
-                .then((page + 1) + "/" + (maxPage + 1) + " ").color(ChatColor.GOLD)
-                .then("[>] ").color(page == maxPage ? ChatColor.GRAY : ChatColor.AQUA).command("/ftop " + (page + 1))
-                .then("].________").color(ChatColor.GOLD);
+                .then("[<] ").color(page == 1 ? ChatColor.GRAY : ChatColor.AQUA);
+
+        if (page != 1) {
+            header.command("/ftop " + (page - 1))
+                    .tooltip(ChatColor.LIGHT_PURPLE + "Command: " + ChatColor.AQUA + "/f top " + (page - 1));
+        }
+
+        header.then(page + "/" + maxPage + " ").color(ChatColor.GOLD)
+                .then("[>] ").color(page == maxPage ? ChatColor.GRAY : ChatColor.AQUA);
+
+        if (page != maxPage) {
+            header.command("/ftop " + (page + 1))
+                    .tooltip(ChatColor.LIGHT_PURPLE + "Command: " + ChatColor.AQUA + "/f top " + (page + 1));
+        }
+
+        header.then("].________").color(ChatColor.GOLD);
         header.send(sender);
 
         if (factions.size() == 0) {
-            for (int i = 0; i < entries; i++) {
-                sender.sendMessage("");
-            }
+            sender.sendMessage(ChatColor.YELLOW + "No entries to be displayed.");
+            return;
         }
 
-        ListIterator<FactionWorth> it = factions.listIterator(entries * page);
+        int spacer = entries * --page;
+        ListIterator<FactionWorth> it = factions.listIterator(spacer);
         for (int i = 0; i < entries; i++) {
-            if (!it.hasNext()) {
-                for (int j = 0; j < i - entries; j++) {
-                    sender.sendMessage("");
-                }
-                return;
-            }
+            if (!it.hasNext()) return;
 
             FactionWorth worth = it.next();
             ChatColor relationColor = getRelationColor(sender, worth.getFactionId());
-            FancyMessage message = new FancyMessage((i + 1) + ". ").color(ChatColor.YELLOW)
-                    .then(worth.getName()).color(relationColor)
-                    .then(plugin.getCurrencyFormat().format(worth.getTotalWorth())).color(ChatColor.AQUA);
+            List<String> tooltip = getTooltip(worth);
+
+            FancyMessage message = new FancyMessage((i + 1 + spacer) + ". ").color(ChatColor.YELLOW)
+                    .then(worth.getName() + " ").color(relationColor).tooltip(tooltip)
+                    .then(plugin.getCurrencyFormat().format(worth.getTotalWorth())).color(ChatColor.AQUA).tooltip(tooltip);
+
             message.send(sender);
         }
+    }
+
+    private List<String> getTooltip(FactionWorth worth) {
+        List<String> tooltip = new ArrayList<>();
+        addTooltip(tooltip, worth.getSpawners(), "Spawner");
+        addTooltip(tooltip, worth.getMaterials(), "");
+        return tooltip;
+    }
+
+    private <T extends Enum<T>> void addTooltip(List<String> tooltip, Map<T, Integer> counter, String added) {
+        counter.forEach((type, count) -> {
+            if (count > 0) {
+                tooltip.add(ChatColor.DARK_AQUA + format(type.name()) + " " + added + ": " + ChatColor.AQUA + count);
+            }
+        });
+    }
+
+    private String format(String enumName) {
+        char[] chars = enumName.toCharArray();
+        boolean firstLetter = true;
+        for (int i = 0; i < chars.length; i++) {
+            if (firstLetter) {
+                chars[i] = Character.toUpperCase(chars[i]);
+                firstLetter = false;
+            } else {
+                chars[i] = Character.toLowerCase(chars[i]);
+            }
+
+            if (chars[i] == '_') {
+                chars[i] = ' ';
+                firstLetter = true;
+            }
+        }
+        return new String(chars);
     }
 
     private ChatColor getRelationColor(CommandSender sender, String factionId) {

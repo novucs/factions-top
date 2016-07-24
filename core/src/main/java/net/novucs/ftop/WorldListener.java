@@ -77,12 +77,12 @@ public class WorldListener implements Listener, PluginService {
                 worthType = WorthType.SPAWNER;
                 EntityType spawnType = ((CreatureSpawner) block.getState()).getSpawnedType();
                 price = plugin.getSettings().getSpawnerPrice(spawnType);
-                spawners.put(spawnType, 1);
+                spawners.put(spawnType, negate ? -1 : 1);
                 break;
             default:
                 worthType = WorthType.BLOCK;
                 price = plugin.getSettings().getBlockPrice(block.getType());
-                materials.put(block.getType(), 1);
+                materials.put(block.getType(), negate ? -1 : 1);
                 break;
         }
 
