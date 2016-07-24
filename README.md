@@ -15,11 +15,10 @@ An efficient and comprehensive factions ranking system.
 | /ftop reload | Reload the plugin settings |
 
 ### Signs
-Signs can be used to display a faction at a specific rank.
+Signs can be used to display a faction at a specific rank. Example:
 
-This sign example will display the faction at rank 2:
-Line 1: [ftop]
-Line 2: 2
+![alt text](https://github.com/novucs/factions-top/raw/master/img/sign-creation.png "Sign creation")
+![alt text](https://github.com/novucs/factions-top/raw/master/img/sign-complete.png "Sign complete")
 
 ### Permissions
 | **Permission**         | **Description**                 | **Default** |
