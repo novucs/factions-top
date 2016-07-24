@@ -72,7 +72,10 @@ public class SignManager extends BukkitRunnable implements PluginService, Listen
             // Update all signs.
             for (BlockPos pos : entry.getValue()) {
                 Block block = pos.getBlock(plugin.getServer());
-                if (block == null || !(block.getState() instanceof Sign)) continue;
+                if (block == null || !(block.getState() instanceof Sign)) {
+                    removeSign(pos);
+                    continue;
+                }
 
                 Sign sign = (Sign) block.getState();
                 sign.setLine(2, worth.getName());
