@@ -17,8 +17,8 @@ An efficient and comprehensive factions ranking system.
 ### Signs
 Signs can be used to display a faction at a specific rank. Example:
 
-![alt text](https://github.com/novucs/factions-top/raw/master/img/sign-creation.png "Sign creation")
-![alt text](https://github.com/novucs/factions-top/raw/master/img/sign-complete.png "Sign complete")
+![](./img/sign-creation.png "Sign Creation")
+![](./img/sign-complete.png "Sign Complete")
 
 ### Permissions
 | **Permission**         | **Description**                 | **Default** |
