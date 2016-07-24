@@ -59,32 +59,22 @@ public class FactionsTopCommand implements CommandExecutor, Listener, PluginServ
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onCommand(PlayerCommandPreprocessEvent event) {
-        if (onCommand(event.getPlayer(), event.getMessage().substring(1))) {
-            event.setCancelled(true);
-        }
+        event.setMessage("/" + attemptRebind(event.getMessage().substring(1)));
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onCommand(ServerCommandEvent event) {
-        if (onCommand(event.getSender(), event.getCommand())) {
-            event.setCancelled(true);
-        }
+        event.setCommand(attemptRebind(event.getCommand()));
     }
 
-    private boolean onCommand(CommandSender sender, String command) {
+    private String attemptRebind(String command) {
         for (String alias : plugin.getSettings().getCommandAliases()) {
             if (command.startsWith(alias)) {
-                if (!sender.hasPermission("factionstop.use")) {
-                    sender.sendMessage(ChatColor.RED + "You do not have permission.");
-                    return true;
-                }
-
-                int page = NumberUtils.toInt(command.replaceFirst(alias, "").split(" ")[0]);
-                sendTop(sender, page);
-                return true;
+                return command.replaceFirst(alias, "ftop");
             }
         }
-        return false;
+
+        return command;
     }
 
     private void sendTop(CommandSender sender, int page) {
