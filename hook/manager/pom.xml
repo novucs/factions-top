@@ -7,13 +7,13 @@
     <parent>
         <artifactId>hook</artifactId>
         <groupId>net.novucs.ftop</groupId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>net.novucs.ftop.hook</groupId>
     <artifactId>manager</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <name>Hook-Manager</name>
