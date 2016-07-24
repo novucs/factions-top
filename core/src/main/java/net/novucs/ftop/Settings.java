@@ -29,6 +29,7 @@ public class Settings {
     private List<String> commandAliases;
     private List<String> ignoredFactionIds;
     private int factionsPerPage;
+    private int signUpdateTicks;
     private int liquidUpdateTicks;
     private int chunkQueueSize;
     private long chunkRecalculateMillis;
@@ -54,6 +55,10 @@ public class Settings {
 
     public int getFactionsPerPage() {
         return factionsPerPage;
+    }
+
+    public int getSignUpdateTicks() {
+        return signUpdateTicks;
     }
 
     public int getLiquidUpdateTicks() {
@@ -238,6 +243,7 @@ public class Settings {
         commandAliases = getList("settings.command-aliases", Collections.singletonList("f top"), String.class);
         ignoredFactionIds = getList("settings.ignored-faction-ids", Arrays.asList("none", "safezone", "warzone", "0", "-1", "-2"), String.class);
         factionsPerPage = getInt("settings.factions-per-page", 9);
+        signUpdateTicks = getInt("settings.sign-update-ticks", 1);
         liquidUpdateTicks = getInt("settings.liquid-update-ticks", 100);
         if (plugin.getEconomyHook() instanceof VaultEconomyHook) {
             ((VaultEconomyHook) plugin.getEconomyHook()).setLiquidUpdateTicks(liquidUpdateTicks);

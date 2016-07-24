@@ -466,6 +466,9 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
 
         // Add all placed and chest worth of each claim to the faction.
         for (ChunkPos pos : claims) {
+            Chunk chunk = pos.getChunk(plugin.getServer());
+            if (chunk == null) continue;
+
             ChunkWorth chunkWorth = getChunkWorth(pos);
             for (WorthType worthType : WorthType.getPlaced()) {
                 double worth = chunkWorth.getWorth(worthType);
@@ -473,7 +476,7 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
             }
 
             // Schedule chunk for recalculation.
-            recalculate(chunkWorth, pos, pos.getChunk(plugin.getServer()), RecalculateReason.CLAIM);
+            recalculate(chunkWorth, pos, chunk, RecalculateReason.CLAIM);
         }
 
         // Adjust faction worth position.

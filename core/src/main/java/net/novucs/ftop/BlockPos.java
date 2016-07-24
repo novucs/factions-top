@@ -1,5 +1,6 @@
 package net.novucs.ftop;
 
+import org.bukkit.Server;
 import org.bukkit.block.Block;
 
 import java.util.Objects;
@@ -8,14 +9,18 @@ public class BlockPos {
 
     private final String world;
     private final int x;
-    private final double y;
-    private final double z;
+    private final int y;
+    private final int z;
 
     public static BlockPos of(Block block) {
         return new BlockPos(block.getWorld().getName(), block.getX(), block.getY(), block.getZ());
     }
 
-    private BlockPos(String world, int x, double y, double z) {
+    public static BlockPos of(String world, int x, int y, int z) {
+        return new BlockPos(world, x, y, z);
+    }
+
+    private BlockPos(String world, int x, int y, int z) {
         this.world = world;
         this.x = x;
         this.y = y;
@@ -30,12 +35,17 @@ public class BlockPos {
         return x;
     }
 
-    public double getY() {
+    public int getY() {
         return y;
     }
 
-    public double getZ() {
+    public int getZ() {
         return z;
+    }
+
+    public Block getBlock(Server server) {
+        if (server.getWorld(world) == null) return null;
+        return server.getWorld(world).getBlockAt(x, y, z);
     }
 
     @Override

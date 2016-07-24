@@ -12,4 +12,23 @@ commands:
     permission-message: "§cYou do not have permission."
     usage: /<command> [page]
 permissions:
-  factionstop.use: {default: true}
+  factionstop.user:
+    default: true
+    children:
+      factionstop.use: true
+
+  factionstop.admin:
+    default: op
+    children:
+      factionstop.sign.break: true
+      factionstop.sign.create: true
+      factionstop.user: true
+
+  factionstop.*:
+    default: false
+    children:
+      factionstop.admin: true
+
+  factionstop.use: {default: false}
+  factionstop.sign.break: {default: false}
+  factionstop.sign.create: {default: false}

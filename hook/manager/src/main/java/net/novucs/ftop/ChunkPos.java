@@ -43,6 +43,7 @@ public class ChunkPos {
     }
 
     public Chunk getChunk(Server server) {
+        if (server.getWorld(world) == null) return null;
         return server.getWorld(world).getChunkAt(x, z);
     }
 

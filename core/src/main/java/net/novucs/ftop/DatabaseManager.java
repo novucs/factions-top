@@ -1,5 +1,7 @@
 package net.novucs.ftop;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.bukkit.Material;
@@ -100,6 +102,25 @@ public class DatabaseManager {
                 "FOREIGN KEY (`chunk_id`) REFERENCES chunk(`id`)," +
                 "FOREIGN KEY (`spawner_id`) REFERENCES spawner(`id`)," +
                 "UNIQUE (`chunk_id`, `spawner_id`))");
+        statement.executeUpdate();
+
+        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `block` (" +
+                "`id` INT NOT NULL AUTO_INCREMENT, " +
+                "`world_id` INT NOT NULL, " +
+                "`x` INT NOT NULL, " +
+                "`y` INT NOT NULL, " +
+                "`z` INT NOT NULL, " +
+                "PRIMARY KEY (`id`), " +
+                "FOREIGN KEY (`world_id`) REFERENCES world(`id`), " +
+                "UNIQUE (`world_id`, `x`, `y`, `z`))");
+        statement.executeUpdate();
+
+        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `sign` (" +
+                "`id` INT NOT NULL AUTO_INCREMENT, " +
+                "`block_id` INT NOT NULL UNIQUE, " +
+                "`rank` INT NOT NULL, " +
+                "PRIMARY KEY (`id`), " +
+                "FOREIGN KEY (`block_id`) REFERENCES block(`id`))");
         statement.executeUpdate();
     }
 
@@ -448,5 +469,129 @@ public class DatabaseManager {
 
     private int saveWorth(Connection connection, WorthType worthType) throws SQLException {
         return saveName(connection, "worth", worthType.name());
+    }
+
+    public Multimap<Integer, BlockPos> loadSigns() throws SQLException {
+        Connection connection = dataSource.getConnection();
+        PreparedStatement statement = connection.prepareStatement("SELECT `block_id`, `rank` FROM `sign`");
+        ResultSet set = statement.executeQuery();
+        Multimap<Integer, BlockPos> signs = HashMultimap.create();
+
+        while (set.next()) {
+            int blockId = set.getInt("block_id");
+            BlockPos pos = getBlock(connection, blockId);
+            int rank = set.getInt("rank");
+            signs.put(rank, pos);
+        }
+
+        return signs;
+    }
+
+    private BlockPos getBlock(Connection connection, int blockId) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement("SELECT `world_id`, `x`, `y`, `z` FROM `block` WHERE `id` = ?");
+        statement.setInt(1, blockId);
+        ResultSet set = statement.executeQuery();
+
+        if (set.next()) {
+            int worldId = set.getInt("world_id");
+            String worldName = getWorldName(connection, worldId);
+            if (worldName == null) return null;
+
+            int x = set.getInt("x");
+            int y = set.getInt("y");
+            int z = set.getInt("z");
+            return BlockPos.of(worldName, x, y, z);
+        }
+
+        return null;
+    }
+
+    private String getWorldName(Connection connection, int worldId) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement("SELECT `name` FROM `world` WHERE `id` = ?");
+        statement.setInt(1, worldId);
+        ResultSet set = statement.executeQuery();
+        return set.next() ? set.getString("name") : null;
+    }
+
+    public int saveSign(BlockPos pos, int rank) throws SQLException {
+        Connection connection = dataSource.getConnection();
+        int blockId = saveBlock(connection, pos);
+        int id = getSign(connection, blockId);
+        if (id > 0) {
+            PreparedStatement statement = connection.prepareStatement("UPDATE `sign` SET `rank` = ? WHERE `id` = ?");
+            statement.setInt(1, rank);
+            statement.setInt(2, id);
+            statement.executeUpdate();
+            return id;
+        }
+
+        PreparedStatement statement = connection.prepareStatement("INSERT INTO `sign` (`block_id`, `rank`) VALUES(?, ?)");
+        statement.setInt(1, blockId);
+        statement.setInt(2, rank);
+
+        statement.executeUpdate();
+        ResultSet set = statement.getGeneratedKeys();
+
+        set.next();
+        return set.getInt(1);
+    }
+
+    public void removeSign(BlockPos pos) throws SQLException {
+        Connection connection = dataSource.getConnection();
+        int worldId = getNameId(connection, "world", pos.getWorld());
+        int blockId = getBlock(connection, worldId, pos.getX(), pos.getY(), pos.getZ());
+        int signId = getSign(connection, blockId);
+        if (signId < 0) return;
+
+        PreparedStatement statement = connection.prepareStatement("DELETE FROM `sign` WHERE `id` = ?");
+        statement.setInt(1, signId);
+        statement.executeUpdate();
+    }
+
+    private int getSign(Connection connection, int blockId) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement("SELECT `id` FROM `sign` WHERE `block_id` = ?");
+        statement.setInt(1, blockId);
+        ResultSet set = statement.executeQuery();
+
+        if (set.next()) {
+            return set.getInt("id");
+        }
+
+        return -1;
+    }
+
+    private int saveBlock(Connection connection, BlockPos pos) throws SQLException {
+        int worldId = saveName(connection, "world", pos.getWorld());
+        int id = getBlock(connection, worldId, pos.getX(), pos.getY(), pos.getZ());
+        if (id > 0) {
+            return id;
+        }
+
+        PreparedStatement statement = connection.prepareStatement("INSERT INTO `block` (`world_id`, `x`, `y`, `z`) VALUES(?, ?, ?, ?)");
+        statement.setInt(1, worldId);
+        statement.setInt(2, pos.getX());
+        statement.setInt(3, pos.getY());
+        statement.setInt(4, pos.getZ());
+        statement.executeUpdate();
+
+        ResultSet set = statement.getGeneratedKeys();
+        set.next();
+        return set.getInt(1);
+    }
+
+    private int getBlock(Connection connection, int worldId, int x, int y, int z) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement("SELECT `id` FROM `block` " +
+                "WHERE `world_id` = ? AND `x` = ? AND `y` = ? AND `z` = ?");
+        statement.setInt(1, worldId);
+        statement.setInt(2, x);
+        statement.setInt(3, y);
+        statement.setInt(4, z);
+        ResultSet set = statement.executeQuery();
+
+        if (set.next()) {
+            return set.getInt("id");
+        }
+
+        return -1;
     }
 }

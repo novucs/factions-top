@@ -20,7 +20,6 @@ import java.util.ListIterator;
 
 public class FactionsTopCommand implements CommandExecutor, Listener, PluginService {
 
-    private final DecimalFormat currencyFormat = new DecimalFormat("$#,###.##");
     private final FactionsTopPlugin plugin;
 
     public FactionsTopCommand(FactionsTopPlugin plugin) {
@@ -113,7 +112,7 @@ public class FactionsTopCommand implements CommandExecutor, Listener, PluginServ
             ChatColor relationColor = getRelationColor(sender, worth.getFactionId());
             FancyMessage message = new FancyMessage((i + 1) + ". ").color(ChatColor.YELLOW)
                     .then(worth.getName()).color(relationColor)
-                    .then(currencyFormat.format(worth.getTotalWorth())).color(ChatColor.AQUA);
+                    .then(plugin.getCurrencyFormat().format(worth.getTotalWorth())).color(ChatColor.AQUA);
             message.send(sender);
         }
     }

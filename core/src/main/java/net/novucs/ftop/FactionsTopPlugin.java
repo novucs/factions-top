@@ -1,5 +1,6 @@
 package net.novucs.ftop;
 
+import com.google.common.collect.Multimap;
 import net.novucs.ftop.hook.*;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.plugin.Plugin;
@@ -14,6 +15,7 @@ import java.net.URLClassLoader;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
@@ -22,14 +24,17 @@ import java.util.logging.Level;
 
 public final class FactionsTopPlugin extends JavaPlugin {
 
+    private final DecimalFormat currencyFormat = new DecimalFormat("$#,###.##");
     private final Settings settings = new Settings(this);
     private final ChunkWorthTask chunkWorthTask = new ChunkWorthTask(this);
+    private final SignManager signManager = new SignManager(this);
     private final WorthManager worthManager = new WorthManager(this);
     private final Set<PluginService> services = new HashSet<>(Arrays.asList(
             chunkWorthTask,
+            signManager,
+            worthManager,
             new FactionsTopCommand(this),
-            new WorldListener(this),
-            worthManager
+            new WorldListener(this)
     ));
 
     private boolean active;
@@ -37,6 +42,10 @@ public final class FactionsTopPlugin extends JavaPlugin {
     private EconomyHook economyHook;
     private FactionsHook factionsHook;
     private DatabaseManager databaseManager;
+
+    public DecimalFormat getCurrencyFormat() {
+        return currencyFormat;
+    }
 
     public Settings getSettings() {
         return settings;
@@ -60,6 +69,10 @@ public final class FactionsTopPlugin extends JavaPlugin {
 
     public FactionsHook getFactionsHook() {
         return factionsHook;
+    }
+
+    public DatabaseManager getDatabaseManager() {
+        return databaseManager;
     }
 
     @Override
@@ -101,10 +114,12 @@ public final class FactionsTopPlugin extends JavaPlugin {
             setupH2();
         }
 
-        Map<ChunkPos, ChunkWorth> loaded;
+        Map<ChunkPos, ChunkWorth> loadedChunks;
+        Multimap<Integer, BlockPos> loadedSigns;
         try {
             databaseManager = DatabaseManager.create(settings.getHikariConfig());
-            loaded = databaseManager.load();
+            loadedChunks = databaseManager.load();
+            loadedSigns = databaseManager.loadSigns();
         } catch (SQLException e) {
             getLogger().severe("Failed to correctly communicate with database!");
             getLogger().log(Level.SEVERE, "The errors are as follows:", e);
@@ -113,8 +128,9 @@ public final class FactionsTopPlugin extends JavaPlugin {
             return;
         }
 
-        worthManager.loadChunks(loaded);
+        worthManager.loadChunks(loadedChunks);
         worthManager.updateAllFactions();
+        signManager.setSigns(loadedSigns);
     }
 
     private void setupSlf4j() {
