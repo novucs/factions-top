@@ -73,7 +73,7 @@ public class SignManager extends BukkitRunnable implements PluginService, Listen
             for (BlockPos pos : entry.getValue()) {
                 Block block = pos.getBlock(plugin.getServer());
                 if (block == null || !(block.getState() instanceof Sign)) {
-                    removeSign(pos);
+                    plugin.getServer().getScheduler().runTask(plugin, () -> removeSign(pos));
                     continue;
                 }
 
