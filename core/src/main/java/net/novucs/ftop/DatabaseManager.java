@@ -143,6 +143,7 @@ public class DatabaseManager {
             target.put(entry.getValue(), new ChunkWorth(worth, materialCount, spawnerCount));
         }
 
+        connection.close();
         return target;
     }
 
@@ -276,6 +277,8 @@ public class DatabaseManager {
             int chunkId = saveChunk(connection, entry.getKey());
             saveChunkWorth(connection, chunkId, entry.getValue());
         }
+
+        connection.close();
     }
 
     private void saveChunkWorth(Connection connection, int chunkId, ChunkWorth chunkWorth) throws SQLException {
@@ -484,6 +487,7 @@ public class DatabaseManager {
             signs.put(rank, pos);
         }
 
+        connection.close();
         return signs;
     }
 
@@ -533,7 +537,9 @@ public class DatabaseManager {
         ResultSet set = statement.getGeneratedKeys();
 
         set.next();
-        return set.getInt(1);
+        id = set.getInt(1);
+        connection.close();
+        return id;
     }
 
     public void removeSign(BlockPos pos) throws SQLException {
@@ -546,6 +552,7 @@ public class DatabaseManager {
         PreparedStatement statement = connection.prepareStatement("DELETE FROM `sign` WHERE `id` = ?");
         statement.setInt(1, signId);
         statement.executeUpdate();
+        connection.close();
     }
 
     private int getSign(Connection connection, int blockId) throws SQLException {
