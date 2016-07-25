@@ -365,6 +365,7 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
 
             setSpawners(pos, spawners);
             setMaterials(pos, materials);
+            materialsQueue.row(pos).putAll(materials);
 
             plugin.getChunkWorthTask().queue(chunk.getChunkSnapshot());
         });
@@ -440,10 +441,10 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
                 if (materialPrice != 0) {
                     if (spawnerType == null) {
                         count = materials.getOrDefault(item.getType(), 0);
-                        materials.put(item.getType(), count + 1);
+                        materials.put(item.getType(), count + item.getAmount());
                     } else {
                         count = spawners.getOrDefault(spawnerType, 0);
-                        spawners.put(spawnerType, count + 1);
+                        spawners.put(spawnerType, count + item.getAmount());
                     }
                 }
             }

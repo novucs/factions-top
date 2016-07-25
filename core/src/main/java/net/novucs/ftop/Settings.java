@@ -18,13 +18,14 @@ import java.util.stream.Collectors;
 
 public class Settings {
 
-    private static final int LATEST_VERSION = 1;
+    private static final int LATEST_VERSION = 2;
     private static final String HEADER = "FactionsTop by novucs.\n" +
             "\n" +
             "Configuration walkthrough:\n" +
             "- config-version: Should not be touched, determines config version.\n" +
             "- command-aliases: List of commands to rebind to \"/ftop\".\n" +
             "- ignored-faction-ids: Faction IDs to not calculate for factions top.\n" +
+            "- disable-chest-events: Disables chest events, improves performance.\n" +
             "- factions-per-page: Number of factions displayed per page in \"/ftop\".\n" +
             "- sign-update-ticks: Duration in ticks between sign updates.\n" +
             "- liquid-update-ticks: Duration in ticks between liquid economy updates.\n" +
@@ -50,6 +51,7 @@ public class Settings {
     // General settings.
     private List<String> commandAliases;
     private List<String> ignoredFactionIds;
+    private boolean disableChestEvents;
     private int factionsPerPage;
     private int signUpdateTicks;
     private int liquidUpdateTicks;
@@ -72,6 +74,10 @@ public class Settings {
 
     public List<String> getIgnoredFactionIds() {
         return ignoredFactionIds;
+    }
+
+    public boolean isDisableChestEvents() {
+        return disableChestEvents;
     }
 
     public int getFactionsPerPage() {
@@ -259,6 +265,7 @@ public class Settings {
         int version = getInt("config-version", 0);
         commandAliases = getList("settings.command-aliases", Collections.singletonList("f top"), String.class);
         ignoredFactionIds = getList("settings.ignored-faction-ids", Arrays.asList("none", "safezone", "warzone", "0", "-1", "-2"), String.class);
+        disableChestEvents = getBoolean("settings.disable-chest-events", false);
         factionsPerPage = getInt("settings.factions-per-page", 9);
         signUpdateTicks = getInt("settings.sign-update-ticks", 1);
         liquidUpdateTicks = getInt("settings.liquid-update-ticks", 100);

@@ -21,14 +21,13 @@ import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 public class WorldListener implements Listener, PluginService {
 
     private final FactionsTopPlugin plugin;
-    private final Map<BlockPos, Double> chestPrices = new HashMap<>();
+    private final Map<BlockPos, ChestWorth> chests = new HashMap<>();
 
     public WorldListener(FactionsTopPlugin plugin) {
         this.plugin = plugin;
@@ -92,50 +91,60 @@ public class WorldListener implements Listener, PluginService {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void checkWorth(InventoryOpenEvent event) {
-        // Do nothing if a player did not open the inventory.
-        if (!(event.getPlayer() instanceof Player)) {
+        // Do nothing if a player did not open the inventory or if chest events
+        // are disabled.
+        if (!(event.getPlayer() instanceof Player) || plugin.getSettings().isDisableChestEvents()) {
             return;
         }
 
+        Inventory inventory = event.getInventory();
+
         // Set all default worth values for this chest.
-        if (event.getInventory().getHolder() instanceof DoubleChest) {
-            DoubleChest chest = (DoubleChest) event.getInventory().getHolder();
+        if (inventory.getHolder() instanceof DoubleChest) {
+            DoubleChest chest = (DoubleChest) inventory.getHolder();
             checkWorth(chest.getLeftSide().getInventory());
             checkWorth(chest.getRightSide().getInventory());
         }
 
-        if (event.getInventory().getHolder() instanceof Chest) {
-            checkWorth(event.getInventory());
+        if (inventory.getHolder() instanceof Chest) {
+            checkWorth(inventory);
         }
     }
 
     private void checkWorth(Inventory inventory) {
-        chestPrices.put(BlockPos.of(inventory.getLocation().getBlock()), getInventoryWorth(inventory));
+        chests.put(BlockPos.of(inventory.getLocation().getBlock()), getWorth(inventory));
     }
 
-    private double getInventoryWorth(Inventory inventory) {
+    private ChestWorth getWorth(Inventory inventory) {
         double worth = 0;
+        Map<Material, Integer> materials = new HashMap<>();
+        Map<EntityType, Integer> spawners = new HashMap<>();
+
         for (ItemStack item : inventory.getStorageContents()) {
-            worth += getWorth(item);
+            if (item == null) continue;
+
+            if (item.getType() == Material.MOB_SPAWNER) {
+                EntityType spawnerType = plugin.getCraftbukkitHook().getSpawnerType(item);
+                worth += plugin.getSettings().getSpawnerPrice(spawnerType) * item.getAmount();
+
+                int count = spawners.getOrDefault(spawnerType, 0);
+                spawners.put(spawnerType, count + item.getAmount());
+                continue;
+            }
+
+            worth += plugin.getSettings().getBlockPrice(item.getType()) * item.getAmount();
+            int count = materials.getOrDefault(item.getType(), 0);
+            materials.put(item.getType(), count + item.getAmount());
         }
-        return worth;
-    }
 
-    private double getWorth(ItemStack item) {
-        if (item == null) return 0;
-
-        if (item.getType() == Material.MOB_SPAWNER) {
-            EntityType spawnerType = plugin.getCraftbukkitHook().getSpawnerType(item);
-            return plugin.getSettings().getSpawnerPrice(spawnerType) * item.getAmount();
-        }
-
-        return plugin.getSettings().getBlockPrice(item.getType()) * item.getAmount();
+        return new ChestWorth(worth, materials, spawners);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void updateWorth(InventoryCloseEvent event) {
-        // Do nothing if a player did not close the inventory.
-        if (!(event.getPlayer() instanceof Player)) {
+        // Do nothing if a player did not close the inventory or if chest
+        // events are disabled.
+        if (!(event.getPlayer() instanceof Player) || plugin.getSettings().isDisableChestEvents()) {
             return;
         }
 
@@ -154,15 +163,36 @@ public class WorldListener implements Listener, PluginService {
 
     private void updateWorth(Inventory inventory) {
         BlockPos pos = BlockPos.of(inventory.getLocation().getBlock());
-        Double worth = chestPrices.remove(pos);
+        ChestWorth worth = chests.remove(pos);
         if (worth == null) return;
 
-        // Update chest value, do not update block totals. Block total
-        // operations can be costly, better keep this to the automatic
-        // check.
-        worth = getInventoryWorth(inventory) - worth;
+        worth = getDifference(worth, getWorth(inventory));
+
         plugin.getWorthManager().add(inventory.getLocation().getChunk(), RecalculateReason.CHEST, WorthType.CHEST,
-                worth, Collections.emptyMap(), Collections.emptyMap());
+                worth.getTotalWorth(), worth.getMaterials(), worth.getSpawners());
+    }
+
+    private ChestWorth getDifference(ChestWorth first, ChestWorth second) {
+        double worth = second.getTotalWorth() - first.getTotalWorth();
+        Map<Material, Integer> materials = getDifference(first.getMaterials(), second.getMaterials());
+        Map<EntityType, Integer> spawners = getDifference(first.getSpawners(), second.getSpawners());
+        return new ChestWorth(worth, materials, spawners);
+    }
+
+    private <T> Map<T, Integer> getDifference(Map<T, Integer> first, Map<T, Integer> second) {
+        Map<T, Integer> target = new HashMap<>();
+
+        for (Map.Entry<T, Integer> entry : first.entrySet()) {
+            int difference = second.getOrDefault(entry.getKey(), 0) - entry.getValue();
+            target.put(entry.getKey(), difference);
+        }
+
+        for (Map.Entry<T, Integer> entry : second.entrySet()) {
+            if (target.containsKey(entry.getKey())) continue;
+            target.put(entry.getKey(), entry.getValue());
+        }
+
+        return target;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
