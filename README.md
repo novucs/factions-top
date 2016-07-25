@@ -1,6 +1,8 @@
 # Novucs' FactionsTop
 An efficient and comprehensive factions ranking system.
 
+This Bukkit plugin adds a command to the well known factions plugin to display all factions on the server, ordered by wealth. The wealth of a faction is determined by calculating the value of all blocks stored in the faction claims and chests. This specific implementation aims to provide real-time results while still maintaining a good performance. A demonstration of this plugin in action is shown in this video: https://youtu.be/f9WWFT5tZaI
+
 ## Supports
 * Spigot 1.7.x -> 1.10.x
 * FactionsUUID by drtshock
