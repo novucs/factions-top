@@ -60,7 +60,7 @@ public class DatabaseManager {
         statement.executeUpdate();
 
         statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `chunk_worth` (" +
-                "`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY," +
+                "`id` INT NOT NULL AUTO_INCREMENT," +
                 "`chunk_id` INT NOT NULL," +
                 "`worth_id` INT NOT NULL," +
                 "`worth` FLOAT NOT NULL," +
