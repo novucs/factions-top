@@ -78,7 +78,9 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
         factions.clear();
         for (Map.Entry<ChunkPos, ChunkWorth> chunk : chunks.entrySet()) {
             FactionWorth worth = getFactionWorth(chunk.getKey());
-            worth.addAll(chunk.getValue());
+            if (worth != null) {
+                worth.addAll(chunk.getValue());
+            }
         }
 
         for (Map.Entry<String, FactionWorth> faction : factions.entrySet()) {
