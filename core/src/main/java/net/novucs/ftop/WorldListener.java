@@ -1,6 +1,7 @@
 package net.novucs.ftop;
 
 import net.novucs.ftop.hook.event.*;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
@@ -102,17 +103,17 @@ public class WorldListener implements Listener, PluginService {
         // Set all default worth values for this chest.
         if (inventory.getHolder() instanceof DoubleChest) {
             DoubleChest chest = (DoubleChest) inventory.getHolder();
-            checkWorth(chest.getLeftSide().getInventory());
-            checkWorth(chest.getRightSide().getInventory());
+            checkWorth((Chest) chest.getLeftSide());
+            checkWorth((Chest) chest.getRightSide());
         }
 
         if (inventory.getHolder() instanceof Chest) {
-            checkWorth(inventory);
+            checkWorth((Chest) inventory.getHolder());
         }
     }
 
-    private void checkWorth(Inventory inventory) {
-        chests.put(BlockPos.of(inventory.getLocation().getBlock()), getWorth(inventory));
+    private void checkWorth(Chest chest) {
+        chests.put(BlockPos.of(chest.getBlock()), getWorth(chest.getInventory()));
     }
 
     private ChestWorth getWorth(Inventory inventory) {
@@ -120,7 +121,7 @@ public class WorldListener implements Listener, PluginService {
         Map<Material, Integer> materials = new HashMap<>();
         Map<EntityType, Integer> spawners = new HashMap<>();
 
-        for (ItemStack item : inventory.getStorageContents()) {
+        for (ItemStack item : inventory.getContents()) {
             if (item == null) continue;
 
             if (item.getType() == Material.MOB_SPAWNER) {
@@ -152,23 +153,23 @@ public class WorldListener implements Listener, PluginService {
         // to the worth manager.
         if (event.getInventory().getHolder() instanceof DoubleChest) {
             DoubleChest chest = (DoubleChest) event.getInventory().getHolder();
-            updateWorth(chest.getLeftSide().getInventory());
-            updateWorth(chest.getRightSide().getInventory());
+            updateWorth((Chest) chest.getLeftSide());
+            updateWorth((Chest) chest.getRightSide());
         }
 
         if (event.getInventory().getHolder() instanceof Chest) {
-            updateWorth(event.getInventory());
+            updateWorth((Chest) event.getInventory().getHolder());
         }
     }
 
-    private void updateWorth(Inventory inventory) {
-        BlockPos pos = BlockPos.of(inventory.getLocation().getBlock());
+    private void updateWorth(Chest chest) {
+        BlockPos pos = BlockPos.of(chest.getBlock());
         ChestWorth worth = chests.remove(pos);
         if (worth == null) return;
 
-        worth = getDifference(worth, getWorth(inventory));
+        worth = getDifference(worth, getWorth(chest.getInventory()));
 
-        plugin.getWorthManager().add(inventory.getLocation().getChunk(), RecalculateReason.CHEST, WorthType.CHEST,
+        plugin.getWorthManager().add(chest.getChunk(), RecalculateReason.CHEST, WorthType.CHEST,
                 worth.getTotalWorth(), worth.getMaterials(), worth.getSpawners());
     }
 
