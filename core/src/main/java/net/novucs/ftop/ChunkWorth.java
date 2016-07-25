@@ -56,17 +56,17 @@ public class ChunkWorth {
         this.spawners = spawners;
     }
 
-    protected void modifyMaterials(Map<Material, Integer> materials, boolean remove) {
+    protected void addMaterials(Map<Material, Integer> materials) {
         for (Map.Entry<Material, Integer> material : materials.entrySet()) {
-            int amount = this.materials.getOrDefault(material.getKey(), 0);
-            this.materials.put(material.getKey(), amount + (remove ? -material.getValue() : material.getValue()));
+            int amount = Math.max(0, this.materials.getOrDefault(material.getKey(), 0) + material.getValue());
+            this.materials.put(material.getKey(), amount);
         }
     }
 
-    protected void modifySpawners(Map<EntityType, Integer> spawners, boolean remove) {
+    protected void addSpawners(Map<EntityType, Integer> spawners) {
         for (Map.Entry<EntityType, Integer> spawner : spawners.entrySet()) {
-            int amount = this.spawners.getOrDefault(spawner.getKey(), 0);
-            this.spawners.put(spawner.getKey(), amount + (remove ? -spawner.getValue() : spawner.getValue()));
+            int amount = Math.max(0, this.spawners.getOrDefault(spawner.getKey(), 0) + spawner.getValue());
+            this.spawners.put(spawner.getKey(), amount);
         }
     }
 

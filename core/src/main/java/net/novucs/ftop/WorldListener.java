@@ -199,8 +199,10 @@ public class WorldListener implements Listener, PluginService {
     public void updateWorth(FactionClaimEvent event) {
         String newFactionId = event.getFactionId();
         event.getClaims().asMap().forEach((oldFactionId, claims) -> {
-            plugin.getWorthManager().update(newFactionId, claims, false);
-            plugin.getWorthManager().update(oldFactionId, claims, true);
+            if (!oldFactionId.equals(newFactionId)) {
+                plugin.getWorthManager().update(newFactionId, claims, false);
+                plugin.getWorthManager().update(oldFactionId, claims, true);
+            }
         });
     }
 

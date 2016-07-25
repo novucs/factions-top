@@ -233,15 +233,15 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
 
         // Update all stats with the new chunk data.
         ChunkWorth chunkWorth = getChunkWorth(pos);
-        factionWorth.modifyMaterials(chunkWorth.getMaterials(), true);
+        factionWorth.removeMaterials(chunkWorth.getMaterials());
         chunkWorth.setMaterials(materials);
-        factionWorth.modifyMaterials(materials, false);
+        factionWorth.addMaterials(materials);
 
         // Add all back all modifications made since the update was scheduled.
         if (materialsQueue.containsRow(pos)) {
             Map<Material, Integer> queued = materialsQueue.row(pos);
-            chunkWorth.modifyMaterials(queued, false);
-            factionWorth.modifyMaterials(queued, false);
+            chunkWorth.addMaterials(queued);
+            factionWorth.addMaterials(queued);
             queued.clear();
         }
     }
@@ -253,9 +253,9 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
 
         // Update all stats with the new chunk data.
         ChunkWorth chunkWorth = getChunkWorth(pos);
-        factionWorth.modifySpawners(chunkWorth.getSpawners(), true);
+        factionWorth.removeSpawners(chunkWorth.getSpawners());
         chunkWorth.setSpawners(spawners);
-        factionWorth.modifySpawners(spawners, false);
+        factionWorth.addSpawners(spawners);
     }
 
     /**
@@ -281,12 +281,12 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
         // Update all stats with the new chunk data.
         ChunkWorth chunkWorth = getChunkWorth(pos);
         chunkWorth.addWorth(worthType, worth);
-        chunkWorth.modifyMaterials(materials, false);
-        chunkWorth.modifySpawners(spawners, false);
+        chunkWorth.addMaterials(materials);
+        chunkWorth.addSpawners(spawners);
 
         factionWorth.addWorth(worthType, worth);
-        factionWorth.modifyMaterials(materials, false);
-        factionWorth.modifySpawners(spawners, false);
+        factionWorth.addMaterials(materials);
+        factionWorth.addSpawners(spawners);
 
         // Adjust faction worth position.
         sortQueue.add(factionWorth);
@@ -366,7 +366,6 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
             }
 
             setSpawners(pos, spawners);
-            setMaterials(pos, materials);
             materialsQueue.row(pos).putAll(materials);
 
             plugin.getChunkWorthTask().queue(chunk.getChunkSnapshot());
@@ -476,6 +475,14 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
             for (WorthType worthType : WorthType.getPlaced()) {
                 double worth = chunkWorth.getWorth(worthType);
                 factionWorth.addWorth(worthType, unclaimed ? -worth : worth);
+            }
+
+            if (unclaimed) {
+                factionWorth.removeMaterials(chunkWorth.getMaterials());
+                factionWorth.removeSpawners(chunkWorth.getSpawners());
+            } else {
+                factionWorth.addMaterials(chunkWorth.getMaterials());
+                factionWorth.addSpawners(chunkWorth.getSpawners());
             }
 
             // Schedule chunk for recalculation.

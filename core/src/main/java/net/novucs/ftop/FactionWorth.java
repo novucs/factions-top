@@ -55,32 +55,48 @@ public class FactionWorth implements Comparable<FactionWorth> {
         setWorth(worthType, getWorth(worthType) + worth);
     }
 
-    protected void modifyMaterials(Map<Material, Integer> materials, boolean remove) {
-        for (Map.Entry<Material, Integer> material : materials.entrySet()) {
-            int amount = this.materials.getOrDefault(material.getKey(), 0);
-            this.materials.put(material.getKey(), amount + (remove ? -material.getValue() : material.getValue()));
-        }
+    protected void addMaterials(Map<Material, Integer> materials) {
+        add(materials, this.materials);
     }
 
-    protected void modifySpawners(Map<EntityType, Integer> spawners, boolean remove) {
-        for (Map.Entry<EntityType, Integer> spawner : spawners.entrySet()) {
-            int amount = this.spawners.getOrDefault(spawner.getKey(), 0);
-            this.spawners.put(spawner.getKey(), amount + (remove ? -spawner.getValue() : spawner.getValue()));
-        }
+    protected void removeMaterials(Map<Material, Integer> materials) {
+        remove(materials, this.materials);
     }
 
-    protected void modifyWorth(Map<WorthType, Double> worth, boolean remove) {
+    protected void addSpawners(Map<EntityType, Integer> spawners) {
+        add(spawners, this.spawners);
+    }
+
+    protected void removeSpawners(Map<EntityType, Integer> spawners) {
+        remove(spawners, this.spawners);
+    }
+
+    protected void addWorth(Map<WorthType, Double> worth) {
         for (Map.Entry<WorthType, Double> entry : worth.entrySet()) {
             double amount = this.worth.getOrDefault(entry.getKey(), 0d);
-            totalWorth += remove ? -entry.getValue() : entry.getValue();
-            this.worth.put(entry.getKey(), amount + (remove ? -entry.getValue() : entry.getValue()));
+            totalWorth += entry.getValue();
+            this.worth.put(entry.getKey(), amount + entry.getValue());
+        }
+    }
+
+    private <T> void add(Map<T, Integer> modifier, Map<T, Integer> modified) {
+        for (Map.Entry<T, Integer> entry : modifier.entrySet()) {
+            int amount = Math.max(0, modified.getOrDefault(entry.getKey(), 0) + entry.getValue());
+            modified.put(entry.getKey(), amount);
+        }
+    }
+
+    private <T> void remove(Map<T, Integer> modifier, Map<T, Integer> modified) {
+        for (Map.Entry<T, Integer> entry : modifier.entrySet()) {
+            int amount = Math.max(0, modified.getOrDefault(entry.getKey(), 0) - entry.getValue());
+            modified.put(entry.getKey(), amount);
         }
     }
 
     protected void addAll(ChunkWorth chunkWorth) {
-        modifyMaterials(chunkWorth.getMaterials(), false);
-        modifySpawners(chunkWorth.getSpawners(), false);
-        modifyWorth(chunkWorth.getWorth(), false);
+        addMaterials(chunkWorth.getMaterials());
+        addSpawners(chunkWorth.getSpawners());
+        addWorth(chunkWorth.getWorth());
     }
 
     public String getName() {
