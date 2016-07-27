@@ -8,7 +8,6 @@ import net.ess3.api.events.UserBalanceUpdateEvent;
 import net.novucs.ftop.WorthType;
 import net.novucs.ftop.hook.event.FactionEconomyEvent;
 import net.novucs.ftop.hook.event.PlayerEconomyEvent;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.*;
 import org.bukkit.plugin.Plugin;

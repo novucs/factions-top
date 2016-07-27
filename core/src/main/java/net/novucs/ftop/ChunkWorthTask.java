@@ -2,10 +2,8 @@ package net.novucs.ftop;
 
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
-import org.bukkit.entity.EntityType;
 
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;

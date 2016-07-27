@@ -282,8 +282,11 @@ public class Settings {
 
         addDefaults(WorthType.class, "settings.enabled", true, Collections.emptyList());
         enabled = parseStateMap(WorthType.class, "settings.enabled", false);
-        plugin.getEconomyHook().setFactionEnabled(isEnabled(WorthType.FACTION_BALANCE));
-        plugin.getEconomyHook().setPlayerEnabled(isEnabled(WorthType.PLAYER_BALANCE));
+
+        if (plugin.getEconomyHook() != null) {
+            plugin.getEconomyHook().setFactionEnabled(isEnabled(WorthType.FACTION_BALANCE));
+            plugin.getEconomyHook().setPlayerEnabled(isEnabled(WorthType.PLAYER_BALANCE));
+        }
 
         addDefaults(RecalculateReason.class, "settings.perform-recalculate", true, Collections.emptyList());
         performRecalculate = parseStateMap(RecalculateReason.class, "settings.perform-recalculate", false);
