@@ -137,7 +137,15 @@ public final class FactionsTopPlugin extends JavaPlugin {
 
     private void setupH2() {
         try {
+            Class.forName("org.h2.Driver");
+            getLogger().info("H2 successfully loaded via classpath.");
+            return;
+        } catch (ClassNotFoundException ignore) {
+        }
+
+        try {
             loadLibrary("http://repo2.maven.org/maven2/com/h2database/h2/1.4.192/h2-1.4.192.jar");
+            getLogger().info("H2 forcefully loaded, a reboot may be required.");
         } catch (Exception e) {
             getLogger().severe("H2 was unable to be loaded.");
             getLogger().log(Level.SEVERE, "The errors are as follows:", e);
