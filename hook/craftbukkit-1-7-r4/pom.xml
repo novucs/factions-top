@@ -7,13 +7,13 @@
     <parent>
         <artifactId>hook</artifactId>
         <groupId>net.novucs.ftop</groupId>
-        <version>1.0.4</version>
+        <version>1.0.5-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>net.novucs.ftop.hook</groupId>
     <artifactId>craftbukkit-1-7-r4</artifactId>
-    <version>1.0.4</version>
+    <version>1.0.5-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Craftbukkit-Hook-1.7-R4</name>
@@ -23,7 +23,7 @@
         <dependency>
             <groupId>net.novucs.ftop.hook</groupId>
             <artifactId>manager</artifactId>
-            <version>1.0.4</version>
+            <version>1.0.5-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
