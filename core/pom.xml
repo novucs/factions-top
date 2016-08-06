@@ -7,13 +7,13 @@
     <parent>
         <artifactId>factions-top</artifactId>
         <groupId>net.novucs</groupId>
-        <version>1.0.4-SNAPSHOT</version>
+        <version>1.0.4</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>net.novucs.ftop</groupId>
     <artifactId>core</artifactId>
-    <version>1.0.4-SNAPSHOT</version>
+    <version>1.0.4</version>
     <packaging>jar</packaging>
 
     <name>FactionsTop</name>
@@ -65,55 +65,55 @@
         <dependency>
             <groupId>net.novucs.ftop.hook</groupId>
             <artifactId>craftbukkit-1-7-r4</artifactId>
-            <version>1.0.4-SNAPSHOT</version>
+            <version>1.0.4</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>net.novucs.ftop.hook</groupId>
             <artifactId>craftbukkit-1-8-r1</artifactId>
-            <version>1.0.4-SNAPSHOT</version>
+            <version>1.0.4</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>net.novucs.ftop.hook</groupId>
             <artifactId>craftbukkit-1-8-r2</artifactId>
-            <version>1.0.4-SNAPSHOT</version>
+            <version>1.0.4</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>net.novucs.ftop.hook</groupId>
             <artifactId>craftbukkit-1-8-r3</artifactId>
-            <version>1.0.4-SNAPSHOT</version>
+            <version>1.0.4</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>net.novucs.ftop.hook</groupId>
             <artifactId>essentials</artifactId>
-            <version>1.0.4-SNAPSHOT</version>
+            <version>1.0.4</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>net.novucs.ftop.hook</groupId>
             <artifactId>factions-1-6</artifactId>
-            <version>1.0.4-SNAPSHOT</version>
+            <version>1.0.4</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>net.novucs.ftop.hook</groupId>
             <artifactId>factions-2-7</artifactId>
-            <version>1.0.4-SNAPSHOT</version>
+            <version>1.0.4</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>net.novucs.ftop.hook</groupId>
             <artifactId>manager</artifactId>
-            <version>1.0.4-SNAPSHOT</version>
+            <version>1.0.4</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>net.novucs.ftop.hook</groupId>
             <artifactId>vault</artifactId>
-            <version>1.0.4-SNAPSHOT</version>
+            <version>1.0.4</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
