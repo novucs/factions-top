@@ -15,7 +15,6 @@ import java.net.URLClassLoader;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.sql.SQLException;
-import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
@@ -24,7 +23,6 @@ import java.util.logging.Level;
 
 public final class FactionsTopPlugin extends JavaPlugin {
 
-    private final DecimalFormat currencyFormat = new DecimalFormat("$#,###.##");
     private final Settings settings = new Settings(this);
     private final ChunkWorthTask chunkWorthTask = new ChunkWorthTask(this);
     private final SignManager signManager = new SignManager(this);
@@ -42,10 +40,6 @@ public final class FactionsTopPlugin extends JavaPlugin {
     private EconomyHook economyHook;
     private FactionsHook factionsHook;
     private DatabaseManager databaseManager;
-
-    public DecimalFormat getCurrencyFormat() {
-        return currencyFormat;
-    }
 
     public Settings getSettings() {
         return settings;

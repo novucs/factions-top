@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.zaxxer.hikari.HikariConfig;
 import net.novucs.ftop.hook.VaultEconomyHook;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -13,12 +14,13 @@ import org.bukkit.entity.EntityType;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class Settings {
 
-    private static final int LATEST_VERSION = 2;
+    private static final int LATEST_VERSION = 3;
     private static final String HEADER = "FactionsTop by novucs.\n" +
             "\n" +
             "Configuration walkthrough:\n" +
@@ -48,6 +50,18 @@ public class Settings {
     private FileConfiguration config;
     private File configFile;
 
+    // Message settings.
+    private DecimalFormat countFormat;
+    private DecimalFormat currencyFormat;
+    private ButtonMessage backButtonMessage;
+    private ButtonMessage nextButtonMessage;
+    private String headerMessage;
+    private String noEntriesMessage;
+    private String bodyMessage;
+    private List<String> bodyTooltip;
+    private String footerMessage;
+    private String permissionMessage;
+
     // General settings.
     private List<String> commandAliases;
     private List<String> ignoredFactionIds;
@@ -66,6 +80,46 @@ public class Settings {
 
     public Settings(FactionsTopPlugin plugin) {
         this.plugin = plugin;
+    }
+
+    public DecimalFormat getCountFormat() {
+        return countFormat;
+    }
+
+    public DecimalFormat getCurrencyFormat() {
+        return currencyFormat;
+    }
+
+    public ButtonMessage getBackButtonMessage() {
+        return backButtonMessage;
+    }
+
+    public ButtonMessage getNextButtonMessage() {
+        return nextButtonMessage;
+    }
+
+    public String getHeaderMessage() {
+        return headerMessage;
+    }
+
+    public String getNoEntriesMessage() {
+        return noEntriesMessage;
+    }
+
+    public String getBodyMessage() {
+        return bodyMessage;
+    }
+
+    public List<String> getBodyTooltip() {
+        return bodyTooltip;
+    }
+
+    public String getFooterMessage() {
+        return footerMessage;
+    }
+
+    public String getPermissionMessage() {
+        return permissionMessage;
     }
 
     public List<String> getCommandAliases() {
@@ -251,6 +305,23 @@ public class Settings {
         return hikariConfig;
     }
 
+    private String format(String message) {
+        return ChatColor.translateAlternateColorCodes('&', message);
+    }
+
+    private List<String> format(List<String> messages) {
+        return messages.stream()
+                .map(this::format)
+                .collect(Collectors.toList());
+    }
+
+    private ButtonMessage getButtonMessage(String path, ButtonMessage def) {
+        String enabled = format(getString(path + ".enabled", def.getEnabled()));
+        String disabled = format(getString(path + ".disabled", def.getDisabled()));
+        List<String> tooltip = format(getList(path + ".tooltip", def.getTooltip(), String.class));
+        return new ButtonMessage(enabled, disabled, tooltip);
+    }
+
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public void load() throws IOException, InvalidConfigurationException {
         // Create then load the configuration and file.
@@ -263,6 +334,41 @@ public class Settings {
 
         // Load all configuration values into memory.
         int version = getInt("config-version", 0);
+        countFormat = new DecimalFormat(getString("messages.count-format", "#,###"));
+        currencyFormat = new DecimalFormat(getString("messages.currency-format", "$#,###.##"));
+        backButtonMessage = getButtonMessage("messages.button-back",
+                new ButtonMessage("&b[<]", "&7[<]", Collections.singletonList(format("&dCommand: &b/f top {page:back}"))));
+        nextButtonMessage = getButtonMessage("messages.button-next",
+                new ButtonMessage("&b[>]", "&7[>]", Collections.singletonList(format("&dCommand: &b/f top {page:next}"))));
+        headerMessage = format(getString("messages.header",
+                "&6_______.[ &2Top Factions {button:back} &6{page:this}/{page:last} {button:next} &6]._______"));
+        noEntriesMessage = format(getString("messages.no-entries", "&eNo entries to be displayed."));
+        bodyMessage = format(getString("messages.body.text", "&e{rank}. {relcolor}{faction} &b{worth:total}"));
+        List<String> bodyTooltipDefault = Arrays.asList(
+                "&e&l-- General --",
+                "&dTotal Worth: &b{worth:total}",
+                "&dBlock Worth: &b{worth:block}",
+                "&dChest Worth: &b{worth:chest}",
+                "&dSpawner Worth: &b{worth:spawner}",
+                "&dPlayer Balances: &b{worth:player_balance}",
+                "&dFaction Bank: &b{worth:faction_balance}",
+                "",
+                "&e&l-- Spawners --",
+                "&dSlime: &b{count:spawner:slime}",
+                "&dSkeleton: &b{count:spawner:skeleton}",
+                "&dZombie: &b{count:spawner:zombie}",
+                "",
+                "&e&l-- Materials --",
+                "&dEmerald Block: &b{count:material:emerald_block}",
+                "&dDiamond Block: &b{count:material:diamond_block}",
+                "&dGold Block: &b{count:material:gold_block}",
+                "&dIron Block: &b{count:material:iron_block}",
+                "&dCoal Block: &b{count:material:coal_block}"
+        );
+        bodyTooltip = format(getList("messages.body.tooltip", bodyTooltipDefault, String.class));
+        footerMessage = format(getString("messages.footer", ""));
+        permissionMessage = format(getString("messages.permission", "&cYou do not have permission."));
+
         commandAliases = getList("settings.command-aliases", Collections.singletonList("f top"), String.class);
         ignoredFactionIds = getList("settings.ignored-faction-ids", Arrays.asList("none", "safezone", "warzone", "0", "-1", "-2"), String.class);
         disableChestEvents = getBoolean("settings.disable-chest-events", false);

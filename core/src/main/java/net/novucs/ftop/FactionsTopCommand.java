@@ -3,9 +3,11 @@ package net.novucs.ftop;
 import mkremins.fanciful.FancyMessage;
 import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -14,10 +16,11 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.server.ServerCommandEvent;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class FactionsTopCommand implements CommandExecutor, Listener, PluginService {
 
@@ -41,11 +44,16 @@ public class FactionsTopCommand implements CommandExecutor, Listener, PluginServ
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (!sender.hasPermission("factionstop.use")) {
+            sender.sendMessage(plugin.getSettings().getPermissionMessage());
+            return true;
+        }
+
         if (args.length == 0) {
             sendTop(sender, 0);
         } else if (args[0].equalsIgnoreCase("reload")) {
             if (!sender.hasPermission("factionstop.reload")) {
-                sender.sendMessage(ChatColor.RED + "You do not have permission.");
+                sender.sendMessage(plugin.getSettings().getPermissionMessage());
                 return true;
             }
 
@@ -82,31 +90,34 @@ public class FactionsTopCommand implements CommandExecutor, Listener, PluginServ
         // Do not attempt to send hook worth if page requested is beyond the limit.
         int entries = plugin.getSettings().getFactionsPerPage();
         List<FactionWorth> factions = plugin.getWorthManager().getOrderedFactions();
-        int maxPage = Math.max(factions.size() / entries, 1);
+        int maxPage = Math.max((int) Math.ceil((double) factions.size() / entries), 1);
         page = Math.max(1, Math.min(maxPage, page));
 
-        FancyMessage header = new FancyMessage("________.[ ").color(ChatColor.GOLD)
-                .then("Top Factions ").color(ChatColor.DARK_GREEN)
-                .then("[<] ").color(page == 1 ? ChatColor.GRAY : ChatColor.AQUA);
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put("{page:back}", String.valueOf(page - 1));
+        placeholders.put("{page:this}", String.valueOf(page));
+        placeholders.put("{page:next}", String.valueOf(page + 1));
+        placeholders.put("{page:last}", String.valueOf(maxPage));
 
-        if (page != 1) {
-            header.command("/ftop " + (page - 1))
-                    .tooltip(ChatColor.LIGHT_PURPLE + "Command: " + ChatColor.AQUA + "/f top " + (page - 1));
+        ButtonMessage back = plugin.getSettings().getBackButtonMessage();
+        ButtonMessage next = plugin.getSettings().getNextButtonMessage();
+
+        String backMsg = page == 1 ? back.getDisabled() : back.getEnabled();
+        String backCmd = page == 1 ? null : "/ftop " + (page - 1);
+        List<String> backTooltip = replace(back.getTooltip(), placeholders);
+
+        String nextMsg = page == maxPage ? next.getDisabled() : next.getEnabled();
+        String nextCmd = page == maxPage ? null : "/ftop " + (page + 1);
+        List<String> nextTooltip = replace(next.getTooltip(), placeholders);
+
+        if (!plugin.getSettings().getHeaderMessage().isEmpty()) {
+            String headerString = replace(plugin.getSettings().getHeaderMessage(), placeholders);
+            FancyMessage header = build(headerString, backMsg, backCmd, backTooltip, nextMsg, nextCmd, nextTooltip);
+            header.send(sender);
         }
-
-        header.then(page + "/" + maxPage + " ").color(ChatColor.GOLD)
-                .then("[>] ").color(page == maxPage ? ChatColor.GRAY : ChatColor.AQUA);
-
-        if (page != maxPage) {
-            header.command("/ftop " + (page + 1))
-                    .tooltip(ChatColor.LIGHT_PURPLE + "Command: " + ChatColor.AQUA + "/f top " + (page + 1));
-        }
-
-        header.then("].________").color(ChatColor.GOLD);
-        header.send(sender);
 
         if (factions.size() == 0) {
-            sender.sendMessage(ChatColor.YELLOW + "No entries to be displayed.");
+            sender.sendMessage(plugin.getSettings().getNoEntriesMessage());
             return;
         }
 
@@ -116,49 +127,116 @@ public class FactionsTopCommand implements CommandExecutor, Listener, PluginServ
             if (!it.hasNext()) return;
 
             FactionWorth worth = it.next();
-            ChatColor relationColor = getRelationColor(sender, worth.getFactionId());
-            List<String> tooltip = getTooltip(worth);
+            Map<String, String> worthPlaceholders = new HashMap<>(placeholders);
+            worthPlaceholders.put("{rank}", Integer.toString(i + 1));
+            worthPlaceholders.put("{relcolor}", "" + ChatColor.COLOR_CHAR + getRelationColor(sender, worth.getFactionId()).getChar());
+            worthPlaceholders.put("{faction}", worth.getName());
+            worthPlaceholders.put("{worth:total}", plugin.getSettings().getCurrencyFormat().format(worth.getTotalWorth()));
 
-            FancyMessage message = new FancyMessage((i + 1 + spacer) + ". ").color(ChatColor.YELLOW)
-                    .then(worth.getName() + " ").color(relationColor).tooltip(tooltip)
-                    .then(plugin.getCurrencyFormat().format(worth.getTotalWorth())).color(ChatColor.AQUA).tooltip(tooltip);
+            String bodyMessage = insertPlaceholders(worth, replace(plugin.getSettings().getBodyMessage(), worthPlaceholders));
+            List<String> tooltip = insertPlaceholders(worth, replace(plugin.getSettings().getBodyTooltip(), worthPlaceholders));
 
+            FancyMessage message = new FancyMessage(bodyMessage).tooltip(tooltip);
             message.send(sender);
         }
+
+        if (!plugin.getSettings().getFooterMessage().isEmpty()) {
+            String footerString = replace(plugin.getSettings().getFooterMessage(), placeholders);
+            FancyMessage footer = build(footerString, backMsg, backCmd, backTooltip, nextMsg, nextCmd, nextTooltip);
+            footer.send(sender);
+        }
     }
 
-    private List<String> getTooltip(FactionWorth worth) {
-        List<String> tooltip = new ArrayList<>();
-        addTooltip(tooltip, worth.getSpawners(), "Spawner");
-        addTooltip(tooltip, worth.getMaterials(), "");
-        return tooltip;
+    private String insertPlaceholders(Replacer replacer, String key, String message) {
+        int index = message.indexOf('{' + key + ':');
+        if (index < 0) {
+            return message;
+        }
+
+        String first = message.substring(0, index);
+        String next = message.substring(index + key.length() + 2);
+
+        index = next.indexOf('}');
+
+        if (index < 0) {
+            return first + insertPlaceholders(replacer, key, next);
+        }
+
+        return first + replacer.replace(next.substring(0, index)) + insertPlaceholders(replacer, key, next.substring(index + 1));
     }
 
-    private <T extends Enum<T>> void addTooltip(List<String> tooltip, Map<T, Integer> counter, String added) {
-        counter.forEach((type, count) -> {
-            if (count > 0) {
-                tooltip.add(ChatColor.DARK_AQUA + format(type.name()) + " " + added + ": " + ChatColor.AQUA + count);
-            }
-        });
+    private String insertPlaceholders(FactionWorth worth, String message) {
+        message = insertPlaceholders((s) -> {
+            double value = worth.getWorth(StringUtils.parseEnum(WorthType.class, s).orElse(null));
+            return plugin.getSettings().getCurrencyFormat().format(value);
+        }, "worth", message);
+
+        message = insertPlaceholders((s) -> {
+            int count = worth.getSpawners().getOrDefault(StringUtils.parseEnum(EntityType.class, s).orElse(null), 0);
+            return plugin.getSettings().getCountFormat().format(count);
+        }, "count:spawner", message);
+
+        message = insertPlaceholders((s) -> {
+            int count = worth.getMaterials().getOrDefault(StringUtils.parseEnum(Material.class, s).orElse(null), 0);
+            return plugin.getSettings().getCountFormat().format(count);
+        }, "count:material", message);
+
+        return message;
     }
 
-    private String format(String enumName) {
-        char[] chars = enumName.toCharArray();
-        boolean firstLetter = true;
-        for (int i = 0; i < chars.length; i++) {
-            if (firstLetter) {
-                chars[i] = Character.toUpperCase(chars[i]);
-                firstLetter = false;
+    private List<String> insertPlaceholders(FactionWorth worth, List<String> messages) {
+        return messages.stream()
+                .map(message -> insertPlaceholders(worth, message))
+                .collect(Collectors.toList());
+    }
+
+    private String replace(String message, Map<String, String> placeholders) {
+        for (Map.Entry<String, String> entry : placeholders.entrySet()) {
+            message = message.replace(entry.getKey(), entry.getValue());
+        }
+        return message;
+    }
+
+    private List<String> replace(List<String> messages, Map<String, String> placeholders) {
+        return messages.stream()
+                .map(message -> replace(message, placeholders))
+                .collect(Collectors.toList());
+    }
+
+    private FancyMessage build(String message, String backText, String backCmd, List<String> backTooltip,
+                               String nextText, String nextCmd, List<String> nextTooltip) {
+        FancyMessage fancyMessage = new FancyMessage("");
+
+        while (!message.isEmpty()) {
+            int backIndex = message.indexOf("{button:back}");
+            int nextIndex = message.indexOf("{button:next}");
+
+            backIndex = backIndex == -1 ? Integer.MAX_VALUE : backIndex;
+            nextIndex = nextIndex == -1 ? Integer.MAX_VALUE : nextIndex;
+
+            if (backIndex < nextIndex && backIndex != Integer.MAX_VALUE) {
+                fancyMessage.then(message.substring(0, backIndex)).then(backText);
+
+                if (backCmd != null) {
+                    fancyMessage.command(backCmd).tooltip(backTooltip);
+                }
+
+                message = message.substring(backIndex + 13);
+            } else if (nextIndex < backIndex && nextIndex != Integer.MAX_VALUE) {
+                fancyMessage.then(message.substring(0, nextIndex)).then(nextText);
+
+                if (nextCmd != null) {
+                    fancyMessage.command(nextCmd).tooltip(nextTooltip);
+                }
+
+                message = message.substring(nextIndex + 13);
             } else {
-                chars[i] = Character.toLowerCase(chars[i]);
-            }
-
-            if (chars[i] == '_') {
-                chars[i] = ' ';
-                firstLetter = true;
+                fancyMessage.then(message);
+                break;
             }
         }
-        return new String(chars);
+
+        return fancyMessage;
     }
 
     private ChatColor getRelationColor(CommandSender sender, String factionId) {

@@ -79,7 +79,7 @@ public class SignManager extends BukkitRunnable implements PluginService, Listen
 
                 Sign sign = (Sign) block.getState();
                 sign.setLine(2, worth.getName());
-                sign.setLine(3, plugin.getCurrencyFormat().format(worth.getTotalWorth()));
+                sign.setLine(3, plugin.getSettings().getCurrencyFormat().format(worth.getTotalWorth()));
                 sign.update();
             }
         }
@@ -112,7 +112,7 @@ public class SignManager extends BukkitRunnable implements PluginService, Listen
         if (factions.size() > rank) {
             FactionWorth worth = factions.get(rank);
             event.setLine(2, worth.getName());
-            event.setLine(3, plugin.getCurrencyFormat().format(worth.getTotalWorth()));
+            event.setLine(3, plugin.getSettings().getCurrencyFormat().format(worth.getTotalWorth()));
         } else {
             event.setLine(2, "-");
             event.setLine(3, "$0.00");
@@ -147,7 +147,7 @@ public class SignManager extends BukkitRunnable implements PluginService, Listen
         }
 
         if (!event.getPlayer().hasPermission("factionstop.sign.break")) {
-            event.getPlayer().sendMessage(ChatColor.RED + "You do not have permission.");
+            event.getPlayer().sendMessage(plugin.getSettings().getPermissionMessage());
             event.setCancelled(true);
             return;
         }
