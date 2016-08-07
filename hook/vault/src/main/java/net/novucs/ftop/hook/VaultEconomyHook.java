@@ -137,7 +137,7 @@ public class VaultEconomyHook extends BukkitRunnable implements EconomyHook, Lis
         for (String factionId : factionIds) {
             // Get their previous and current balances.
             oldBalance = factionBalances.getOrDefault(factionId, 0d);
-            newBalance = economy.getBalance(factionId);
+            newBalance = economy.getBalance("faction-" + factionId);
 
             // Add new balance if faction is not already added to the cache.
             if (oldBalance == null) {
