@@ -1,5 +1,6 @@
 package net.novucs.ftop;
 
+import com.google.common.collect.ImmutableMap;
 import net.novucs.ftop.hook.event.*;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -77,18 +78,21 @@ public class WorldListener extends BukkitRunnable implements Listener, PluginSer
         }
 
         // Get the worth type and price of this event.
-        double price;
-        WorthType worthType;
+        int multiplier = negate ? -1 : 1;
+        double price = multiplier * plugin.getSettings().getBlockPrice(block.getType());
+        WorthType worthType = WorthType.BLOCK;
         Map<Material, Integer> materials = new HashMap<>();
         Map<EntityType, Integer> spawners = new HashMap<>();
+
+        plugin.getWorthManager().add(block.getChunk(), reason, worthType, price,
+                ImmutableMap.of(block.getType(), multiplier), spawners);
 
         switch (block.getType()) {
             case MOB_SPAWNER:
                 worthType = WorthType.SPAWNER;
                 EntityType spawnType = ((CreatureSpawner) block.getState()).getSpawnedType();
-                price = plugin.getSettings().getSpawnerPrice(spawnType);
-                price = negate ? -price : price;
-                spawners.put(spawnType, negate ? -1 : 1);
+                price = multiplier * plugin.getSettings().getSpawnerPrice(spawnType);
+                spawners.put(spawnType, multiplier);
                 break;
             case CHEST:
             case TRAPPED_CHEST:
@@ -104,11 +108,7 @@ public class WorldListener extends BukkitRunnable implements Listener, PluginSer
                 spawners.putAll(chestWorth.getSpawners());
                 break;
             default:
-                worthType = WorthType.BLOCK;
-                price = plugin.getSettings().getBlockPrice(block.getType());
-                price = negate ? -price : price;
-                materials.put(block.getType(), negate ? -1 : 1);
-                break;
+                return;
         }
 
         // Add block price to the count.
