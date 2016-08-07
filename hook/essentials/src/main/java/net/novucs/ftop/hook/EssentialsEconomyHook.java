@@ -88,7 +88,7 @@ public class EssentialsEconomyHook implements EconomyHook, Listener {
 
         Player player = event.getPlayer();
         if (!player.isOnline() && player.getName().startsWith("faction_")) {
-            String factionId = player.getName().substring(8);
+            String factionId = player.getName().substring(8).replace("_", "-");
             if (factionsHook.isFaction(factionId)) {
                 if (factionEnabled) {
                     callEvent(new FactionEconomyEvent(factionId, oldBalance, newBalance));
