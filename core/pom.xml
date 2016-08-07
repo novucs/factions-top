@@ -100,6 +100,12 @@
         </dependency>
         <dependency>
             <groupId>net.novucs.ftop.hook</groupId>
+            <artifactId>factions-1-8</artifactId>
+            <version>1.0.5-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.novucs.ftop.hook</groupId>
             <artifactId>factions-2-7</artifactId>
             <version>1.0.5-SNAPSHOT</version>
             <scope>compile</scope>
@@ -121,6 +127,12 @@
             <artifactId>HikariCP</artifactId>
             <version>2.4.7</version>
             <scope>compile</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>mkremins</groupId>
