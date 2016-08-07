@@ -76,17 +76,32 @@ public class WorldListener implements Listener, PluginService {
                 worthType = WorthType.SPAWNER;
                 EntityType spawnType = ((CreatureSpawner) block.getState()).getSpawnedType();
                 price = plugin.getSettings().getSpawnerPrice(spawnType);
+                price = negate ? -price : price;
                 spawners.put(spawnType, negate ? -1 : 1);
+                break;
+            case CHEST:
+            case TRAPPED_CHEST:
+                if (plugin.getSettings().isDisableChestEvents()) {
+                    return;
+                }
+
+                worthType = WorthType.CHEST;
+                Chest chest = (Chest) block.getState();
+                ChestWorth chestWorth = negate ? getWorthNegative(chest.getBlockInventory()) : getWorth(chest.getBlockInventory());
+                price = chestWorth.getTotalWorth();
+                materials.putAll(chestWorth.getMaterials());
+                spawners.putAll(chestWorth.getSpawners());
                 break;
             default:
                 worthType = WorthType.BLOCK;
                 price = plugin.getSettings().getBlockPrice(block.getType());
+                price = negate ? -price : price;
                 materials.put(block.getType(), negate ? -1 : 1);
                 break;
         }
 
         // Add block price to the count.
-        plugin.getWorthManager().add(block.getChunk(), reason, worthType, negate ? -price : price, materials, spawners);
+        plugin.getWorthManager().add(block.getChunk(), reason, worthType, price, materials, spawners);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -112,7 +127,7 @@ public class WorldListener implements Listener, PluginService {
     }
 
     private void checkWorth(Chest chest) {
-        chests.put(BlockPos.of(chest.getBlock()), getWorth(chest.getInventory()));
+        chests.put(BlockPos.of(chest.getBlock()), getWorth(chest.getBlockInventory()));
     }
 
     private ChestWorth getWorth(Inventory inventory) {
@@ -135,6 +150,31 @@ public class WorldListener implements Listener, PluginService {
             worth += plugin.getSettings().getBlockPrice(item.getType()) * item.getAmount();
             int count = materials.getOrDefault(item.getType(), 0);
             materials.put(item.getType(), count + item.getAmount());
+        }
+
+        return new ChestWorth(worth, materials, spawners);
+    }
+
+    private ChestWorth getWorthNegative(Inventory inventory) {
+        double worth = 0;
+        Map<Material, Integer> materials = new HashMap<>();
+        Map<EntityType, Integer> spawners = new HashMap<>();
+
+        for (ItemStack item : inventory.getContents()) {
+            if (item == null) continue;
+
+            if (item.getType() == Material.MOB_SPAWNER) {
+                EntityType spawnerType = plugin.getCraftbukkitHook().getSpawnerType(item);
+                worth -= plugin.getSettings().getSpawnerPrice(spawnerType) * item.getAmount();
+
+                int count = spawners.getOrDefault(spawnerType, 0);
+                spawners.put(spawnerType, count - item.getAmount());
+                continue;
+            }
+
+            worth -= plugin.getSettings().getBlockPrice(item.getType()) * item.getAmount();
+            int count = materials.getOrDefault(item.getType(), 0);
+            materials.put(item.getType(), count - item.getAmount());
         }
 
         return new ChestWorth(worth, materials, spawners);
@@ -166,7 +206,7 @@ public class WorldListener implements Listener, PluginService {
         ChestWorth worth = chests.remove(pos);
         if (worth == null) return;
 
-        worth = getDifference(worth, getWorth(chest.getInventory()));
+        worth = getDifference(worth, getWorth(chest.getBlockInventory()));
 
         plugin.getWorthManager().add(chest.getChunk(), RecalculateReason.CHEST, WorthType.CHEST,
                 worth.getTotalWorth(), worth.getMaterials(), worth.getSpawners());
