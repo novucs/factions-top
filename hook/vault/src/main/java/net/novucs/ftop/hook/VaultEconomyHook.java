@@ -20,6 +20,7 @@ public class VaultEconomyHook extends BukkitRunnable implements EconomyHook, Lis
     private final Set<String> factionIds;
     private final Map<UUID, Double> playerBalances = new HashMap<>();
     private final Map<String, Double> factionBalances = new HashMap<>();
+    private boolean enabled;
     private boolean playerEnabled;
     private boolean factionEnabled;
     private int liquidUpdateTicks;
@@ -37,21 +38,25 @@ public class VaultEconomyHook extends BukkitRunnable implements EconomyHook, Lis
     @Override
     public void initialize() {
         RegisteredServiceProvider<Economy> rsp = plugin.getServer().getServicesManager().getRegistration(Economy.class);
-        if (rsp == null) {
+
+        if (rsp == null || (economy = rsp.getProvider()) == null) {
             plugin.getLogger().warning("No economy provider for Vault found!");
             plugin.getLogger().warning("Economy support by Vault is now disabled.");
             return;
         }
 
-        economy = rsp.getProvider();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         runTaskTimer(plugin, liquidUpdateTicks, liquidUpdateTicks);
+        enabled = true;
     }
 
     @Override
     public void terminate() {
-        HandlerList.unregisterAll(this);
-        cancel();
+        if (enabled) {
+            HandlerList.unregisterAll(this);
+            cancel();
+            enabled = false;
+        }
     }
 
     @Override
@@ -66,12 +71,14 @@ public class VaultEconomyHook extends BukkitRunnable implements EconomyHook, Lis
 
     @Override
     public double getBalance(Player player) {
-        return economy.getBalance(player);
+        return economy == null ? 0 : economy.getBalance(player);
     }
 
     @Override
     public Map<WorthType, Double> getBalances(String factionId, List<UUID> members) {
         Map<WorthType, Double> target = new EnumMap<>(WorthType.class);
+        if (economy == null) return target;
+
         target.put(WorthType.FACTION_BALANCE, economy.getBalance(factionId));
 
         double playerBalance = 0;
