@@ -147,6 +147,10 @@ public class DatabaseManager {
         return target;
     }
 
+    public void close() {
+        dataSource.close();
+    }
+
     private Map<WorthType, Double> getChunkWorth(Connection connection, int chunkId) throws SQLException {
         Map<WorthType, Double> target = new EnumMap<>(WorthType.class);
 

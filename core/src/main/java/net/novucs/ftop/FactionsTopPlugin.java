@@ -97,6 +97,8 @@ public final class FactionsTopPlugin extends JavaPlugin {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        databaseManager.close();
         services.forEach(PluginService::terminate);
         active = false;
     }
