@@ -122,11 +122,8 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
     private void sort(FactionWorth factionWorth) {
         // Remove the current value.
         ListIterator<FactionWorth> it = orderedFactions.listIterator();
-        while (it.hasNext()) {
-            if (it.next() == factionWorth) {
-                it.remove();
-                break;
-            }
+        if (!remove(factionWorth, it)) {
+            return;
         }
 
         // Locate where the value should be ordered.
@@ -145,6 +142,16 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
 
         // Add back to list with the correct position.
         it.add(factionWorth);
+    }
+
+    private <E> boolean remove(E element, ListIterator<E> it) {
+        while (it.hasNext()) {
+            if (it.next() == element) {
+                it.remove();
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
