@@ -337,9 +337,9 @@ public class Settings {
         countFormat = new DecimalFormat(getString("messages.count-format", "#,###"));
         currencyFormat = new DecimalFormat(getString("messages.currency-format", "$#,###.##"));
         backButtonMessage = getButtonMessage("messages.button-back",
-                new ButtonMessage("&b[<]", "&7[<]", Collections.singletonList(format("&dCommand: &b/f top {page:back}"))));
+                new ButtonMessage("&b[<]", "&7[<]", Collections.singletonList("&dCommand: &b/f top {page:back}")));
         nextButtonMessage = getButtonMessage("messages.button-next",
-                new ButtonMessage("&b[>]", "&7[>]", Collections.singletonList(format("&dCommand: &b/f top {page:next}"))));
+                new ButtonMessage("&b[>]", "&7[>]", Collections.singletonList("&dCommand: &b/f top {page:next}")));
         headerMessage = format(getString("messages.header",
                 "&6_______.[ &2Top Factions {button:back} &6{page:this}/{page:last} {button:next} &6]._______"));
         noEntriesMessage = format(getString("messages.no-entries", "&eNo entries to be displayed."));
