@@ -20,14 +20,18 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
-public class WorldListener implements Listener, PluginService {
+public class WorldListener extends BukkitRunnable implements Listener, PluginService {
 
     private final FactionsTopPlugin plugin;
     private final Map<BlockPos, ChestWorth> chests = new HashMap<>();
+    private final Set<String> recentDisbands = new HashSet<>();
 
     public WorldListener(FactionsTopPlugin plugin) {
         this.plugin = plugin;
@@ -36,11 +40,18 @@ public class WorldListener implements Listener, PluginService {
     @Override
     public void initialize() {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
+        runTaskTimer(plugin, 1, 1);
     }
 
     @Override
     public void terminate() {
         HandlerList.unregisterAll(this);
+        cancel();
+    }
+
+    @Override
+    public void run() {
+        recentDisbands.clear();
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -248,6 +259,7 @@ public class WorldListener implements Listener, PluginService {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void removeFaction(FactionDisbandEvent event) {
+        recentDisbands.add(event.getFactionId());
         plugin.getWorthManager().remove(event.getFactionId());
     }
 
@@ -275,6 +287,11 @@ public class WorldListener implements Listener, PluginService {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void updateWorth(FactionLeaveEvent event) {
+        // Do nothing if the faction was disbanded within this tick.
+        if (recentDisbands.contains(event.getFactionId())) {
+            return;
+        }
+
         double balance = plugin.getEconomyHook().getBalance(event.getPlayer());
         plugin.getWorthManager().add(event.getFactionId(), WorthType.PLAYER_BALANCE, -balance);
     }
