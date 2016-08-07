@@ -124,7 +124,7 @@ public class FactionsTopCommand implements CommandExecutor, Listener, PluginServ
         int spacer = entries * --page;
         ListIterator<FactionWorth> it = factions.listIterator(spacer);
         for (int i = 0; i < entries; i++) {
-            if (!it.hasNext()) return;
+            if (!it.hasNext()) break;
 
             FactionWorth worth = it.next();
             Map<String, String> worthPlaceholders = new HashMap<>(placeholders);
