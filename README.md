@@ -6,6 +6,7 @@ This Bukkit plugin adds a command to the well known factions plugin to display a
 ## Supports
 * Spigot 1.7.x -> 1.10.x
 * FactionsUUID by drtshock
+* FactionsOne
 * MassiveCore Factions 2.7+
 * H2 and MySQL
 
