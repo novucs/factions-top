@@ -133,7 +133,9 @@ public class Factions18x extends FactionsHook {
     public void onLeave(FPlayerLeaveEvent event) {
         Player player = event.getFPlayer().getPlayer();
         String factionId = event.getFaction().getId();
-        callEvent(new FactionLeaveEvent(factionId, player));
+        if (player != null) {
+            callEvent(new FactionLeaveEvent(factionId, player));
+        }
     }
 
     private ChunkPos getChunkPos(FLocation location) {

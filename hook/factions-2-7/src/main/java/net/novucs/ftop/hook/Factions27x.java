@@ -92,6 +92,8 @@ public class Factions27x extends FactionsHook {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onMembershipChange(EventFactionsMembershipChange event) {
         Player player = event.getMPlayer().getPlayer();
+        if (player == null) return;
+
         Faction oldFaction = event.getMPlayer().getFaction();
         Faction newFaction = event.getNewFaction();
         String oldFactionId = event.getMPlayer().getFaction().getId();

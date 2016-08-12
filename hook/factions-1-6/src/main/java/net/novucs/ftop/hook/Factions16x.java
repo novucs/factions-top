@@ -110,7 +110,9 @@ public class Factions16x extends FactionsHook {
     public void onLeave(FPlayerLeaveEvent event) {
         Player player = event.getfPlayer().getPlayer();
         String factionId = event.getFaction().getId();
-        callEvent(new FactionLeaveEvent(factionId, player));
+        if (player != null) {
+            callEvent(new FactionLeaveEvent(factionId, player));
+        }
     }
 
     private ChunkPos getChunkPos(FLocation location) {
