@@ -127,11 +127,18 @@ public class FactionsTopCommand implements CommandExecutor, Listener, PluginServ
             if (!it.hasNext()) break;
 
             FactionWorth worth = it.next();
+
+            int spawnerCount = 0;
+            for (EntityType spawner : worth.getSpawners().keySet()) {
+                spawnerCount += worth.getSpawners().get(spawner);
+            }
+
             Map<String, String> worthPlaceholders = new HashMap<>(placeholders);
             worthPlaceholders.put("{rank}", Integer.toString(i + 1));
             worthPlaceholders.put("{relcolor}", "" + ChatColor.COLOR_CHAR + getRelationColor(sender, worth.getFactionId()).getChar());
             worthPlaceholders.put("{faction}", worth.getName());
             worthPlaceholders.put("{worth:total}", plugin.getSettings().getCurrencyFormat().format(worth.getTotalWorth()));
+            worthPlaceholders.put("{count:total:spawner}", String.valueOf(spawnerCount));
 
             String bodyMessage = insertPlaceholders(worth, replace(plugin.getSettings().getBodyMessage(), worthPlaceholders));
             List<String> tooltip = insertPlaceholders(worth, replace(plugin.getSettings().getBodyTooltip(), worthPlaceholders));
