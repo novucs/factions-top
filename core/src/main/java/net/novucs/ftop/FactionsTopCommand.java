@@ -125,14 +125,19 @@ public class FactionsTopCommand implements CommandExecutor, Listener, PluginServ
         ListIterator<FactionWorth> it = factions.listIterator(spacer);
         for (int i = 0; i < entries; i++) {
             if (!it.hasNext()) break;
-
+            
             FactionWorth worth = it.next();
+            int spawners = 0;
+            for (EntityType e : worth.getSpawners().keySet()) {
+            	spawners = spawners+worth.getSpawners().get(e);
+            }
+            
             Map<String, String> worthPlaceholders = new HashMap<>(placeholders);
             worthPlaceholders.put("{rank}", Integer.toString(i + 1));
             worthPlaceholders.put("{relcolor}", "" + ChatColor.COLOR_CHAR + getRelationColor(sender, worth.getFactionId()).getChar());
             worthPlaceholders.put("{faction}", worth.getName());
             worthPlaceholders.put("{worth:total}", plugin.getSettings().getCurrencyFormat().format(worth.getTotalWorth()));
-
+            worthPlaceholders.put("{spawnercount}", String.valueOf(spawners));
             String bodyMessage = insertPlaceholders(worth, replace(plugin.getSettings().getBodyMessage(), worthPlaceholders));
             List<String> tooltip = insertPlaceholders(worth, replace(plugin.getSettings().getBodyTooltip(), worthPlaceholders));
 
