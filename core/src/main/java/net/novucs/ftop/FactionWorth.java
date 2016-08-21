@@ -45,6 +45,22 @@ public class FactionWorth implements Comparable<FactionWorth> {
         return Collections.unmodifiableMap(spawners);
     }
 
+    public int getTotalSpawnerCount() {
+        int target = 0;
+        for (int count : spawners.values()) {
+            target += count;
+        }
+        return target;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public double getTotalWorth() {
+        return totalWorth;
+    }
+
     protected void setWorth(WorthType worthType, double worth) {
         worth = Math.max(0, worth);
         Double prev = this.worth.put(worthType, worth);
@@ -99,16 +115,8 @@ public class FactionWorth implements Comparable<FactionWorth> {
         addWorth(chunkWorth.getWorth());
     }
 
-    public String getName() {
-        return name;
-    }
-
     protected void setName(String name) {
         this.name = name;
-    }
-
-    public double getTotalWorth() {
-        return totalWorth;
     }
 
     @Override
