@@ -11,6 +11,16 @@ commands:
     description: Displays factions in order of worth.
     usage: /<command> [page]
 
+  ftopgui:
+    aliases: [factionstopgui]
+    description: Displays top factions with a GUI.
+    usage: /<command> [page]
+
+  ftopreload:
+    aliases: [factionstopreload, ftopr]
+    description: Reloads the plugin configuration.
+    usage: /<command>
+
 permissions:
   factionstop.user:
     default: true

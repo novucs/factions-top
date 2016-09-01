@@ -1,4 +1,4 @@
-package net.novucs.ftop;
+package net.novucs.ftop.entity;
 
 import java.util.List;
 import java.util.Objects;

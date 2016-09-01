@@ -1,9 +1,14 @@
-package net.novucs.ftop;
+package net.novucs.ftop.manager;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import net.novucs.ftop.entity.ChunkPos;
+import net.novucs.ftop.util.GenericUtils;
+import net.novucs.ftop.WorthType;
+import net.novucs.ftop.entity.BlockPos;
+import net.novucs.ftop.entity.ChunkWorth;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 
@@ -209,7 +214,7 @@ public class DatabaseManager {
 
         while (set.next()) {
             int id = set.getInt("id");
-            Optional<T> parsed = StringUtils.parseEnum(clazz, set.getString("name"));
+            Optional<T> parsed = GenericUtils.parseEnum(clazz, set.getString("name"));
             if (parsed.isPresent()) {
                 target.put(id, parsed.get());
             }

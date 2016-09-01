@@ -1,7 +1,11 @@
-package net.novucs.ftop;
+package net.novucs.ftop.manager;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import net.novucs.ftop.*;
+import net.novucs.ftop.entity.ChunkPos;
+import net.novucs.ftop.entity.ChunkWorth;
+import net.novucs.ftop.entity.FactionWorth;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
@@ -65,16 +69,16 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
         }
     }
 
-    protected Map<ChunkPos, ChunkWorth> getChunks() {
+    public Map<ChunkPos, ChunkWorth> getChunks() {
         return chunks;
     }
 
-    protected void loadChunks(Map<ChunkPos, ChunkWorth> chunks) {
+    public void loadChunks(Map<ChunkPos, ChunkWorth> chunks) {
         this.chunks.clear();
         this.chunks.putAll(chunks);
     }
 
-    protected void updateAllFactions() {
+    public void updateAllFactions() {
         factions.clear();
         for (Map.Entry<ChunkPos, ChunkWorth> chunk : chunks.entrySet()) {
             FactionWorth worth = getFactionWorth(chunk.getKey());
@@ -208,7 +212,7 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
      * @param worthType the worth type.
      * @param worth     the worth value.
      */
-    protected void set(ChunkPos pos, WorthType worthType, double worth) {
+    public void set(ChunkPos pos, WorthType worthType, double worth) {
         // Do nothing if faction worth is null.
         FactionWorth factionWorth = getFactionWorth(pos);
         if (factionWorth == null) return;
@@ -233,7 +237,7 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
         }
     }
 
-    protected void setMaterials(ChunkPos pos, Map<Material, Integer> materials) {
+    public void setMaterials(ChunkPos pos, Map<Material, Integer> materials) {
         // Do nothing if faction worth is null.
         FactionWorth factionWorth = getFactionWorth(pos);
         if (factionWorth == null) return;
@@ -253,7 +257,7 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
         }
     }
 
-    protected void setSpawners(ChunkPos pos, Map<EntityType, Integer> spawners) {
+    public void setSpawners(ChunkPos pos, Map<EntityType, Integer> spawners) {
         // Do nothing if faction worth is null.
         FactionWorth factionWorth = getFactionWorth(pos);
         if (factionWorth == null) return;
@@ -273,8 +277,8 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
      * @param worthType the worth type.
      * @param worth     the worth value.
      */
-    protected void add(Chunk chunk, RecalculateReason reason, WorthType worthType, double worth,
-                       Map<Material, Integer> materials, Map<EntityType, Integer> spawners) {
+    public void add(Chunk chunk, RecalculateReason reason, WorthType worthType, double worth,
+                    Map<Material, Integer> materials, Map<EntityType, Integer> spawners) {
         // Do nothing if worth type is disabled or worth is nothing.
         if (!plugin.getSettings().isEnabled(worthType) || worth == 0) {
             return;
@@ -321,7 +325,7 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
      * @param chunk  the chunk.
      * @param reason the reason for recalculating.
      */
-    protected void recalculate(Chunk chunk, RecalculateReason reason) {
+    public void recalculate(Chunk chunk, RecalculateReason reason) {
         ChunkPos pos = ChunkPos.of(chunk);
         if (getFactionWorth(pos) == null) return;
 
@@ -468,7 +472,7 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
      * @param claims    the claims affected in this transaction.
      * @param unclaimed true if the claims were unclaimed.
      */
-    protected void update(String factionId, Collection<ChunkPos> claims, boolean unclaimed) {
+    public void update(String factionId, Collection<ChunkPos> claims, boolean unclaimed) {
         // Do nothing if faction worth is null.
         FactionWorth factionWorth = getFactionWorth(factionId);
         if (factionWorth == null) return;
@@ -507,7 +511,7 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
      * @param worthType the worth type.
      * @param worth     the worth to add.
      */
-    protected void add(String factionId, WorthType worthType, double worth) {
+    public void add(String factionId, WorthType worthType, double worth) {
         // Do nothing if the worth type is placed or disabled or worth is equal to nothing.
         if (WorthType.isPlaced(worthType) || !plugin.getSettings().isEnabled(worthType) || worth == 0) {
             return;
@@ -528,7 +532,7 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
      * @param factionId the faction ID.
      * @param newName   the new faction name.
      */
-    protected void rename(String factionId, String newName) {
+    public void rename(String factionId, String newName) {
         FactionWorth factionWorth = factions.getOrDefault(factionId, null);
         if (factionWorth != null) {
             factionWorth.setName(newName);
@@ -540,7 +544,7 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
      *
      * @param factionId the ID of the faction to remove.
      */
-    protected void remove(String factionId) {
+    public void remove(String factionId) {
         FactionWorth factionWorth = factions.remove(factionId);
 
         // Optimised removal, factions lower down the list are more likely to be disbanded.

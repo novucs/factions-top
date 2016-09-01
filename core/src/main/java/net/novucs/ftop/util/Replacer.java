@@ -1,4 +1,4 @@
-package net.novucs.ftop;
+package net.novucs.ftop.util;
 
 public interface Replacer {
 

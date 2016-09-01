@@ -1,4 +1,4 @@
-package net.novucs.ftop;
+package net.novucs.ftop.entity;
 
 import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;

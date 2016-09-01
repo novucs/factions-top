@@ -1,10 +1,16 @@
 package net.novucs.ftop;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.zaxxer.hikari.HikariConfig;
+import net.novucs.ftop.entity.ButtonMessage;
+import net.novucs.ftop.gui.GuiLayout;
+import net.novucs.ftop.gui.element.GuiElement;
+import net.novucs.ftop.gui.element.GuiElementType;
+import net.novucs.ftop.gui.element.GuiFactionList;
 import net.novucs.ftop.hook.VaultEconomyHook;
-import org.bukkit.ChatColor;
+import net.novucs.ftop.util.GenericUtils;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -18,14 +24,17 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static net.novucs.ftop.util.StringUtils.format;
+
 public class Settings {
 
     private static final int LATEST_VERSION = 3;
+
     private static final String HEADER = "FactionsTop by novucs.\n" +
             "\n" +
             "Configuration walkthrough:\n" +
             "- config-version: Should not be touched, determines config version.\n" +
-            "- command-aliases: List of commands to rebind to \"/ftop\".\n" +
+            "- command-aliases: List of command to rebind to \"/ftop\".\n" +
             "- ignored-faction-ids: Faction IDs to not calculate for factions top.\n" +
             "- disable-chest-events: Disables chest events, improves performance.\n" +
             "- factions-per-page: Number of factions displayed per page in \"/ftop\".\n" +
@@ -46,6 +55,67 @@ public class Settings {
             "Valid materials (Case insensitive):\n" +
             "https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html\n";
 
+    private static final ImmutableList<String> WORTH_HOVER = ImmutableList.of(
+            "&e&l-- General --",
+            "&dTotal Worth: &b{worth:total}",
+            "&dBlock Worth: &b{worth:block}",
+            "&dChest Worth: &b{worth:chest}",
+            "&dSpawner Worth: &b{worth:spawner}",
+            "&dPlayer Balances: &b{worth:player_balance}",
+            "&dFaction Bank: &b{worth:faction_balance}",
+            "",
+            "&e&l-- Spawners --",
+            "&dSlime: &b{count:spawner:slime}",
+            "&dSkeleton: &b{count:spawner:skeleton}",
+            "&dZombie: &b{count:spawner:zombie}",
+            "",
+            "&e&l-- Materials --",
+            "&dEmerald Block: &b{count:material:emerald_block}",
+            "&dDiamond Block: &b{count:material:diamond_block}",
+            "&dGold Block: &b{count:material:gold_block}",
+            "&dIron Block: &b{count:material:iron_block}",
+            "&dCoal Block: &b{count:material:coal_block}"
+    );
+
+    private static final ImmutableList<ImmutableMap<?, ?>> GUI_LAYOUT = ImmutableList.of(
+            ImmutableMap.of(
+                    "type", "button_back",
+                    "enabled", ImmutableMap.of(
+                            "text", "&bBack",
+                            "lore", new ArrayList<>(),
+                            "material", "wool",
+                            "data", 5
+                    ),
+                    "disabled", ImmutableMap.of(
+                            "text", "&7Back",
+                            "lore", new ArrayList<>(),
+                            "material", "wool",
+                            "data", 14
+                    )),
+            ImmutableMap.of(
+                    "type", "faction_list",
+                    "faction-count", 7,
+                    "fill-empty", true,
+                    "text", "&e{rank}. {relcolor}{faction} &b{worth:total}",
+                    "lore", new ArrayList<>(WORTH_HOVER)
+            ),
+            ImmutableMap.of(
+                    "type", "button_next",
+                    "enabled", ImmutableMap.of(
+                            "text", "&bNext",
+                            "lore", new ArrayList<>(),
+                            "material", "wool",
+                            "data", 5
+                    ),
+                    "disabled", ImmutableMap.of(
+                            "text", "&7Next",
+                            "lore", new ArrayList<>(),
+                            "material", "wool",
+                            "data", 14
+                    )
+            )
+    );
+
     private final FactionsTopPlugin plugin;
     private FileConfiguration config;
     private File configFile;
@@ -61,6 +131,12 @@ public class Settings {
     private List<String> bodyTooltip;
     private String footerMessage;
     private String permissionMessage;
+
+    // GUI settings.
+    private List<String> guiCommandAliases;
+    private int guiLineCount;
+    private String guiInventoryName;
+    private GuiLayout guiLayout;
 
     // General settings.
     private List<String> commandAliases;
@@ -120,6 +196,22 @@ public class Settings {
 
     public String getPermissionMessage() {
         return permissionMessage;
+    }
+
+    public List<String> getGuiCommandAliases() {
+        return guiCommandAliases;
+    }
+
+    public int getGuiLineCount() {
+        return guiLineCount;
+    }
+
+    public String getGuiInventoryName() {
+        return guiInventoryName;
+    }
+
+    public GuiLayout getGuiLayout() {
+        return guiLayout;
     }
 
     public List<String> getCommandAliases() {
@@ -239,7 +331,7 @@ public class Settings {
         ConfigurationSection section = getOrDefaultSection(key);
         for (String name : section.getKeys(false)) {
             // Warn user if unable to parse enum.
-            Optional<T> parsed = StringUtils.parseEnum(type, name);
+            Optional<T> parsed = GenericUtils.parseEnum(type, name);
             if (!parsed.isPresent()) {
                 plugin.getLogger().warning("Invalid " + type.getSimpleName() + ": " + name);
                 continue;
@@ -263,7 +355,7 @@ public class Settings {
         ConfigurationSection section = getOrDefaultSection(key);
         for (String name : section.getKeys(false)) {
             // Warn user if unable to parse enum.
-            Optional<T> parsed = StringUtils.parseEnum(type, name);
+            Optional<T> parsed = GenericUtils.parseEnum(type, name);
             if (!parsed.isPresent()) {
                 plugin.getLogger().warning("Invalid " + type.getSimpleName() + ": " + name);
                 continue;
@@ -283,12 +375,36 @@ public class Settings {
     private <T extends Enum<T>> EnumMap<T, Double> parseDefPrices(Class<T> type, Map<String, Double> def) {
         EnumMap<T, Double> target = new EnumMap<>(type);
         def.forEach((name, price) -> {
-            Optional<T> parsed = StringUtils.parseEnum(type, name);
+            Optional<T> parsed = GenericUtils.parseEnum(type, name);
             if (parsed.isPresent()) {
                 target.put(parsed.get(), price);
             }
         });
         return target;
+    }
+
+    private GuiLayout loadGuiLayout() {
+        config.addDefault("gui-settings.layout", GUI_LAYOUT);
+
+        List<Map<?, ?>> layout = config.getMapList("gui-settings.layout");
+        List<GuiElement> elements = new ArrayList<>(layout.size());
+
+        for (Map<?, ?> element : layout) {
+            Optional<GuiElementType> type = GenericUtils.getEnum(GuiElementType.class, element, "type");
+            if (type.isPresent()) {
+                elements.add(type.get().getParser().parse(element));
+            }
+        }
+
+        int factionsPerPage = 0;
+
+        for (GuiElement element : elements) {
+            if (element instanceof GuiFactionList) {
+                factionsPerPage += ((GuiFactionList) element).getFactionCount();
+            }
+        }
+
+        return new GuiLayout(ImmutableList.copyOf(elements), factionsPerPage);
     }
 
     private HikariConfig loadHikariConfig() {
@@ -303,16 +419,6 @@ public class Settings {
         hikariConfig.setThreadFactory(new ThreadFactoryBuilder().setDaemon(true)
                 .setNameFormat("factions-top-sql-pool-%d").build());
         return hikariConfig;
-    }
-
-    private String format(String message) {
-        return ChatColor.translateAlternateColorCodes('&', message);
-    }
-
-    private List<String> format(List<String> messages) {
-        return messages.stream()
-                .map(this::format)
-                .collect(Collectors.toList());
     }
 
     private ButtonMessage getButtonMessage(String path, ButtonMessage def) {
@@ -344,30 +450,14 @@ public class Settings {
                 "&6_______.[ &2Top Factions {button:back} &6{page:this}/{page:last} {button:next} &6]._______"));
         noEntriesMessage = format(getString("messages.no-entries", "&eNo entries to be displayed."));
         bodyMessage = format(getString("messages.body.text", "&e{rank}. {relcolor}{faction} &b{worth:total}"));
-        List<String> bodyTooltipDefault = Arrays.asList(
-                "&e&l-- General --",
-                "&dTotal Worth: &b{worth:total}",
-                "&dBlock Worth: &b{worth:block}",
-                "&dChest Worth: &b{worth:chest}",
-                "&dSpawner Worth: &b{worth:spawner}",
-                "&dPlayer Balances: &b{worth:player_balance}",
-                "&dFaction Bank: &b{worth:faction_balance}",
-                "",
-                "&e&l-- Spawners --",
-                "&dSlime: &b{count:spawner:slime}",
-                "&dSkeleton: &b{count:spawner:skeleton}",
-                "&dZombie: &b{count:spawner:zombie}",
-                "",
-                "&e&l-- Materials --",
-                "&dEmerald Block: &b{count:material:emerald_block}",
-                "&dDiamond Block: &b{count:material:diamond_block}",
-                "&dGold Block: &b{count:material:gold_block}",
-                "&dIron Block: &b{count:material:iron_block}",
-                "&dCoal Block: &b{count:material:coal_block}"
-        );
-        bodyTooltip = format(getList("messages.body.tooltip", bodyTooltipDefault, String.class));
+        bodyTooltip = format(getList("messages.body.tooltip", new ArrayList<>(WORTH_HOVER), String.class));
         footerMessage = format(getString("messages.footer", ""));
         permissionMessage = format(getString("messages.permission", "&cYou do not have permission."));
+
+        guiCommandAliases = getList("gui-settings.command-aliases", Collections.singletonList("f topgui"), String.class);
+        guiLineCount = getInt("gui-settings.line-count", 1);
+        guiInventoryName = format(getString("gui-settings.inventory-name", "&lFactions Top"));
+        guiLayout = loadGuiLayout();
 
         commandAliases = getList("settings.command-aliases", Collections.singletonList("f top"), String.class);
         ignoredFactionIds = getList("settings.ignored-faction-ids", Arrays.asList("none", "safezone", "warzone", "0", "-1", "-2"), String.class);

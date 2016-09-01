@@ -1,5 +1,6 @@
-package net.novucs.ftop;
+package net.novucs.ftop.entity;
 
+import net.novucs.ftop.WorthType;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 
@@ -36,34 +37,34 @@ public class ChunkWorth {
         this.worth.put(worthType, worth);
     }
 
-    protected Map<WorthType, Double> getWorth() {
+    public Map<WorthType, Double> getWorth() {
         return worth;
     }
 
-    protected Map<Material, Integer> getMaterials() {
+    public Map<Material, Integer> getMaterials() {
         return materials;
     }
 
-    protected Map<EntityType, Integer> getSpawners() {
+    public Map<EntityType, Integer> getSpawners() {
         return spawners;
     }
 
-    protected void setMaterials(Map<Material, Integer> materials) {
+    public void setMaterials(Map<Material, Integer> materials) {
         this.materials = materials;
     }
 
-    protected void setSpawners(Map<EntityType, Integer> spawners) {
+    public void setSpawners(Map<EntityType, Integer> spawners) {
         this.spawners = spawners;
     }
 
-    protected void addMaterials(Map<Material, Integer> materials) {
+    public void addMaterials(Map<Material, Integer> materials) {
         for (Map.Entry<Material, Integer> material : materials.entrySet()) {
             int amount = Math.max(0, this.materials.getOrDefault(material.getKey(), 0) + material.getValue());
             this.materials.put(material.getKey(), amount);
         }
     }
 
-    protected void addSpawners(Map<EntityType, Integer> spawners) {
+    public void addSpawners(Map<EntityType, Integer> spawners) {
         for (Map.Entry<EntityType, Integer> spawner : spawners.entrySet()) {
             int amount = Math.max(0, this.spawners.getOrDefault(spawner.getKey(), 0) + spawner.getValue());
             this.spawners.put(spawner.getKey(), amount);

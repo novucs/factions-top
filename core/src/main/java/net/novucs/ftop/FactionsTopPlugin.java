@@ -1,7 +1,21 @@
 package net.novucs.ftop;
 
 import com.google.common.collect.Multimap;
+import net.novucs.ftop.command.GuiCommand;
+import net.novucs.ftop.command.ReloadCommand;
+import net.novucs.ftop.command.TextCommand;
+import net.novucs.ftop.entity.BlockPos;
+import net.novucs.ftop.entity.ChunkPos;
+import net.novucs.ftop.entity.ChunkWorth;
 import net.novucs.ftop.hook.*;
+import net.novucs.ftop.listener.CommandListener;
+import net.novucs.ftop.listener.GuiListener;
+import net.novucs.ftop.listener.WorldListener;
+import net.novucs.ftop.manager.DatabaseManager;
+import net.novucs.ftop.manager.GuiManager;
+import net.novucs.ftop.manager.SignManager;
+import net.novucs.ftop.manager.WorthManager;
+import net.novucs.ftop.task.ChunkWorthTask;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -25,13 +39,18 @@ public final class FactionsTopPlugin extends JavaPlugin {
 
     private final Settings settings = new Settings(this);
     private final ChunkWorthTask chunkWorthTask = new ChunkWorthTask(this);
+    private final GuiManager guiManager = new GuiManager(this);
     private final SignManager signManager = new SignManager(this);
     private final WorthManager worthManager = new WorthManager(this);
     private final Set<PluginService> services = new HashSet<>(Arrays.asList(
             chunkWorthTask,
             signManager,
             worthManager,
-            new FactionsTopCommand(this),
+            new GuiCommand(this),
+            new ReloadCommand(this),
+            new TextCommand(this),
+            new CommandListener(this),
+            new GuiListener(this),
             new WorldListener(this)
     ));
 
@@ -47,6 +66,10 @@ public final class FactionsTopPlugin extends JavaPlugin {
 
     public ChunkWorthTask getChunkWorthTask() {
         return chunkWorthTask;
+    }
+
+    public GuiManager getGuiManager() {
+        return guiManager;
     }
 
     public WorthManager getWorthManager() {
@@ -239,7 +262,7 @@ public final class FactionsTopPlugin extends JavaPlugin {
      * the plugin will disable all services until the settings have been
      * corrected.
      */
-    protected void loadSettings() {
+    public void loadSettings() {
         try {
             // Attempt to load the plugin settings.
             settings.load();

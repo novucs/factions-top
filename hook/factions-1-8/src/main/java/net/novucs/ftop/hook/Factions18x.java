@@ -5,7 +5,7 @@ import com.google.common.collect.Multimap;
 import com.massivecraft.factions.*;
 import com.massivecraft.factions.event.*;
 import com.massivecraft.factions.struct.TerritoryAccess;
-import net.novucs.ftop.ChunkPos;
+import net.novucs.ftop.entity.ChunkPos;
 import net.novucs.ftop.hook.event.*;
 import net.novucs.ftop.hook.event.FactionDisbandEvent;
 import net.novucs.ftop.hook.event.FactionRenameEvent;
@@ -72,6 +72,11 @@ public class Factions18x extends FactionsHook {
         FPlayer fplayer = FPlayers.i.get(player);
         Faction faction = Factions.i.get(factionId);
         return fplayer.getFaction().getRelationTo(faction).getColor();
+    }
+
+    @Override
+    public String getOwnerName(String factionId) {
+        return Factions.i.get(factionId).getFPlayerLeader().getName();
     }
 
     @Override

@@ -12,7 +12,7 @@ import com.massivecraft.factions.event.EventFactionsMembershipChange;
 import com.massivecraft.factions.event.EventFactionsNameChange;
 import com.massivecraft.massivecore.ps.PS;
 import com.massivecraft.massivecore.store.SenderEntity;
-import net.novucs.ftop.ChunkPos;
+import net.novucs.ftop.entity.ChunkPos;
 import net.novucs.ftop.hook.event.*;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -58,6 +58,11 @@ public class Factions27x extends FactionsHook {
         MPlayer mplayer = MPlayer.get(player);
         Faction faction = Faction.get(factionId);
         return mplayer.getFaction().getRelationTo(faction).getColor();
+    }
+
+    @Override
+    public String getOwnerName(String factionId) {
+        return FactionColl.get().get(factionId).getLeader().getName();
     }
 
     @Override

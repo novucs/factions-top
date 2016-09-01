@@ -1,4 +1,4 @@
-package net.novucs.ftop;
+package net.novucs.ftop.entity;
 
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;

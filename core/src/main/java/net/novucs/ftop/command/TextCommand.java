@@ -1,44 +1,38 @@
-package net.novucs.ftop;
+package net.novucs.ftop.command;
 
 import mkremins.fanciful.FancyMessage;
+import net.novucs.ftop.FactionsTopPlugin;
+import net.novucs.ftop.PluginService;
+import net.novucs.ftop.entity.ButtonMessage;
+import net.novucs.ftop.entity.FactionWorth;
 import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.HandlerList;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.server.ServerCommandEvent;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-public class FactionsTopCommand implements CommandExecutor, Listener, PluginService {
+import static net.novucs.ftop.util.StringUtils.*;
+
+public class TextCommand implements CommandExecutor, PluginService {
 
     private final FactionsTopPlugin plugin;
 
-    public FactionsTopCommand(FactionsTopPlugin plugin) {
+    public TextCommand(FactionsTopPlugin plugin) {
         this.plugin = plugin;
     }
 
     @Override
     public void initialize() {
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
         plugin.getServer().getPluginCommand("ftop").setExecutor(this);
     }
 
     @Override
     public void terminate() {
-        HandlerList.unregisterAll(this);
         plugin.getServer().getPluginCommand("ftop").setExecutor(null);
     }
 
@@ -51,39 +45,10 @@ public class FactionsTopCommand implements CommandExecutor, Listener, PluginServ
 
         if (args.length == 0) {
             sendTop(sender, 0);
-        } else if (args[0].equalsIgnoreCase("reload")) {
-            if (!sender.hasPermission("factionstop.reload")) {
-                sender.sendMessage(plugin.getSettings().getPermissionMessage());
-                return true;
-            }
-
-            plugin.loadSettings();
-            sender.sendMessage(ChatColor.YELLOW + "FactionsTop settings have been successfully reloaded.");
-            sender.sendMessage(ChatColor.YELLOW + "New faction worth values will take a while to register.");
         } else {
             sendTop(sender, NumberUtils.toInt(args[0]));
         }
         return true;
-    }
-
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onCommand(PlayerCommandPreprocessEvent event) {
-        event.setMessage("/" + attemptRebind(event.getMessage().substring(1)));
-    }
-
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onCommand(ServerCommandEvent event) {
-        event.setCommand(attemptRebind(event.getCommand()));
-    }
-
-    private String attemptRebind(String command) {
-        for (String alias : plugin.getSettings().getCommandAliases()) {
-            if (command.startsWith(alias)) {
-                return command.replaceFirst(alias, "ftop");
-            }
-        }
-
-        return command;
     }
 
     private void sendTop(CommandSender sender, int page) {
@@ -130,13 +95,13 @@ public class FactionsTopCommand implements CommandExecutor, Listener, PluginServ
 
             Map<String, String> worthPlaceholders = new HashMap<>(placeholders);
             worthPlaceholders.put("{rank}", Integer.toString(i + 1));
-            worthPlaceholders.put("{relcolor}", "" + ChatColor.COLOR_CHAR + getRelationColor(sender, worth.getFactionId()).getChar());
+            worthPlaceholders.put("{relcolor}", "" + ChatColor.COLOR_CHAR + getRelationColor(plugin, sender, worth.getFactionId()).getChar());
             worthPlaceholders.put("{faction}", worth.getName());
             worthPlaceholders.put("{worth:total}", plugin.getSettings().getCurrencyFormat().format(worth.getTotalWorth()));
             worthPlaceholders.put("{count:total:spawner}", plugin.getSettings().getCountFormat().format(worth.getTotalSpawnerCount()));
 
-            String bodyMessage = insertPlaceholders(worth, replace(plugin.getSettings().getBodyMessage(), worthPlaceholders));
-            List<String> tooltip = insertPlaceholders(worth, replace(plugin.getSettings().getBodyTooltip(), worthPlaceholders));
+            String bodyMessage = insertPlaceholders(plugin.getSettings(), worth, replace(plugin.getSettings().getBodyMessage(), worthPlaceholders));
+            List<String> tooltip = insertPlaceholders(plugin.getSettings(), worth, replace(plugin.getSettings().getBodyTooltip(), worthPlaceholders));
 
             FancyMessage message = new FancyMessage(bodyMessage).tooltip(tooltip);
             message.send(sender);
@@ -147,62 +112,6 @@ public class FactionsTopCommand implements CommandExecutor, Listener, PluginServ
             FancyMessage footer = build(footerString, backMsg, backCmd, backTooltip, nextMsg, nextCmd, nextTooltip);
             footer.send(sender);
         }
-    }
-
-    private String insertPlaceholders(Replacer replacer, String key, String message) {
-        int index = message.indexOf('{' + key + ':');
-        if (index < 0) {
-            return message;
-        }
-
-        String first = message.substring(0, index);
-        String next = message.substring(index + key.length() + 2);
-
-        index = next.indexOf('}');
-
-        if (index < 0) {
-            return first + insertPlaceholders(replacer, key, next);
-        }
-
-        return first + replacer.replace(next.substring(0, index)) + insertPlaceholders(replacer, key, next.substring(index + 1));
-    }
-
-    private String insertPlaceholders(FactionWorth worth, String message) {
-        message = insertPlaceholders((s) -> {
-            double value = worth.getWorth(StringUtils.parseEnum(WorthType.class, s).orElse(null));
-            return plugin.getSettings().getCurrencyFormat().format(value);
-        }, "worth", message);
-
-        message = insertPlaceholders((s) -> {
-            int count = worth.getSpawners().getOrDefault(StringUtils.parseEnum(EntityType.class, s).orElse(null), 0);
-            return plugin.getSettings().getCountFormat().format(count);
-        }, "count:spawner", message);
-
-        message = insertPlaceholders((s) -> {
-            int count = worth.getMaterials().getOrDefault(StringUtils.parseEnum(Material.class, s).orElse(null), 0);
-            return plugin.getSettings().getCountFormat().format(count);
-        }, "count:material", message);
-
-        return message;
-    }
-
-    private List<String> insertPlaceholders(FactionWorth worth, List<String> messages) {
-        return messages.stream()
-                .map(message -> insertPlaceholders(worth, message))
-                .collect(Collectors.toList());
-    }
-
-    private String replace(String message, Map<String, String> placeholders) {
-        for (Map.Entry<String, String> entry : placeholders.entrySet()) {
-            message = message.replace(entry.getKey(), entry.getValue());
-        }
-        return message;
-    }
-
-    private List<String> replace(List<String> messages, Map<String, String> placeholders) {
-        return messages.stream()
-                .map(message -> replace(message, placeholders))
-                .collect(Collectors.toList());
     }
 
     private FancyMessage build(String message, String backText, String backCmd, List<String> backTooltip,
@@ -239,9 +148,5 @@ public class FactionsTopCommand implements CommandExecutor, Listener, PluginServ
         }
 
         return fancyMessage;
-    }
-
-    private ChatColor getRelationColor(CommandSender sender, String factionId) {
-        return sender instanceof Player ? plugin.getFactionsHook().getRelation((Player) sender, factionId) : ChatColor.WHITE;
     }
 }
