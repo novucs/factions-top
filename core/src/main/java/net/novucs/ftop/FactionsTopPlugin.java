@@ -38,6 +38,7 @@ import java.util.logging.Level;
 
 public final class FactionsTopPlugin extends JavaPlugin {
 
+    private final ChunkWorthTask chunkWorthTask = new ChunkWorthTask(this);
     private final Settings settings = new Settings(this);
     private final GuiManager guiManager = new GuiManager(this);
     private final SignManager signManager = new SignManager(this);
@@ -55,7 +56,6 @@ public final class FactionsTopPlugin extends JavaPlugin {
     ));
 
     private boolean active;
-    private ChunkWorthTask chunkWorthTask = new ChunkWorthTask(this);
     private CraftbukkitHook craftbukkitHook;
     private EconomyHook economyHook;
     private FactionsHook factionsHook;

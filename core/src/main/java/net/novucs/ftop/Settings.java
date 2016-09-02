@@ -28,7 +28,7 @@ import static net.novucs.ftop.util.StringUtils.format;
 
 public class Settings {
 
-    private static final int LATEST_VERSION = 3;
+    private static final int LATEST_VERSION = 4;
 
     private static final String HEADER = "FactionsTop by novucs.\n" +
             "\n" +
