@@ -21,6 +21,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.plugin.Plugin;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -71,6 +72,15 @@ public class Factions27x extends FactionsHook {
         return FactionColl.get().get(factionId).getMPlayers().stream()
                 .map(SenderEntity::getUuid)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ChunkPos> getClaims() {
+        List<ChunkPos> target = new LinkedList<>();
+        for (Set<PS> ps : BoardColl.get().getFactionToChunks().values()) {
+            target.addAll(psToChunkPos(ps));
+        }
+        return target;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

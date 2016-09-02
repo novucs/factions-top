@@ -16,6 +16,11 @@ commands:
     description: Displays top factions with a GUI.
     usage: /<command> [page]
 
+  ftoprecalculate:
+    aliases: [factionstoprecalculate, ftoprecalc, ftoprec]
+    description: Recalculates all existing claims.
+    usage: /<command>
+
   ftopreload:
     aliases: [factionstopreload, ftopr]
     description: Reloads the plugin configuration.
@@ -35,6 +40,7 @@ permissions:
   factionstop.admin:
     default: op
     children:
+      factionstop.recalculate: true
       factionstop.reload: true
       factionstop.sign.break: true
       factionstop.sign.create: true
@@ -46,6 +52,7 @@ permissions:
       factionstop.admin: true
 
   factionstop.use: {default: false}
+  factionstop.recalculate: {default: false}
   factionstop.reload: {default: false}
   factionstop.sign.break: {default: false}
   factionstop.sign.create: {default: false}

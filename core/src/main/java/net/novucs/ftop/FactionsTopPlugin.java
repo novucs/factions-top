@@ -1,10 +1,7 @@
 package net.novucs.ftop;
 
 import com.google.common.collect.Multimap;
-import net.novucs.ftop.command.GuiCommand;
-import net.novucs.ftop.command.ReloadCommand;
-import net.novucs.ftop.command.TextCommand;
-import net.novucs.ftop.command.VersionCommand;
+import net.novucs.ftop.command.*;
 import net.novucs.ftop.entity.BlockPos;
 import net.novucs.ftop.entity.ChunkPos;
 import net.novucs.ftop.entity.ChunkWorth;
@@ -17,6 +14,7 @@ import net.novucs.ftop.manager.GuiManager;
 import net.novucs.ftop.manager.SignManager;
 import net.novucs.ftop.manager.WorthManager;
 import net.novucs.ftop.task.ChunkWorthTask;
+import net.novucs.ftop.task.RecalculateTask;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -39,14 +37,16 @@ import java.util.logging.Level;
 public final class FactionsTopPlugin extends JavaPlugin {
 
     private final ChunkWorthTask chunkWorthTask = new ChunkWorthTask(this);
-    private final Settings settings = new Settings(this);
     private final GuiManager guiManager = new GuiManager(this);
+    private final RecalculateTask recalculateTask = new RecalculateTask(this);
+    private final Settings settings = new Settings(this);
     private final SignManager signManager = new SignManager(this);
     private final WorthManager worthManager = new WorthManager(this);
     private final Set<PluginService> services = new HashSet<>(Arrays.asList(
             signManager,
             worthManager,
             new GuiCommand(this),
+            new RecalculateCommand(this),
             new ReloadCommand(this),
             new TextCommand(this),
             new VersionCommand(this),
@@ -61,16 +61,20 @@ public final class FactionsTopPlugin extends JavaPlugin {
     private FactionsHook factionsHook;
     private DatabaseManager databaseManager;
 
-    public Settings getSettings() {
-        return settings;
-    }
-
     public ChunkWorthTask getChunkWorthTask() {
         return chunkWorthTask;
     }
 
     public GuiManager getGuiManager() {
         return guiManager;
+    }
+
+    public RecalculateTask getRecalculateTask() {
+        return recalculateTask;
+    }
+
+    public Settings getSettings() {
+        return settings;
     }
 
     public WorthManager getWorthManager() {

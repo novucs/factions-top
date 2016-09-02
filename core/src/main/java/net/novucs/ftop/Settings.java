@@ -131,6 +131,9 @@ public class Settings {
     private List<String> bodyTooltip;
     private String footerMessage;
     private String permissionMessage;
+    private String recalculationStartMessage;
+    private String recalculationFinishMessage;
+    private String recalculationStopMessage;
 
     // GUI settings.
     private List<String> guiCommandAliases;
@@ -146,6 +149,7 @@ public class Settings {
     private int signUpdateTicks;
     private int liquidUpdateTicks;
     private int chunkQueueSize;
+    private int recalculateChunksPerTick;
     private long chunkRecalculateMillis;
     private HikariConfig hikariConfig;
     private Map<WorthType, Boolean> enabled;
@@ -198,6 +202,18 @@ public class Settings {
         return permissionMessage;
     }
 
+    public String getRecalculationStartMessage() {
+        return recalculationStartMessage;
+    }
+
+    public String getRecalculationFinishMessage() {
+        return recalculationFinishMessage;
+    }
+
+    public String getRecalculationStopMessage() {
+        return recalculationStopMessage;
+    }
+
     public List<String> getGuiCommandAliases() {
         return guiCommandAliases;
     }
@@ -240,6 +256,10 @@ public class Settings {
 
     public int getChunkQueueSize() {
         return chunkQueueSize;
+    }
+
+    public int getRecalculateChunksPerTick() {
+        return recalculateChunksPerTick;
     }
 
     public long getChunkRecalculateMillis() {
@@ -453,6 +473,12 @@ public class Settings {
         bodyTooltip = format(getList("messages.body.tooltip", new ArrayList<>(WORTH_HOVER), String.class));
         footerMessage = format(getString("messages.footer", ""));
         permissionMessage = format(getString("messages.permission", "&cYou do not have permission."));
+        recalculationStartMessage = format(getString("messages.recalculation-start",
+                "&eAll faction totals are being resynchronized"));
+        recalculationFinishMessage = format(getString("messages.recalculation-finish",
+                "&eResynchronization of faction totals complete"));
+        recalculationStopMessage = format(getString("messages.recalculation-stop",
+                "&eResynchronization of faction totals stopped"));
 
         guiCommandAliases = getList("gui-settings.command-aliases", Collections.singletonList("f topgui"), String.class);
         guiLineCount = getInt("gui-settings.line-count", 1);
@@ -460,7 +486,8 @@ public class Settings {
         guiLayout = loadGuiLayout();
 
         commandAliases = getList("settings.command-aliases", Collections.singletonList("f top"), String.class);
-        ignoredFactionIds = getList("settings.ignored-faction-ids", Arrays.asList("none", "safezone", "warzone", "0", "-1", "-2"), String.class);
+        ignoredFactionIds = getList("settings.ignored-faction-ids",
+                Arrays.asList("none", "safezone", "warzone", "0", "-1", "-2"), String.class);
         disableChestEvents = getBoolean("settings.disable-chest-events", false);
         factionsPerPage = getInt("settings.factions-per-page", 9);
         signUpdateTicks = getInt("settings.sign-update-ticks", 1);
@@ -469,6 +496,7 @@ public class Settings {
             ((VaultEconomyHook) plugin.getEconomyHook()).setLiquidUpdateTicks(liquidUpdateTicks);
         }
         chunkQueueSize = getInt("settings.chunk-queue-size", 200);
+        recalculateChunksPerTick = getInt("settings.recalculate-chunks-per-tick", 50);
         chunkRecalculateMillis = getLong("settings.chunk-recalculate-millis", 120000);
 
         // Do not reload hikari configuration if already loaded.
@@ -487,7 +515,8 @@ public class Settings {
         addDefaults(RecalculateReason.class, "settings.perform-recalculate", true, Collections.emptyList());
         performRecalculate = parseStateMap(RecalculateReason.class, "settings.perform-recalculate", false);
 
-        addDefaults(RecalculateReason.class, "settings.bypass-recalculate-delay", false, Arrays.asList(RecalculateReason.UNLOAD, RecalculateReason.CLAIM));
+        addDefaults(RecalculateReason.class, "settings.bypass-recalculate-delay", false,
+                Arrays.asList(RecalculateReason.COMMAND, RecalculateReason.UNLOAD, RecalculateReason.CLAIM));
         bypassRecalculateDelay = parseStateMap(RecalculateReason.class, "settings.bypass-recalculate-delay", false);
 
         Map<String, Double> prices = ImmutableMap.of(

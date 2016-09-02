@@ -14,8 +14,9 @@ import java.util.regex.Pattern;
 
 public class CommandListener implements Listener, PluginService {
 
-    private static final Pattern RELOAD_COMMAND = Pattern.compile("f( |)(|top)( |)(r(|eload)($| .*))");
-    private static final Pattern VERSION_COMMAND = Pattern.compile("f( |)(|top)( |)(v(|ersion)($| .*))");
+    private static final Pattern VERSION_COMMAND = Pattern.compile("f( |)top( |)(v(ersion|))($| .*)");
+    private static final Pattern RECALCULATE_COMMAND = Pattern.compile("f( |)top( |)(rec(alc(ulate|)|))($| .*)");
+    private static final Pattern RELOAD_COMMAND = Pattern.compile("f( |)top( |)(r(eload|))($| .*)");
     private final FactionsTopPlugin plugin;
 
     public CommandListener(FactionsTopPlugin plugin) {
@@ -44,11 +45,15 @@ public class CommandListener implements Listener, PluginService {
 
     private String attemptRebind(String command) {
         if (VERSION_COMMAND.matcher(command).matches()) {
-            return "ftopversion";
+            return command.replaceFirst("f( |)top( |)(v(ersion|))", "ftopversion");
+        }
+
+        if (RECALCULATE_COMMAND.matcher(command).matches()) {
+            return command.replaceFirst("f( |)top( |)(rec(alc(ulate|)|))", "ftoprecalculate");
         }
 
         if (RELOAD_COMMAND.matcher(command).matches()) {
-            return "ftopreload";
+            return command.replaceFirst("f( |)top( |)(r(eload|))", "ftopreload");
         }
 
         String newCommand = replaceFirst(command, "ftop", plugin.getSettings().getCommandAliases());

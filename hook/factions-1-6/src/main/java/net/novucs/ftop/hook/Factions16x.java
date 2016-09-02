@@ -15,11 +15,13 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.plugin.Plugin;
 
-import java.util.List;
-import java.util.UUID;
+import java.lang.reflect.Field;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Factions16x extends FactionsHook {
+
+    private Map<FLocation, String> flocationIds;
 
     public Factions16x(Plugin plugin) {
         super(plugin);
@@ -29,6 +31,22 @@ public class Factions16x extends FactionsHook {
     public String getFactionAt(String worldName, int chunkX, int chunkZ) {
         Faction faction = Board.getInstance().getFactionAt(new FLocation(worldName, chunkX, chunkZ));
         return faction.getId();
+    }
+
+    @Override
+    public void initialize() {
+        try {
+            Field flocationIdsField = Board.class.getDeclaredField("flocationIds");
+            flocationIdsField.setAccessible(true);
+            flocationIds = (Map<FLocation, String>) flocationIdsField.get(null);
+            flocationIdsField.setAccessible(false);
+        } catch (NoSuchFieldException | IllegalAccessException ex) {
+            getPlugin().getLogger().severe("Factions version found is incompatible!");
+            getPlugin().getServer().getPluginManager().disablePlugin(getPlugin());
+            return;
+        }
+
+        super.initialize();
     }
 
     @Override
@@ -64,6 +82,13 @@ public class Factions16x extends FactionsHook {
         return Factions.getInstance().getFactionById(factionId).getFPlayers().stream()
                 .map(fplayer -> UUID.fromString(fplayer.getId()))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ChunkPos> getClaims() {
+        List<ChunkPos> target = new LinkedList<>();
+        target.addAll(getChunkPos(flocationIds.keySet()));
+        return target;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -119,6 +144,10 @@ public class Factions16x extends FactionsHook {
         if (player != null) {
             callEvent(new FactionLeaveEvent(factionId, player));
         }
+    }
+
+    private Set<ChunkPos> getChunkPos(Set<FLocation> locations) {
+        return locations.stream().map(this::getChunkPos).collect(Collectors.toSet());
     }
 
     private ChunkPos getChunkPos(FLocation location) {

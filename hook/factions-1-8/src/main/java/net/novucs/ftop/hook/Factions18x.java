@@ -17,9 +17,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.Field;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Factions18x extends FactionsHook {
@@ -87,6 +85,13 @@ public class Factions18x extends FactionsHook {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<ChunkPos> getClaims() {
+        List<ChunkPos> target = new LinkedList<>();
+        target.addAll(getChunkPos(flocationIds.keySet()));
+        return target;
+    }
+
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDisband(com.massivecraft.factions.event.FactionDisbandEvent event) {
         String factionId = event.getFaction().getId();
@@ -142,6 +147,10 @@ public class Factions18x extends FactionsHook {
         if (player != null) {
             callEvent(new FactionLeaveEvent(factionId, player));
         }
+    }
+
+    private Set<ChunkPos> getChunkPos(Set<FLocation> locations) {
+        return locations.stream().map(this::getChunkPos).collect(Collectors.toSet());
     }
 
     private ChunkPos getChunkPos(FLocation location) {
