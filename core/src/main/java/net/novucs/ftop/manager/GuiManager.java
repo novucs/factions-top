@@ -34,7 +34,7 @@ public class GuiManager {
         int maxPage = Math.max((int) Math.ceil((double) factions.size() / entries), 1);
         page = Math.max(1, Math.min(maxPage, page));
 
-        int spacer = entries * --page;
+        int spacer = entries * (page - 1);
         ListIterator<FactionWorth> it = factions.listIterator(spacer);
 
         int lines = plugin.getSettings().getGuiLineCount() * 9;

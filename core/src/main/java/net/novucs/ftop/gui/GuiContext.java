@@ -60,11 +60,11 @@ public class GuiContext {
     }
 
     public boolean hasNextPage() {
-        return thisPage != maxPage;
+        return thisPage < maxPage;
     }
 
     public boolean hasPrevPage() {
-        return thisPage != 0;
+        return thisPage > 1;
     }
 
     public int getCurrentRank() {

@@ -17,6 +17,8 @@ public class GuiBackButton extends GuiBiStateButton {
 
     @Override
     public void handleClick(GuiContext context) {
-        context.getPlugin().getServer().dispatchCommand(context.getPlayer(), "ftopgui " + (context.getThisPage() - 1));
+        if (context.hasPrevPage()) {
+            context.getPlugin().getGuiManager().sendGui(context.getPlayer(), context.getThisPage() - 1);
+        }
     }
 }
