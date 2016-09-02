@@ -56,7 +56,7 @@ public class GuiFactionList implements GuiElement {
 
             FactionWorth worth = context.getWorthIterator().next();
             Map<String, String> worthPlaceholders = new HashMap<>(placeholders);
-            worthPlaceholders.put("{rank}", Integer.toString(counter));
+            worthPlaceholders.put("{rank}", Integer.toString(context.getAndIncrementRank()));
             worthPlaceholders.put("{relcolor}", "" + ChatColor.COLOR_CHAR +
                     getRelationColor(plugin, context.getPlayer(), worth.getFactionId()).getChar());
             worthPlaceholders.put("{faction}", worth.getName());

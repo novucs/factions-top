@@ -75,6 +75,10 @@ public class GuiContext {
         this.currentRank = currentRank;
     }
 
+    public int getAndIncrementRank() {
+        return currentRank++;
+    }
+
     public int getSlot() {
         return slot;
     }

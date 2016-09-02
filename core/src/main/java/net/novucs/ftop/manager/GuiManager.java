@@ -42,7 +42,7 @@ public class GuiManager {
         Inventory inventory = plugin.getServer().createInventory(null, lines, name);
 
         GuiContext context = new GuiContext(plugin, player, inventory, maxPage, page, it);
-        context.setCurrentRank(spacer);
+        context.setCurrentRank(spacer + 1);
 
         plugin.getSettings().getGuiLayout().render(context);
         inventories.put(inventory, context);
