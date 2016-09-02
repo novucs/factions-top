@@ -8,6 +8,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 
 public class GuiListener implements Listener, PluginService {
 
@@ -47,5 +48,10 @@ public class GuiListener implements Listener, PluginService {
         if (context != null) {
             event.setCancelled(true);
         }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void unloadInventory(InventoryCloseEvent event) {
+        plugin.getGuiManager().unloadGui(event.getInventory());
     }
 }

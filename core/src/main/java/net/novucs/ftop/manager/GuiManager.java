@@ -24,6 +24,10 @@ public class GuiManager {
         return inventories.get(inventory);
     }
 
+    public void unloadGui(Inventory inventory) {
+        inventories.remove(inventory);
+    }
+
     public void sendGui(Player player, int page) {
         int entries = plugin.getSettings().getGuiLayout().getFactionsPerPage();
         List<FactionWorth> factions = plugin.getWorthManager().getOrderedFactions();
