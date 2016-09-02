@@ -1,9 +1,8 @@
 package net.novucs.ftop.task;
 
-import net.novucs.ftop.entity.ChunkPos;
 import net.novucs.ftop.FactionsTopPlugin;
-import net.novucs.ftop.PluginService;
 import net.novucs.ftop.WorthType;
+import net.novucs.ftop.entity.ChunkPos;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
 
@@ -11,28 +10,15 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ChunkWorthTask extends Thread implements PluginService {
+public class ChunkWorthTask extends Thread {
 
     private final FactionsTopPlugin plugin;
-    private final AtomicBoolean running = new AtomicBoolean(false);
     private final BlockingQueue<ChunkSnapshot> queue = new LinkedBlockingQueue<>();
 
     public ChunkWorthTask(FactionsTopPlugin plugin) {
         super("factions-top-chunk-task");
         this.plugin = plugin;
-    }
-
-    @Override
-    public void initialize() {
-        running.set(true);
-        start();
-    }
-
-    @Override
-    public void terminate() {
-        running.set(false);
     }
 
     public void queue(ChunkSnapshot snapshot) {
@@ -45,12 +31,12 @@ public class ChunkWorthTask extends Thread implements PluginService {
 
     @Override
     public void run() {
-        while (running.get()) {
+        while (!isInterrupted()) {
             ChunkSnapshot snapshot;
             try {
                 snapshot = queue.take();
             } catch (InterruptedException e) {
-                throw new RuntimeException("An exception occurred while attempting to take from the chunk snapshot queue.", e);
+                break;
             }
 
             ChunkPos pos = ChunkPos.of(snapshot);

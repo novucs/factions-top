@@ -39,12 +39,10 @@ import java.util.logging.Level;
 public final class FactionsTopPlugin extends JavaPlugin {
 
     private final Settings settings = new Settings(this);
-    private final ChunkWorthTask chunkWorthTask = new ChunkWorthTask(this);
     private final GuiManager guiManager = new GuiManager(this);
     private final SignManager signManager = new SignManager(this);
     private final WorthManager worthManager = new WorthManager(this);
     private final Set<PluginService> services = new HashSet<>(Arrays.asList(
-            chunkWorthTask,
             signManager,
             worthManager,
             new GuiCommand(this),
@@ -57,6 +55,7 @@ public final class FactionsTopPlugin extends JavaPlugin {
     ));
 
     private boolean active;
+    private ChunkWorthTask chunkWorthTask = new ChunkWorthTask(this);
     private CraftbukkitHook craftbukkitHook;
     private EconomyHook economyHook;
     private FactionsHook factionsHook;
@@ -113,10 +112,17 @@ public final class FactionsTopPlugin extends JavaPlugin {
         services.add(factionsHook);
         loadSettings();
         loadDatabase();
+        chunkWorthTask.start();
     }
 
     @Override
     public void onDisable() {
+        chunkWorthTask.interrupt();
+        try {
+            chunkWorthTask.join();
+        } catch (InterruptedException ignore) {
+        }
+
         try {
             databaseManager.save(worthManager.getChunks());
         } catch (SQLException e) {
