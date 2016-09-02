@@ -34,13 +34,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class WorldListener extends BukkitRunnable implements Listener, PluginService {
+public class WorthListener extends BukkitRunnable implements Listener, PluginService {
 
     private final FactionsTopPlugin plugin;
     private final Map<BlockPos, ChestWorth> chests = new HashMap<>();
     private final Set<String> recentDisbands = new HashSet<>();
 
-    public WorldListener(FactionsTopPlugin plugin) {
+    public WorthListener(FactionsTopPlugin plugin) {
         this.plugin = plugin;
     }
 

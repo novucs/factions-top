@@ -11,7 +11,7 @@ import net.novucs.ftop.entity.ChunkWorth;
 import net.novucs.ftop.hook.*;
 import net.novucs.ftop.listener.CommandListener;
 import net.novucs.ftop.listener.GuiListener;
-import net.novucs.ftop.listener.WorldListener;
+import net.novucs.ftop.listener.WorthListener;
 import net.novucs.ftop.manager.DatabaseManager;
 import net.novucs.ftop.manager.GuiManager;
 import net.novucs.ftop.manager.SignManager;
@@ -53,7 +53,7 @@ public final class FactionsTopPlugin extends JavaPlugin {
             new VersionCommand(this),
             new CommandListener(this),
             new GuiListener(this),
-            new WorldListener(this)
+            new WorthListener(this)
     ));
 
     private boolean active;
