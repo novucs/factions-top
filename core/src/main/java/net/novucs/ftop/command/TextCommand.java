@@ -94,7 +94,7 @@ public class TextCommand implements CommandExecutor, PluginService {
             FactionWorth worth = it.next();
 
             Map<String, String> worthPlaceholders = new HashMap<>(placeholders);
-            worthPlaceholders.put("{rank}", Integer.toString(i + 1));
+            worthPlaceholders.put("{rank}", Integer.toString(spacer + i + 1));
             worthPlaceholders.put("{relcolor}", "" + ChatColor.COLOR_CHAR + getRelationColor(plugin, sender, worth.getFactionId()).getChar());
             worthPlaceholders.put("{faction}", worth.getName());
             worthPlaceholders.put("{worth:total}", plugin.getSettings().getCurrencyFormat().format(worth.getTotalWorth()));
