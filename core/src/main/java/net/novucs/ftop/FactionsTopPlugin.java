@@ -4,6 +4,7 @@ import com.google.common.collect.Multimap;
 import net.novucs.ftop.command.GuiCommand;
 import net.novucs.ftop.command.ReloadCommand;
 import net.novucs.ftop.command.TextCommand;
+import net.novucs.ftop.command.VersionCommand;
 import net.novucs.ftop.entity.BlockPos;
 import net.novucs.ftop.entity.ChunkPos;
 import net.novucs.ftop.entity.ChunkWorth;
@@ -49,6 +50,7 @@ public final class FactionsTopPlugin extends JavaPlugin {
             new GuiCommand(this),
             new ReloadCommand(this),
             new TextCommand(this),
+            new VersionCommand(this),
             new CommandListener(this),
             new GuiListener(this),
             new WorldListener(this)

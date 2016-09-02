@@ -21,6 +21,11 @@ commands:
     description: Reloads the plugin configuration.
     usage: /<command>
 
+  ftopversion:
+    aliases: [factionstopversion, ftopv]
+    description: Sends the version message.
+    usage: /<command>
+
 permissions:
   factionstop.user:
     default: true

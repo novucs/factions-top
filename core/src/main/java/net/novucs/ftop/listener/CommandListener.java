@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 public class CommandListener implements Listener, PluginService {
 
     private static final Pattern RELOAD_COMMAND = Pattern.compile("f( |)(|top)( |)(r(|eload)($| .*))");
+    private static final Pattern VERSION_COMMAND = Pattern.compile("f( |)(|top)( |)(v(|ersion)($| .*))");
     private final FactionsTopPlugin plugin;
 
     public CommandListener(FactionsTopPlugin plugin) {
@@ -42,6 +43,10 @@ public class CommandListener implements Listener, PluginService {
     }
 
     private String attemptRebind(String command) {
+        if (VERSION_COMMAND.matcher(command).matches()) {
+            return "ftopversion";
+        }
+
         if (RELOAD_COMMAND.matcher(command).matches()) {
             return "ftopreload";
         }
