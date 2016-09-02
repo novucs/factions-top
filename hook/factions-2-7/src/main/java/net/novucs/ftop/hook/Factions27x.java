@@ -62,7 +62,8 @@ public class Factions27x extends FactionsHook {
 
     @Override
     public String getOwnerName(String factionId) {
-        return FactionColl.get().get(factionId).getLeader().getName();
+        MPlayer owner = FactionColl.get().get(factionId).getLeader();
+        return owner == null ? null : owner.getName();
     }
 
     @Override
