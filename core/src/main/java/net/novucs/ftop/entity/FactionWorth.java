@@ -16,6 +16,7 @@ public class FactionWorth implements Comparable<FactionWorth> {
     private final Map<EntityType, Integer> spawners = new EnumMap<>(EntityType.class);
     private String name;
     private double totalWorth = 0;
+    private int totalSpawners = 0;
 
     public FactionWorth(String factionId, String name) {
         this.factionId = factionId;
@@ -39,11 +40,7 @@ public class FactionWorth implements Comparable<FactionWorth> {
     }
 
     public int getTotalSpawnerCount() {
-        int target = 0;
-        for (int count : spawners.values()) {
-            target += count;
-        }
-        return target;
+        return totalSpawners;
     }
 
     public String getName() {
@@ -73,10 +70,12 @@ public class FactionWorth implements Comparable<FactionWorth> {
     }
 
     public void addSpawners(Map<EntityType, Integer> spawners) {
+        spawners.values().forEach(count -> totalSpawners += count);
         add(spawners, this.spawners);
     }
 
     public void removeSpawners(Map<EntityType, Integer> spawners) {
+        spawners.values().forEach(count -> totalSpawners -= count);
         remove(spawners, this.spawners);
     }
 
