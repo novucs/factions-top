@@ -12,21 +12,19 @@ This Bukkit plugin adds a command to the well known factions plugin to display a
 
 ## Usage
 ### Commands
-| **Command**  | **Description**            |
-| -------------| ---------------------------|
-| /ftop <page> | List all top factions      |
-| /ftop reload | Reload the plugin settings |
-
-### Signs
-Signs can be used to display a faction at a specific rank. Example:
-
-![](./img/sign-creation.png "Sign Creation")
-![](./img/sign-complete.png "Sign Complete")
+| **Command**      | **Description**                 |
+| -----------------| --------------------------------|
+| /ftop <page>     | List all top factions           |
+| /ftopgui <page>  | List all top factions with GUI  |
+| /ftoprecalculate | Recalculates all faction values |
+| /ftopreload      | Reload the plugin settings      |
+| /ftopversion     | View the plugin version         |
 
 ### Permissions
-| **Permission**         | **Description**                 | **Default** |
-| -----------------------| ------------------------------- | ----------- |
-| factionstop.use        | List all top factions           | everyone    |
-| factionstop.reload     | Reload the plugin settings      | operator    |
-| factionstop.sign.break | Break FactionsTop ranking signs | operator    |
-| factionstop.sign.place | Place FactionsTop ranking signs | operator    |
+| **Permission**          | **Description**                 | **Default** |
+| ------------------------| ------------------------------- | ----------- |
+| factionstop.use         | List all top factions           | everyone    |
+| factionstop.recalculate | Recalculate all faction values  | operator    |
+| factionstop.reload      | Reload the plugin settings      | operator    |
+| factionstop.sign.break  | Break FactionsTop ranking signs | operator    |
+| factionstop.sign.place  | Place FactionsTop ranking signs | operator    |
