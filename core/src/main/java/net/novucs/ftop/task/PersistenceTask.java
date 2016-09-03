@@ -63,7 +63,7 @@ public class PersistenceTask extends Thread {
         chunkQueue.drainTo(chunks);
 
         try {
-            plugin.getDatabaseManager().save(chunks);
+            plugin.getDatabaseManager().saveChunks(chunks);
         } catch (SQLException e) {
             plugin.getLogger().log(Level.SEVERE, "Failed to persist chunk data", e);
         }
@@ -72,6 +72,11 @@ public class PersistenceTask extends Thread {
     private void persistFactions() {
         List<FactionWorth> factions = new LinkedList<>();
         factionQueue.drainTo(factions);
-        // TODO: Save factions to database.
+
+        try {
+            plugin.getDatabaseManager().saveFactions(factions);
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.SEVERE, "Failed to persist faction data", e);
+        }
     }
 }

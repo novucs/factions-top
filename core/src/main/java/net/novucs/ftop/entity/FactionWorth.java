@@ -31,6 +31,10 @@ public class FactionWorth implements Comparable<FactionWorth> {
         return worth.getOrDefault(worthType, 0d);
     }
 
+    public Map<WorthType, Double> getWorth() {
+        return worth;
+    }
+
     public Map<Material, Integer> getMaterials() {
         return Collections.unmodifiableMap(materials);
     }

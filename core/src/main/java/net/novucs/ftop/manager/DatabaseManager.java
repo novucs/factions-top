@@ -8,6 +8,7 @@ import net.novucs.ftop.WorthType;
 import net.novucs.ftop.entity.BlockPos;
 import net.novucs.ftop.entity.ChunkPos;
 import net.novucs.ftop.entity.ChunkWorth;
+import net.novucs.ftop.entity.FactionWorth;
 import net.novucs.ftop.util.GenericUtils;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
@@ -123,6 +124,47 @@ public class DatabaseManager {
                 "`rank` INT NOT NULL, " +
                 "PRIMARY KEY (`id`), " +
                 "FOREIGN KEY (`block_id`) REFERENCES block(`id`))");
+        statement.executeUpdate();
+
+        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `faction` (" +
+                "`id` VARCHAR(40) NOT NULL, " +
+                "`name` VARCHAR(40) NOT NULL UNIQUE, " +
+                "`total_worth` FLOAT NOT NULL, " +
+                "`total_spawners` INT NOT NULL, " +
+                "PRIMARY KEY (`id`))");
+        statement.executeUpdate();
+
+        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `faction_worth` (" +
+                "`id` INT NOT NULL AUTO_INCREMENT, " +
+                "`faction_id` VARCHAR(40) NOT NULL, " +
+                "`worth_id` INT NOT NULL, " +
+                "`worth` FLOAT NOT NULL, " +
+                "PRIMARY KEY (`id`), " +
+                "FOREIGN KEY (`faction_id`) REFERENCES faction(`id`), " +
+                "FOREIGN KEY (`worth_id`) REFERENCES worth(`id`), " +
+                "UNIQUE (`faction_id`, `worth_id`))");
+        statement.executeUpdate();
+
+        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `faction_material_count` (" +
+                "`id` INT NOT NULL AUTO_INCREMENT, " +
+                "`faction_id` VARCHAR(40) NOT NULL, " +
+                "`material_id` INT NOT NULL, " +
+                "`count` INT NOT NULL, " +
+                "PRIMARY KEY (`id`), " +
+                "FOREIGN KEY (`faction_id`) REFERENCES faction(`id`), " +
+                "FOREIGN KEY (`material_id`) REFERENCES material(`id`), " +
+                "UNIQUE (`faction_id`, `material_id`))");
+        statement.executeUpdate();
+
+        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `faction_spawner_count` (" +
+                "`id` INT NOT NULL AUTO_INCREMENT, " +
+                "`faction_id` VARCHAR(40) NOT NULL, " +
+                "`spawner_id` INT NOT NULL, " +
+                "`count` INT NOT NULL, " +
+                "PRIMARY KEY (`id`), " +
+                "FOREIGN KEY (`faction_id`) REFERENCES faction(`id`), " +
+                "FOREIGN KEY (`spawner_id`) REFERENCES spawner(`id`), " +
+                "UNIQUE (`faction_id`, `spawner_id`))");
         statement.executeUpdate();
     }
 
@@ -275,7 +317,7 @@ public class DatabaseManager {
         return target;
     }
 
-    public void save(Collection<Map.Entry<ChunkPos, ChunkWorth>> chunkWorthEntries) throws SQLException {
+    public void saveChunks(Collection<Map.Entry<ChunkPos, ChunkWorth>> chunkWorthEntries) throws SQLException {
         Connection connection = dataSource.getConnection();
         init(connection);
 
@@ -606,5 +648,216 @@ public class DatabaseManager {
         }
 
         return -1;
+    }
+
+    public void saveFactions(Collection<FactionWorth> factions) throws SQLException {
+        Connection connection = dataSource.getConnection();
+        init(connection);
+
+        for (FactionWorth faction : factions) {
+            saveFaction(connection, faction);
+        }
+
+        connection.close();
+    }
+
+    private boolean isFactionSaved(Connection connection, FactionWorth faction) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement("SELECT `id` FROM `faction` WHERE `id` = ?");
+        statement.setString(1, faction.getFactionId());
+        return statement.executeQuery().next();
+    }
+
+    private void saveFaction(Connection connection, FactionWorth faction) throws SQLException {
+        if (isFactionSaved(connection, faction)) {
+            updateFaction(connection, faction);
+        } else {
+            createFaction(connection, faction);
+        }
+
+        saveFactionWorth(connection, faction);
+        saveFactionMaterials(connection, faction);
+        saveFactionSpawners(connection, faction);
+    }
+
+    private void createFaction(Connection connection, FactionWorth faction) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement("INSERT INTO `faction` (`id`, `name`, `total_worth`, `total_spawners`) VALUES(?, ?, ?, ?)");
+        statement.setString(1, faction.getFactionId());
+        statement.setString(2, faction.getName());
+        statement.setDouble(3, faction.getTotalWorth());
+        statement.setInt(4, faction.getTotalSpawnerCount());
+        statement.executeUpdate();
+    }
+
+    private void updateFaction(Connection connection, FactionWorth faction) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement("UPDATE `faction` " +
+                "SET `name` = ?, `total_worth` = ?, `total_spawners` = ? " +
+                "WHERE `id` = ?");
+        statement.setString(1, faction.getName());
+        statement.setDouble(2, faction.getTotalWorth());
+        statement.setInt(3, faction.getTotalSpawnerCount());
+        statement.setString(4, faction.getFactionId());
+        statement.executeUpdate();
+    }
+
+    private void saveFactionWorth(Connection connection, FactionWorth faction) throws SQLException {
+        Map<Integer, WorthType> worthMap = getWorthMap(connection);
+        PreparedStatement statement = connection.prepareStatement("SELECT `worth_id`, `worth` " +
+                "FROM `faction_worth` " +
+                "WHERE `faction_id` = ?");
+        statement.setString(1, faction.getFactionId());
+        ResultSet set = statement.executeQuery();
+
+        Set<WorthType> worthTypes = Collections.newSetFromMap(new EnumMap<>(WorthType.class));
+
+        while (set.next()) {
+            int worthId = set.getInt("worth_id");
+            WorthType type = worthMap.getOrDefault(worthId, null);
+            if (type == null) {
+                continue;
+            }
+
+            worthTypes.add(type);
+
+            double worth = set.getDouble("worth");
+            double localWorth = faction.getWorth(type);
+
+            if (worth == localWorth) {
+                continue;
+            }
+
+            statement = connection.prepareStatement("DELETE FROM `faction_worth`" +
+                    "WHERE `faction_id` = ? AND `worth_id` = ?");
+            statement.setString(1, faction.getFactionId());
+            statement.setInt(2, worthId);
+            statement.executeUpdate();
+        }
+
+        for (Map.Entry<WorthType, Double> entry : faction.getWorth().entrySet()) {
+            int worthId = saveWorth(connection, entry.getKey());
+
+            if (worthTypes.contains(entry.getKey())) {
+                statement = connection.prepareStatement("UPDATE `faction_worth` " +
+                        "SET `worth` = ? " +
+                        "WHERE `faction_id` = ? AND `worth_id` = ?");
+                statement.setDouble(1, entry.getValue());
+                statement.setString(2, faction.getFactionId());
+                statement.setInt(3, worthId);
+                statement.executeUpdate();
+            } else {
+                statement = connection.prepareStatement("INSERT INTO `faction_worth` (`faction_id`, `worth_id`, `worth`) VALUES (?, ?, ?)");
+                statement.setString(1, faction.getFactionId());
+                statement.setInt(2, worthId);
+                statement.setDouble(3, entry.getValue());
+                statement.executeUpdate();
+            }
+        }
+    }
+
+    private void saveFactionMaterials(Connection connection, FactionWorth faction) throws SQLException {
+        Map<Integer, Material> materialMap = getMaterialMap(connection);
+        PreparedStatement statement = connection.prepareStatement("SELECT `material_id`, `count` " +
+                "FROM `faction_material_count` " +
+                "WHERE `faction_id` = ?");
+        statement.setString(1, faction.getFactionId());
+        ResultSet set = statement.executeQuery();
+
+        Set<Material> materials = Collections.newSetFromMap(new EnumMap<>(Material.class));
+
+        while (set.next()) {
+            int materialId = set.getInt("material_id");
+            Material material = materialMap.getOrDefault(materialId, null);
+            if (material == null) {
+                continue;
+            }
+
+            materials.add(material);
+
+            int count = set.getInt("count");
+            int localCount = faction.getMaterials().getOrDefault(material, 0);
+
+            if (count == localCount) {
+                continue;
+            }
+
+            statement = connection.prepareStatement("DELETE FROM `faction_material_count`" +
+                    "WHERE `faction_id` = ? AND `material_id` = ?");
+            statement.setString(1, faction.getFactionId());
+            statement.setInt(2, materialId);
+            statement.executeUpdate();
+        }
+
+        for (Map.Entry<Material, Integer> entry : faction.getMaterials().entrySet()) {
+            int materialId = saveMaterial(connection, entry.getKey());
+
+            if (materials.contains(entry.getKey())) {
+                statement = connection.prepareStatement("UPDATE `faction_material_count` " +
+                        "SET `count` = ? " +
+                        "WHERE `faction_id` = ? AND `material_id` = ?");
+                statement.setDouble(1, entry.getValue());
+                statement.setString(2, faction.getFactionId());
+                statement.setInt(3, materialId);
+                statement.executeUpdate();
+            } else {
+                statement = connection.prepareStatement("INSERT INTO `faction_material_count` (`faction_id`, `material_id`, `count`) VALUES (?, ?, ?)");
+                statement.setString(1, faction.getFactionId());
+                statement.setInt(2, materialId);
+                statement.setDouble(3, entry.getValue());
+                statement.executeUpdate();
+            }
+        }
+    }
+
+    private void saveFactionSpawners(Connection connection, FactionWorth faction) throws SQLException {
+        Map<Integer, EntityType> spawnerMap = getSpawnerMap(connection);
+        PreparedStatement statement = connection.prepareStatement("SELECT `spawner_id`, `count` " +
+                "FROM `faction_spawner_count` " +
+                "WHERE `faction_id` = ?");
+        statement.setString(1, faction.getFactionId());
+        ResultSet set = statement.executeQuery();
+
+        Set<EntityType> spawners = Collections.newSetFromMap(new EnumMap<>(EntityType.class));
+
+        while (set.next()) {
+            int spawnerId = set.getInt("spawner_id");
+            EntityType spawner = spawnerMap.getOrDefault(spawnerId, null);
+            if (spawner == null) {
+                continue;
+            }
+
+            spawners.add(spawner);
+
+            int count = set.getInt("count");
+            int localCount = faction.getSpawners().getOrDefault(spawner, 0);
+
+            if (count == localCount) {
+                continue;
+            }
+
+            statement = connection.prepareStatement("DELETE FROM `faction_spawner_count`" +
+                    "WHERE `faction_id` = ? AND `spawner_id` = ?");
+            statement.setString(1, faction.getFactionId());
+            statement.setInt(2, spawnerId);
+            statement.executeUpdate();
+        }
+
+        for (Map.Entry<EntityType, Integer> entry : faction.getSpawners().entrySet()) {
+            int spawnerId = saveSpawner(connection, entry.getKey());
+
+            if (spawners.contains(entry.getKey())) {
+                statement = connection.prepareStatement("UPDATE `faction_spawner_count` " +
+                        "SET `count` = ? " +
+                        "WHERE `faction_id` = ? AND `spawner_id` = ?");
+                statement.setDouble(1, entry.getValue());
+                statement.setString(2, faction.getFactionId());
+                statement.setInt(3, spawnerId);
+                statement.executeUpdate();
+            } else {
+                statement = connection.prepareStatement("INSERT INTO `faction_spawner_count` (`faction_id`, `spawner_id`, `count`) VALUES (?, ?, ?)");
+                statement.setString(1, faction.getFactionId());
+                statement.setInt(2, spawnerId);
+                statement.setDouble(3, entry.getValue());
+                statement.executeUpdate();
+            }
+        }
     }
 }
