@@ -20,7 +20,7 @@ public class RecalculateTask implements PluginService, Runnable {
 
     @Override
     public void initialize() {
-        if (toRecalculate.isEmpty()) {
+        if (!isRunning()) {
             toRecalculate.addAll(plugin.getFactionsHook().getClaims());
             taskId = plugin.getServer().getScheduler().runTaskTimer(plugin, this, 1, 1).getTaskId();
             plugin.getServer().broadcastMessage(plugin.getSettings().getRecalculationStartMessage());
@@ -31,9 +31,13 @@ public class RecalculateTask implements PluginService, Runnable {
 
     @Override
     public void terminate() {
-        toRecalculate.clear();
-        plugin.getServer().getScheduler().cancelTask(taskId);
-        plugin.getServer().broadcastMessage(plugin.getSettings().getRecalculationStopMessage());
+        if (isRunning()) {
+            toRecalculate.clear();
+            plugin.getServer().getScheduler().cancelTask(taskId);
+            plugin.getServer().broadcastMessage(plugin.getSettings().getRecalculationStopMessage());
+        } else {
+            throw new IllegalStateException("No recalculation task was running");
+        }
     }
 
     public boolean isRunning() {

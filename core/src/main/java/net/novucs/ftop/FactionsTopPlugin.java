@@ -115,12 +115,25 @@ public final class FactionsTopPlugin extends JavaPlugin {
         setupSlf4j();
         services.add(factionsHook);
         loadSettings();
-        loadDatabase();
+        boolean newDatabase = loadDatabase();
         chunkWorthTask.start();
+
+        if (newDatabase && !recalculateTask.isRunning()) {
+            getLogger().info("----- IMPORTANT -----");
+            getLogger().info("Detected a fresh database");
+            getLogger().info("Starting chunk resynchronization");
+            getLogger().info("To cancel, type: /ftoprec cancel");
+            getLogger().info("----- IMPORTANT -----");
+            recalculateTask.initialize();
+        }
     }
 
     @Override
     public void onDisable() {
+        if (recalculateTask.isRunning()) {
+            recalculateTask.terminate();
+        }
+
         getLogger().info("Shutting down chunk worth task...");
         chunkWorthTask.interrupt();
         try {
@@ -141,7 +154,7 @@ public final class FactionsTopPlugin extends JavaPlugin {
         active = false;
     }
 
-    private void loadDatabase() {
+    private boolean loadDatabase() {
         boolean usingH2 = settings.getHikariConfig().getJdbcUrl().startsWith("jdbc:h2");
 
         if (usingH2) {
@@ -159,12 +172,13 @@ public final class FactionsTopPlugin extends JavaPlugin {
             getLogger().log(Level.SEVERE, "The errors are as follows:", e);
             getLogger().severe("Disabling FactionsTop . . .");
             getServer().getPluginManager().disablePlugin(this);
-            return;
+            return false;
         }
 
         worthManager.loadChunks(loadedChunks);
         worthManager.updateAllFactions();
         signManager.setSigns(loadedSigns);
+        return loadedChunks.isEmpty();
     }
 
     private void setupSlf4j() {
