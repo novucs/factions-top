@@ -2,7 +2,10 @@ package net.novucs.ftop.manager;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import net.novucs.ftop.*;
+import net.novucs.ftop.FactionsTopPlugin;
+import net.novucs.ftop.PluginService;
+import net.novucs.ftop.RecalculateReason;
+import net.novucs.ftop.WorthType;
 import net.novucs.ftop.entity.ChunkPos;
 import net.novucs.ftop.entity.ChunkWorth;
 import net.novucs.ftop.entity.FactionWorth;
@@ -87,9 +90,19 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
             }
         }
 
-        for (Map.Entry<String, FactionWorth> faction : factions.entrySet()) {
-            List<UUID> members = plugin.getFactionsHook().getMembers(faction.getKey());
-            plugin.getEconomyHook().getBalances(faction.getKey(), members).forEach(faction.getValue()::addWorth);
+        if (plugin.getSettings().isEnabled(WorthType.PLAYER_BALANCE)) {
+            for (FactionWorth faction : factions.values()) {
+                List<UUID> members = plugin.getFactionsHook().getMembers(faction.getFactionId());
+                double balance = plugin.getEconomyHook().getTotalBalance(members);
+                faction.addWorth(WorthType.PLAYER_BALANCE, balance);
+            }
+        }
+
+        if (plugin.getSettings().isEnabled(WorthType.FACTION_BALANCE)) {
+            for (FactionWorth faction : factions.values()) {
+                double balance = plugin.getEconomyHook().getFactionBalance(faction.getFactionId());
+                faction.addWorth(WorthType.FACTION_BALANCE, balance);
+            }
         }
 
         orderedFactions.clear();

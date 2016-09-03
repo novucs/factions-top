@@ -1,7 +1,6 @@
 package net.novucs.ftop.hook;
 
 import net.milkbowl.vault.economy.Economy;
-import net.novucs.ftop.WorthType;
 import net.novucs.ftop.hook.event.FactionEconomyEvent;
 import net.novucs.ftop.hook.event.PlayerEconomyEvent;
 import org.bukkit.entity.Player;
@@ -75,19 +74,22 @@ public class VaultEconomyHook extends BukkitRunnable implements EconomyHook, Lis
     }
 
     @Override
-    public Map<WorthType, Double> getBalances(String factionId, List<UUID> members) {
-        Map<WorthType, Double> target = new EnumMap<>(WorthType.class);
-        if (economy == null) return target;
+    public double getBalance(UUID playerId) {
+        return economy == null ? 0 : economy.getBalance(plugin.getServer().getOfflinePlayer(playerId));
+    }
 
-        target.put(WorthType.FACTION_BALANCE, economy.getBalance(factionId));
-
-        double playerBalance = 0;
-        for (UUID playerId : members) {
-            playerBalance += economy.getBalance(plugin.getServer().getOfflinePlayer(playerId));
+    @Override
+    public double getTotalBalance(List<UUID> playerIds) {
+        double balance = 0;
+        for (UUID playerId : playerIds) {
+            balance += economy.getBalance(plugin.getServer().getOfflinePlayer(playerId));
         }
+        return balance;
+    }
 
-        target.put(WorthType.PLAYER_BALANCE, playerBalance);
-        return target;
+    @Override
+    public double getFactionBalance(String factionId) {
+        return economy == null ? 0 : economy.getBalance(factionId);
     }
 
     @Override

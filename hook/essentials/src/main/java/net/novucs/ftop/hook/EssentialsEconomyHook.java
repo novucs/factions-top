@@ -5,16 +5,13 @@ import com.earth2me.essentials.User;
 import com.earth2me.essentials.api.UserDoesNotExistException;
 import net.ess3.api.Economy;
 import net.ess3.api.events.UserBalanceUpdateEvent;
-import net.novucs.ftop.WorthType;
 import net.novucs.ftop.hook.event.FactionEconomyEvent;
 import net.novucs.ftop.hook.event.PlayerEconomyEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.*;
 import org.bukkit.plugin.Plugin;
 
-import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 public class EssentialsEconomyHook implements EconomyHook, Listener {
@@ -61,24 +58,30 @@ public class EssentialsEconomyHook implements EconomyHook, Listener {
     }
 
     @Override
-    public Map<WorthType, Double> getBalances(String factionId, List<UUID> members) {
-        Map<WorthType, Double> target = new EnumMap<>(WorthType.class);
+    public double getBalance(UUID playerId) {
+        User user = essentials.getUser(playerId);
+        if (user != null) {
+            return user.getMoney().doubleValue();
+        }
+        return 0;
+    }
 
+    @Override
+    public double getTotalBalance(List<UUID> playerIds) {
+        double balance = 0;
+        for (UUID playerId : playerIds) {
+            balance += getBalance(playerId);
+        }
+        return balance;
+    }
+
+    @Override
+    public double getFactionBalance(String factionId) {
         try {
-            target.put(WorthType.FACTION_BALANCE, Economy.getMoneyExact("faction_" + factionId).doubleValue());
-        } catch (UserDoesNotExistException ignore) {
+            return Economy.getMoneyExact("faction_" + factionId).doubleValue();
+        } catch (UserDoesNotExistException e) {
+            return 0;
         }
-
-        double playerBalance = 0;
-        for (UUID playerId : members) {
-            User user = essentials.getUser(playerId);
-            if (user != null) {
-                playerBalance += user.getMoney().doubleValue();
-            }
-        }
-
-        target.put(WorthType.PLAYER_BALANCE, playerBalance);
-        return target;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

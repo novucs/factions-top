@@ -61,6 +61,7 @@ public class RecalculateTask implements PluginService, Runnable {
         }
 
         if (!isRunning()) {
+            plugin.getWorthManager().updateAllFactions();
             plugin.getServer().getScheduler().cancelTask(taskId);
             plugin.getServer().broadcastMessage(plugin.getSettings().getRecalculationFinishMessage());
         }
