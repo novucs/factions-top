@@ -10,6 +10,10 @@ public class GuiBackButton extends GuiBiStateButton {
 
     @Override
     public void render(GuiContext context) {
+        if (context.getInventory().getSize() <= context.getSlot()) {
+            return;
+        }
+
         GuiButtonContent content = context.hasPrevPage() ? getEnabled() : getDisabled();
         context.getInventory().setItem(context.getAndIncrementSlot(), content.getItem());
         context.getSlots().add(this);

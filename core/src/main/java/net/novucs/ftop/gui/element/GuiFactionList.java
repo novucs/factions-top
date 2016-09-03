@@ -44,6 +44,10 @@ public class GuiFactionList implements GuiElement {
 
         int counter = 0;
         while (counter++ < factionCount) {
+            if (context.getInventory().getSize() <= context.getSlot()) {
+                break;
+            }
+
             context.getSlots().add(this);
 
             if (!context.getWorthIterator().hasNext()) {
