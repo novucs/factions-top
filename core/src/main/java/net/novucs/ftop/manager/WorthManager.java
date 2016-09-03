@@ -107,6 +107,7 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
 
         orderedFactions.clear();
         orderedFactions.addAll(factions.values().stream().sorted().collect(Collectors.toList()));
+        plugin.getPersistenceTask().queue(orderedFactions);
     }
 
     /**
@@ -268,6 +269,9 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
             factionWorth.addMaterials(queued);
             queued.clear();
         }
+
+        plugin.getPersistenceTask().queue(pos, chunkWorth);
+        plugin.getPersistenceTask().queue(factionWorth);
     }
 
     public void setSpawners(ChunkPos pos, Map<EntityType, Integer> spawners) {
@@ -361,6 +365,11 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
                 !plugin.getSettings().isBypassRecalculateDelay(reason) ||
                 !plugin.getSettings().isPerformRecalculate(reason) ||
                 plugin.getSettings().getChunkQueueSize() <= plugin.getChunkWorthTask().getQueueSize()) {
+            FactionWorth factionWorth = getFactionWorth(pos);
+            if (factionWorth != null) {
+                plugin.getPersistenceTask().queue(pos, chunkWorth);
+                plugin.getPersistenceTask().queue(factionWorth);
+            }
             return;
         }
 
@@ -537,6 +546,7 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
         // Update faction with the new worth and adjust the worth position.
         factionWorth.addWorth(worthType, worth);
         sortQueue.add(factionWorth);
+        plugin.getPersistenceTask().queue(factionWorth);
     }
 
     /**

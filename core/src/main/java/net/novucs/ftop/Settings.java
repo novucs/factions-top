@@ -151,6 +151,8 @@ public class Settings {
     private int chunkQueueSize;
     private int recalculateChunksPerTick;
     private long chunkRecalculateMillis;
+    private long databasePersistInterval;
+    private boolean databasePersistFactions;
     private HikariConfig hikariConfig;
     private Map<WorthType, Boolean> enabled;
     private Map<RecalculateReason, Boolean> performRecalculate;
@@ -264,6 +266,14 @@ public class Settings {
 
     public long getChunkRecalculateMillis() {
         return chunkRecalculateMillis;
+    }
+
+    public long getDatabasePersistInterval() {
+        return databasePersistInterval;
+    }
+
+    public boolean isDatabasePersistFactions() {
+        return databasePersistFactions;
     }
 
     public HikariConfig getHikariConfig() {
@@ -497,12 +507,15 @@ public class Settings {
         }
         chunkQueueSize = getInt("settings.chunk-queue-size", 200);
         recalculateChunksPerTick = getInt("settings.recalculate-chunks-per-tick", 50);
-        chunkRecalculateMillis = getLong("settings.chunk-recalculate-millis", 120000);
+        chunkRecalculateMillis = getLong("settings.chunk-recalculate-millis", 120_000);
 
         // Do not reload hikari configuration if already loaded.
         if (hikariConfig == null) {
             hikariConfig = loadHikariConfig();
         }
+
+        databasePersistInterval = Math.max(1000, getLong("settings.database.persist-interval", 60_000));
+        databasePersistFactions = getBoolean("settings.database.persist-factions", false);
 
         addDefaults(WorthType.class, "settings.enabled", true, Collections.emptyList());
         enabled = parseStateMap(WorthType.class, "settings.enabled", false);

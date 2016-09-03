@@ -16,10 +16,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class DatabaseManager {
 
@@ -278,11 +275,11 @@ public class DatabaseManager {
         return target;
     }
 
-    public void save(Map<ChunkPos, ChunkWorth> chunkWorthMap) throws SQLException {
+    public void save(Collection<Map.Entry<ChunkPos, ChunkWorth>> chunkWorthEntries) throws SQLException {
         Connection connection = dataSource.getConnection();
         init(connection);
 
-        for (Map.Entry<ChunkPos, ChunkWorth> entry : chunkWorthMap.entrySet()) {
+        for (Map.Entry<ChunkPos, ChunkWorth> entry : chunkWorthEntries) {
             int chunkId = saveChunk(connection, entry.getKey());
             saveChunkWorth(connection, chunkId, entry.getValue());
         }

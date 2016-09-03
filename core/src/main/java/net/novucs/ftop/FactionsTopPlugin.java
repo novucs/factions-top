@@ -14,6 +14,7 @@ import net.novucs.ftop.manager.GuiManager;
 import net.novucs.ftop.manager.SignManager;
 import net.novucs.ftop.manager.WorthManager;
 import net.novucs.ftop.task.ChunkWorthTask;
+import net.novucs.ftop.task.PersistenceTask;
 import net.novucs.ftop.task.RecalculateTask;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.plugin.Plugin;
@@ -38,6 +39,7 @@ public final class FactionsTopPlugin extends JavaPlugin {
 
     private final ChunkWorthTask chunkWorthTask = new ChunkWorthTask(this);
     private final GuiManager guiManager = new GuiManager(this);
+    private final PersistenceTask persistenceTask = new PersistenceTask(this);
     private final RecalculateTask recalculateTask = new RecalculateTask(this);
     private final Settings settings = new Settings(this);
     private final SignManager signManager = new SignManager(this);
@@ -67,6 +69,10 @@ public final class FactionsTopPlugin extends JavaPlugin {
 
     public GuiManager getGuiManager() {
         return guiManager;
+    }
+
+    public PersistenceTask getPersistenceTask() {
+        return persistenceTask;
     }
 
     public RecalculateTask getRecalculateTask() {
@@ -117,6 +123,7 @@ public final class FactionsTopPlugin extends JavaPlugin {
         loadSettings();
         boolean newDatabase = loadDatabase();
         chunkWorthTask.start();
+        persistenceTask.start();
 
         if (newDatabase && !recalculateTask.isRunning()) {
             getLogger().info("----- IMPORTANT -----");
@@ -145,10 +152,10 @@ public final class FactionsTopPlugin extends JavaPlugin {
         }
 
         getLogger().info("Saving everything to database...");
+        persistenceTask.interrupt();
         try {
-            databaseManager.save(worthManager.getChunks());
-        } catch (SQLException e) {
-            e.printStackTrace();
+            persistenceTask.join();
+        } catch (InterruptedException ignore) {
         }
 
         getLogger().info("Terminating plugin services...");

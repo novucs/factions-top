@@ -36,6 +36,7 @@ public class ChunkWorthTask extends Thread {
             try {
                 snapshot = queue.take();
             } catch (InterruptedException e) {
+                interrupt();
                 break;
             }
 
