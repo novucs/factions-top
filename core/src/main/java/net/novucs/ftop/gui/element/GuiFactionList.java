@@ -30,14 +30,6 @@ public class GuiFactionList implements GuiElement {
 
     @Override
     public void render(GuiContext context) {
-        int page = context.getThisPage();
-        int maxPage = context.getMaxPage();
-        Map<String, String> placeholders = new HashMap<>();
-        placeholders.put("{page:back}", String.valueOf(page - 1));
-        placeholders.put("{page:this}", String.valueOf(page));
-        placeholders.put("{page:next}", String.valueOf(page + 1));
-        placeholders.put("{page:last}", String.valueOf(maxPage));
-
         FactionsTopPlugin plugin = context.getPlugin();
         DecimalFormat currencyFormat = plugin.getSettings().getCurrencyFormat();
         DecimalFormat countFormat = plugin.getSettings().getCountFormat();
@@ -59,16 +51,16 @@ public class GuiFactionList implements GuiElement {
             }
 
             FactionWorth worth = context.getWorthIterator().next();
-            Map<String, String> worthPlaceholders = new HashMap<>(placeholders);
-            worthPlaceholders.put("{rank}", Integer.toString(context.getAndIncrementRank()));
-            worthPlaceholders.put("{relcolor}", "" + ChatColor.COLOR_CHAR +
+            Map<String, String> placeholders = new HashMap<>(context.getPlaceholders());
+            placeholders.put("{rank}", Integer.toString(context.getAndIncrementRank()));
+            placeholders.put("{relcolor}", "" + ChatColor.COLOR_CHAR +
                     getRelationColor(plugin, context.getPlayer(), worth.getFactionId()).getChar());
-            worthPlaceholders.put("{faction}", worth.getName());
-            worthPlaceholders.put("{worth:total}", currencyFormat.format(worth.getTotalWorth()));
-            worthPlaceholders.put("{count:total:spawner}", countFormat.format(worth.getTotalSpawnerCount()));
+            placeholders.put("{faction}", worth.getName());
+            placeholders.put("{worth:total}", currencyFormat.format(worth.getTotalWorth()));
+            placeholders.put("{count:total:spawner}", countFormat.format(worth.getTotalSpawnerCount()));
 
             String owner = plugin.getFactionsHook().getOwnerName(worth.getFactionId());
-            ItemStack item = getItem(worth, worthPlaceholders, plugin.getSettings(), owner);
+            ItemStack item = getItem(worth, placeholders, plugin.getSettings(), owner);
             context.getInventory().setItem(context.getAndIncrementSlot(), item);
         }
     }

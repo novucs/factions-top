@@ -482,7 +482,7 @@ public class Settings {
 
         guiCommandAliases = getList("gui-settings.command-aliases", Collections.singletonList("f topgui"), String.class);
         guiLineCount = getInt("gui-settings.line-count", 1);
-        guiInventoryName = format(getString("gui-settings.inventory-name", "&lFactions Top"));
+        guiInventoryName = format(getString("gui-settings.inventory-name", "&lTop Factions | Page {page:this}"));
         guiLayout = loadGuiLayout();
 
         commandAliases = getList("settings.command-aliases", Collections.singletonList("f top"), String.class);

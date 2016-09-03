@@ -9,6 +9,7 @@ import org.bukkit.inventory.Inventory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 
 public class GuiContext {
 
@@ -18,17 +19,20 @@ public class GuiContext {
     private final int maxPage;
     private final int thisPage;
     private final ListIterator<FactionWorth> worthIterator;
+    private final Map<String, String> placeholders;
     private final List<GuiElement> slots = new ArrayList<>();
     private int currentRank;
     private int slot;
 
-    public GuiContext(FactionsTopPlugin plugin, Player player, Inventory inventory, int maxPage, int thisPage, ListIterator<FactionWorth> worthIterator) {
+    public GuiContext(FactionsTopPlugin plugin, Player player, Inventory inventory, int maxPage, int thisPage,
+                      ListIterator<FactionWorth> worthIterator, Map<String, String> placeholders) {
         this.plugin = plugin;
         this.player = player;
         this.inventory = inventory;
         this.maxPage = maxPage;
         this.thisPage = thisPage;
         this.worthIterator = worthIterator;
+        this.placeholders = placeholders;
     }
 
     public FactionsTopPlugin getPlugin() {
@@ -53,6 +57,10 @@ public class GuiContext {
 
     public ListIterator<FactionWorth> getWorthIterator() {
         return worthIterator;
+    }
+
+    public Map<String, String> getPlaceholders() {
+        return placeholders;
     }
 
     public List<GuiElement> getSlots() {
