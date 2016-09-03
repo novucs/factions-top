@@ -55,7 +55,7 @@ public class RecalculateTask implements PluginService, Runnable {
 
             ChunkPos pos = toRecalculate.pop();
             Chunk chunk = pos.getChunk(plugin.getServer());
-            if (chunk.load()) {
+            if (chunk != null && chunk.load()) {
                 plugin.getWorthManager().recalculate(chunk, RecalculateReason.COMMAND);
             }
         }
