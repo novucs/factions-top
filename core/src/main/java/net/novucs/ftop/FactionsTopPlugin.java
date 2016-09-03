@@ -130,6 +130,9 @@ public final class FactionsTopPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        getLogger().info("Preparing shutdown...");
+        guiManager.closeInventories();
+
         if (recalculateTask.isRunning()) {
             recalculateTask.terminate();
         }
@@ -292,6 +295,8 @@ public final class FactionsTopPlugin extends JavaPlugin {
      * corrected.
      */
     public void loadSettings() {
+        guiManager.closeInventories();
+
         try {
             // Attempt to load the plugin settings.
             settings.load();

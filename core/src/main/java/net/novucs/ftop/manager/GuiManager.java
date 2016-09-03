@@ -3,13 +3,11 @@ package net.novucs.ftop.manager;
 import net.novucs.ftop.FactionsTopPlugin;
 import net.novucs.ftop.entity.FactionWorth;
 import net.novucs.ftop.gui.GuiContext;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.*;
 
 public class GuiManager {
 
@@ -26,6 +24,12 @@ public class GuiManager {
 
     public void unloadGui(Inventory inventory) {
         inventories.remove(inventory);
+    }
+
+    public void closeInventories() {
+        for (Inventory inventory : this.inventories.keySet()) {
+            new ArrayList<>(inventory.getViewers()).forEach(HumanEntity::closeInventory);
+        }
     }
 
     public void sendGui(Player player, int page) {
