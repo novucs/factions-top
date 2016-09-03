@@ -121,18 +121,21 @@ public final class FactionsTopPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        getLogger().info("Shutting down chunk worth task...");
         chunkWorthTask.interrupt();
         try {
             chunkWorthTask.join();
         } catch (InterruptedException ignore) {
         }
 
+        getLogger().info("Saving everything to database...");
         try {
             databaseManager.save(worthManager.getChunks());
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
+        getLogger().info("Terminating plugin services...");
         databaseManager.close();
         services.forEach(PluginService::terminate);
         active = false;
