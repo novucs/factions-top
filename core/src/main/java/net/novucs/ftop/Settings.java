@@ -28,32 +28,7 @@ import static net.novucs.ftop.util.StringUtils.format;
 
 public class Settings {
 
-    private static final int LATEST_VERSION = 4;
-
-    private static final String HEADER = "FactionsTop by novucs.\n" +
-            "\n" +
-            "Configuration walkthrough:\n" +
-            "- config-version: Should not be touched, determines config version.\n" +
-            "- command-aliases: List of command to rebind to \"/ftop\".\n" +
-            "- ignored-faction-ids: Faction IDs to not calculate for factions top.\n" +
-            "- disable-chest-events: Disables chest events, improves performance.\n" +
-            "- factions-per-page: Number of factions displayed per page in \"/ftop\".\n" +
-            "- sign-update-ticks: Duration in ticks between sign updates.\n" +
-            "- liquid-update-ticks: Duration in ticks between liquid economy updates.\n" +
-            "- chunk-queue-size: Hard-limit maximum chunks to be queued for recalculation.\n" +
-            "- chunk-recalculate-millis: Duration in millis between chunk recalculations.\n" +
-            "- database: Various database settings, MySQL and H2 are supported.\n" +
-            "- enabled: Toggles whether specific worth types should be recalculated.\n" +
-            "- perform-recalculate: Toggles chunk recalculation for the listed reasons.\n" +
-            "- bypass-recalculate-delay: Toggles which reason bypasses the delay.\n" +
-            "- spawner-prices: Value for specific spawners.\n" +
-            "- block-prices: Value for specific blocks.\n" +
-            "\n" +
-            "Valid spawners (Case insensitive):\n" +
-            "https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/entity/EntityType.html\n" +
-            "\n" +
-            "Valid materials (Case insensitive):\n" +
-            "https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html\n";
+    private static final int LATEST_VERSION = 5;
 
     private static final ImmutableList<String> WORTH_HOVER = ImmutableList.of(
             "&e&l-- General --",
@@ -553,7 +528,7 @@ public class Settings {
         // Update the configuration file if it is outdated.
         if (version < LATEST_VERSION) {
             // Update header and all config values.
-            config.options().header(HEADER);
+            config.options().header(getDocumentation());
             config.options().copyDefaults(true);
             set("config-version", LATEST_VERSION);
 
@@ -561,5 +536,10 @@ public class Settings {
             config.save(configFile);
             plugin.getLogger().info("Configuration file has been successfully updated.");
         }
+    }
+
+    public String getDocumentation() {
+        Scanner scanner = new Scanner(plugin.getResource("readme.txt")).useDelimiter("\\A");
+        return scanner.hasNext() ? scanner.next() : "";
     }
 }
