@@ -4,6 +4,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.massivecraft.factions.*;
 import com.massivecraft.factions.event.*;
+import com.massivecraft.factions.zcore.persist.MemoryBoard;
 import net.novucs.ftop.entity.ChunkPos;
 import net.novucs.ftop.hook.event.*;
 import net.novucs.ftop.hook.event.FactionDisbandEvent;
@@ -36,9 +37,9 @@ public class Factions16x extends FactionsHook {
     @Override
     public void initialize() {
         try {
-            Field flocationIdsField = Board.class.getDeclaredField("flocationIds");
+            Field flocationIdsField = MemoryBoard.class.getDeclaredField("flocationIds");
             flocationIdsField.setAccessible(true);
-            flocationIds = (Map<FLocation, String>) flocationIdsField.get(null);
+            flocationIds = (Map<FLocation, String>) flocationIdsField.get(Board.getInstance());
             flocationIdsField.setAccessible(false);
         } catch (NoSuchFieldException | IllegalAccessException ex) {
             getPlugin().getLogger().severe("Factions version found is incompatible!");
