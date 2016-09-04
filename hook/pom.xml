@@ -7,13 +7,13 @@
     <parent>
         <artifactId>factions-top</artifactId>
         <groupId>net.novucs</groupId>
-        <version>1.0.8</version>
+        <version>1.0.9-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>net.novucs.ftop</groupId>
     <artifactId>hook</artifactId>
-    <version>1.0.8</version>
+    <version>1.0.9-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>FactionsTop-Hooks</name>
