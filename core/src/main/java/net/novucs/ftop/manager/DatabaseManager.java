@@ -13,10 +13,7 @@ import net.novucs.ftop.util.GenericUtils;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 
 public class DatabaseManager {
@@ -354,7 +351,8 @@ public class DatabaseManager {
             return id;
         }
 
-        PreparedStatement statement = connection.prepareStatement("INSERT INTO `chunk_material_count` (`chunk_id`, `material_id`, `count`) VALUES(?, ?, ?)");
+        PreparedStatement statement = connection.prepareStatement("INSERT INTO `chunk_material_count` (`chunk_id`, `material_id`, `count`) VALUES(?, ?, ?)",
+                Statement.RETURN_GENERATED_KEYS);
         statement.setInt(1, chunkId);
         statement.setInt(2, materialId);
         statement.setInt(3, count);
@@ -389,7 +387,8 @@ public class DatabaseManager {
             return id;
         }
 
-        PreparedStatement statement = connection.prepareStatement("INSERT INTO `chunk_spawner_count` (`chunk_id`, `spawner_id`, `count`) VALUES(?, ?, ?)");
+        PreparedStatement statement = connection.prepareStatement("INSERT INTO `chunk_spawner_count` (`chunk_id`, `spawner_id`, `count`) VALUES(?, ?, ?)",
+                Statement.RETURN_GENERATED_KEYS);
         statement.setInt(1, chunkId);
         statement.setInt(2, spawnerId);
         statement.setInt(3, count);
@@ -424,7 +423,8 @@ public class DatabaseManager {
             return id;
         }
 
-        PreparedStatement statement = connection.prepareStatement("INSERT INTO `chunk_worth` (`chunk_id`, `worth_id`, `worth`) VALUES(?, ?, ?)");
+        PreparedStatement statement = connection.prepareStatement("INSERT INTO `chunk_worth` (`chunk_id`, `worth_id`, `worth`) VALUES(?, ?, ?)",
+                Statement.RETURN_GENERATED_KEYS);
         statement.setInt(1, chunkId);
         statement.setInt(2, worthId);
         statement.setDouble(3, worth);
@@ -455,7 +455,8 @@ public class DatabaseManager {
             return id;
         }
 
-        PreparedStatement statement = connection.prepareStatement("INSERT INTO `chunk` (`world_id`, `x`, `z`) VALUES(?, ?, ?)");
+        PreparedStatement statement = connection.prepareStatement("INSERT INTO `chunk` (`world_id`, `x`, `z`) VALUES(?, ?, ?)",
+                Statement.RETURN_GENERATED_KEYS);
         statement.setInt(1, worldId);
         statement.setInt(2, pos.getX());
         statement.setInt(3, pos.getZ());
@@ -486,7 +487,8 @@ public class DatabaseManager {
             return id;
         }
 
-        PreparedStatement statement = connection.prepareStatement("INSERT INTO `" + table + "` (`name`) VALUES(?)");
+        PreparedStatement statement = connection.prepareStatement("INSERT INTO `" + table + "` (`name`) VALUES(?)",
+                Statement.RETURN_GENERATED_KEYS);
         statement.setString(1, name);
         statement.executeUpdate();
 
@@ -577,7 +579,8 @@ public class DatabaseManager {
             return id;
         }
 
-        PreparedStatement statement = connection.prepareStatement("INSERT INTO `sign` (`block_id`, `rank`) VALUES(?, ?)");
+        PreparedStatement statement = connection.prepareStatement("INSERT INTO `sign` (`block_id`, `rank`) VALUES(?, ?)",
+                Statement.RETURN_GENERATED_KEYS);
         statement.setInt(1, blockId);
         statement.setInt(2, rank);
 
@@ -622,7 +625,8 @@ public class DatabaseManager {
             return id;
         }
 
-        PreparedStatement statement = connection.prepareStatement("INSERT INTO `block` (`world_id`, `x`, `y`, `z`) VALUES(?, ?, ?, ?)");
+        PreparedStatement statement = connection.prepareStatement("INSERT INTO `block` (`world_id`, `x`, `y`, `z`) VALUES(?, ?, ?, ?)",
+                Statement.RETURN_GENERATED_KEYS);
         statement.setInt(1, worldId);
         statement.setInt(2, pos.getX());
         statement.setInt(3, pos.getY());
