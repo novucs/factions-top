@@ -6,6 +6,7 @@ import net.novucs.ftop.entity.BlockPos;
 import net.novucs.ftop.entity.ChunkPos;
 import net.novucs.ftop.entity.ChunkWorth;
 import net.novucs.ftop.hook.*;
+import net.novucs.ftop.listener.ChatListener;
 import net.novucs.ftop.listener.CommandListener;
 import net.novucs.ftop.listener.GuiListener;
 import net.novucs.ftop.listener.WorthListener;
@@ -52,6 +53,7 @@ public final class FactionsTopPlugin extends JavaPlugin {
             new ReloadCommand(this),
             new TextCommand(this),
             new VersionCommand(this),
+            new ChatListener(this),
             new CommandListener(this),
             new GuiListener(this),
             new WorthListener(this)

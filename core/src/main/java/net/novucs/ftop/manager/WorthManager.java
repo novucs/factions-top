@@ -53,6 +53,16 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
         return Collections.unmodifiableSet(factions.keySet());
     }
 
+    /**
+     * Gets the worth for a particular faction ID.
+     *
+     * @param factionId the faction ID.
+     * @return the {@link FactionWorth} or null if no profile found.
+     */
+    public FactionWorth getWorth(String factionId) {
+        return factions.get(factionId);
+    }
+
     @Override
     public void initialize() {
         runTaskTimer(plugin, 1, 1);
