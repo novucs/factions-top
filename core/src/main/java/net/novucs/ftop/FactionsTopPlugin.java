@@ -289,13 +289,10 @@ public final class FactionsTopPlugin extends JavaPlugin {
             case "1.8":
                 factionsHook = new Factions18x(this);
                 return true;
-            case "2.7":
-            case "2.8":
+            default:
                 factionsHook = new Factions27x(this);
                 return true;
         }
-
-        return false;
     }
 
     /**
