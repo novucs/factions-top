@@ -177,8 +177,9 @@ public final class FactionsTopPlugin extends JavaPlugin {
         Multimap<Integer, BlockPos> loadedSigns;
         try {
             databaseManager = DatabaseManager.create(settings.getHikariConfig());
-            loadedChunks = databaseManager.load();
-            loadedSigns = databaseManager.loadSigns();
+            DatabaseManager.DataDump dataDump = databaseManager.load();
+            loadedChunks = dataDump.getChunks();
+            loadedSigns = dataDump.getSigns();
         } catch (SQLException e) {
             getLogger().severe("Failed to correctly communicate with database!");
             getLogger().log(Level.SEVERE, "The errors are as follows:", e);

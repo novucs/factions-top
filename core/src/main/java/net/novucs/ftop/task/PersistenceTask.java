@@ -1,6 +1,7 @@
 package net.novucs.ftop.task;
 
 import net.novucs.ftop.FactionsTopPlugin;
+import net.novucs.ftop.entity.BlockPos;
 import net.novucs.ftop.entity.ChunkPos;
 import net.novucs.ftop.entity.ChunkWorth;
 import net.novucs.ftop.entity.FactionWorth;
@@ -16,6 +17,8 @@ public class PersistenceTask extends Thread {
     private final FactionsTopPlugin plugin;
     private final BlockingQueue<Map.Entry<ChunkPos, ChunkWorth>> chunkQueue = new LinkedBlockingQueue<>();
     private final BlockingQueue<FactionWorth> factionQueue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<Map.Entry<BlockPos, Integer>> signCreationQueue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<BlockPos> signDeletionQueue = new LinkedBlockingQueue<>();
 
     public void queue(ChunkPos pos, ChunkWorth chunkWorth) {
         chunkQueue.add(new AbstractMap.SimpleImmutableEntry<>(pos, chunkWorth));
@@ -33,6 +36,14 @@ public class PersistenceTask extends Thread {
         }
     }
 
+    public void queueCreatedSign(BlockPos block, int rank) {
+        signCreationQueue.add(new AbstractMap.SimpleImmutableEntry<BlockPos, Integer>(block, rank));
+    }
+
+    public void queueDeletedSign(BlockPos block) {
+        signDeletionQueue.add(block);
+    }
+
     public PersistenceTask(FactionsTopPlugin plugin) {
         super("factions-top-persistence-task");
         this.plugin = plugin;
@@ -46,37 +57,31 @@ public class PersistenceTask extends Thread {
             try {
                 sleep(plugin.getSettings().getDatabasePersistInterval());
             } catch (InterruptedException e) {
-                persist();
                 interrupt();
                 break;
             }
         }
+
+        persist();
     }
 
     private void persist() {
-        persistChunks();
-        persistFactions();
-    }
-
-    private void persistChunks() {
         List<Map.Entry<ChunkPos, ChunkWorth>> chunks = new LinkedList<>();
         chunkQueue.drainTo(chunks);
 
-        try {
-            plugin.getDatabaseManager().saveChunks(chunks);
-        } catch (SQLException e) {
-            plugin.getLogger().log(Level.SEVERE, "Failed to persist chunk data", e);
-        }
-    }
-
-    private void persistFactions() {
         List<FactionWorth> factions = new LinkedList<>();
         factionQueue.drainTo(factions);
 
+        List<Map.Entry<BlockPos, Integer>> createdSigns = new LinkedList<>();
+        signCreationQueue.drainTo(createdSigns);
+
+        List<BlockPos> deletedSigns = new LinkedList<>();
+        signDeletionQueue.drainTo(deletedSigns);
+
         try {
-            plugin.getDatabaseManager().saveFactions(factions);
+            plugin.getDatabaseManager().save(chunks, factions, createdSigns, deletedSigns);
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.SEVERE, "Failed to persist faction data", e);
+            plugin.getLogger().log(Level.SEVERE, "Failed to persist chunk data", e);
         }
     }
 }

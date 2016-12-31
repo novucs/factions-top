@@ -17,12 +17,10 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 public class SignManager extends BukkitRunnable implements PluginService, Listener {
@@ -127,14 +125,7 @@ public class SignManager extends BukkitRunnable implements PluginService, Listen
 
     private void saveSign(BlockPos pos, int rank) {
         signs.put(rank, pos);
-        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
-            try {
-                plugin.getDatabaseManager().saveSign(pos, rank);
-            } catch (SQLException e) {
-                plugin.getLogger().severe("Failed to save a sign to the database!");
-                plugin.getLogger().log(Level.SEVERE, "The error is as follows: ", e);
-            }
-        });
+        plugin.getPersistenceTask().queueCreatedSign(pos, rank);
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -161,13 +152,6 @@ public class SignManager extends BukkitRunnable implements PluginService, Listen
 
     private void removeSign(BlockPos pos) {
         signs.values().remove(pos);
-        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
-            try {
-                plugin.getDatabaseManager().removeSign(pos);
-            } catch (SQLException e) {
-                plugin.getLogger().severe("Failed to remove a sign from the database!");
-                plugin.getLogger().log(Level.SEVERE, "The error is as follows: ", e);
-            }
-        });
+        plugin.getPersistenceTask().queueDeletedSign(pos);
     }
 }
