@@ -11,7 +11,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 public class ChatListener implements Listener, PluginService {
 
-    public static final String RANK_PLACEHOLDER = "{rank}";
+    private static final String RANK_PLACEHOLDER = "{rank}";
     private final FactionsTopPlugin plugin;
 
     public ChatListener(FactionsTopPlugin plugin) {
