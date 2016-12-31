@@ -14,6 +14,11 @@ Configuration walkthrough:
 - liquid-update-ticks: Duration in ticks between liquid economy updates.
 - chunk-queue-size: Hard-limit maximum chunks to be queued for recalculation.
 - chunk-recalculate-millis: Duration in millis between chunk recalculations.
+- chat: Chat placeholder settings.
+- - enabled: Are FactionsTop placeholders going to be used?
+- - rank-placeholder: The text to replace in the original chat format.
+- - rank-found: How the placeholder should look when a rank is found.
+- - rank-not-found: How the placeholder should look when a rank is NOT found.
 - database: Various database settings, MySQL and H2 are supported.
 - - persist-interval: Millis between database updates.
 - - persist-factions: Saves factions in database for websites to parse.

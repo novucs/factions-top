@@ -28,7 +28,7 @@ import static net.novucs.ftop.util.StringUtils.format;
 
 public class Settings {
 
-    private static final int LATEST_VERSION = 5;
+    private static final int LATEST_VERSION = 6;
 
     private static final ImmutableList<String> WORTH_HOVER = ImmutableList.of(
             "&e&l-- General --",
@@ -126,6 +126,10 @@ public class Settings {
     private int chunkQueueSize;
     private int recalculateChunksPerTick;
     private long chunkRecalculateMillis;
+    private boolean chatEnabled;
+    private String chatRankPlaceholder;
+    private String chatRankFound;
+    private String chatRankNotFound;
     private long databasePersistInterval;
     private boolean databasePersistFactions;
     private HikariConfig hikariConfig;
@@ -241,6 +245,22 @@ public class Settings {
 
     public long getChunkRecalculateMillis() {
         return chunkRecalculateMillis;
+    }
+
+    public boolean isChatEnabled() {
+        return chatEnabled;
+    }
+
+    public String getChatRankPlaceholder() {
+        return chatRankPlaceholder;
+    }
+
+    public String getChatRankFound() {
+        return chatRankFound;
+    }
+
+    public String getChatRankNotFound() {
+        return chatRankNotFound;
     }
 
     public long getDatabasePersistInterval() {
@@ -483,6 +503,11 @@ public class Settings {
         chunkQueueSize = getInt("settings.chunk-queue-size", 200);
         recalculateChunksPerTick = getInt("settings.recalculate-chunks-per-tick", 50);
         chunkRecalculateMillis = getLong("settings.chunk-recalculate-millis", 120_000);
+
+        chatEnabled = getBoolean("settings.chat.enabled", false);
+        chatRankPlaceholder = getString("settings.chat.rank-placeholder", "{factions_top_rank}");
+        chatRankFound = format(getString("settings.chat.rank-found", "&2[&e#{rank}&2]" ));
+        chatRankNotFound = format(getString("settings.chat.rank-not-found", ""));
 
         // Do not reload hikari configuration if already loaded.
         if (hikariConfig == null) {
