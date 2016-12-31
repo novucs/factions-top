@@ -71,9 +71,13 @@ public class FactionMaterialModel {
 
     public void addBatch(String factionId, int materialId, int count) throws SQLException {
         Integer relationId = identityCache.getFactionMaterialId(factionId, materialId);
+        Map.Entry<String, Integer> insertionKey = new AbstractMap.SimpleImmutableEntry<>(factionId, materialId);
 
         if (relationId == null) {
-            insertCounter(factionId, materialId, count);
+            if (!insertionQueue.contains(insertionKey)) {
+                insertCounter(factionId, materialId, count);
+                insertionQueue.add(insertionKey);
+            }
         } else {
             updateCounter(count, relationId);
         }
@@ -84,7 +88,6 @@ public class FactionMaterialModel {
         insert.setInt(2, materialId);
         insert.setInt(3, count);
         insert.addBatch();
-        insertionQueue.add(new AbstractMap.SimpleImmutableEntry<>(factionId, materialId));
     }
 
     private void updateCounter(int count, Integer relationId) throws SQLException {

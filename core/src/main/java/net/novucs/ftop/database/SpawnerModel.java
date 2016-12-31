@@ -34,7 +34,7 @@ public class SpawnerModel {
         for (EntityType spawner : insertionQueue) {
             if (resultSet.next()) {
                 int id = resultSet.getInt(1);
-                identityCache.setMaterialId(spawner.name(), id);
+                identityCache.setSpawnerId(spawner.name(), id);
             }
         }
 
@@ -54,7 +54,7 @@ public class SpawnerModel {
     }
 
     public void addBatch(EntityType spawner) throws SQLException {
-        if (insertionQueue.contains(spawner) || identityCache.hasMaterial(spawner.name())) {
+        if (insertionQueue.contains(spawner) || identityCache.hasSpawner(spawner.name())) {
             return;
         }
 

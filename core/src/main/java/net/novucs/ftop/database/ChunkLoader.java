@@ -59,11 +59,19 @@ public class ChunkLoader {
 
         for (Map.Entry<Integer, ChunkPos> entry : chunks.entrySet()) {
             int chunkId = entry.getKey();
-            Map<Material, Integer> chunkMaterialCount = new EnumMap<>(globalMaterialCount.row(chunkId));
-            Map<EntityType, Integer> chunkSpawnerCount = new EnumMap<>(globalSpawnerCount.row(chunkId));
-            Map<WorthType, Double> chunkWorth = new EnumMap<>(globalWorth.row(chunkId));
+
+            Map<Material, Integer> chunkMaterialCount = new EnumMap<>(Material.class);
+            chunkMaterialCount.putAll(globalMaterialCount.row(chunkId));
+
+            Map<EntityType, Integer> chunkSpawnerCount = new EnumMap<>(EntityType.class);
+            chunkSpawnerCount.putAll(globalSpawnerCount.row(chunkId));
+
+            Map<WorthType, Double> chunkWorth = new EnumMap<>(WorthType.class);
+            chunkWorth.putAll(globalWorth.row(chunkId));
+
             ChunkPos chunk = entry.getValue();
             ChunkWorth worth = new ChunkWorth(chunkWorth, chunkMaterialCount, chunkSpawnerCount);
+
             target.put(chunk, worth);
         }
 

@@ -34,7 +34,7 @@ public class WorthModel {
         for (WorthType worthType : insertionQueue) {
             if (resultSet.next()) {
                 int id = resultSet.getInt(1);
-                identityCache.setMaterialId(worthType.name(), id);
+                identityCache.setWorthId(worthType.name(), id);
             }
         }
 
@@ -54,7 +54,7 @@ public class WorthModel {
     }
 
     public void addBatch(WorthType worthType) throws SQLException {
-        if (insertionQueue.contains(worthType) || identityCache.hasMaterial(worthType.name())) {
+        if (insertionQueue.contains(worthType) || identityCache.hasWorth(worthType.name())) {
             return;
         }
 

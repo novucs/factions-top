@@ -33,7 +33,7 @@ public class WorldModel {
         for (String world : insertionQueue) {
             if (resultSet.next()) {
                 int id = resultSet.getInt(1);
-                identityCache.setMaterialId(world, id);
+                identityCache.setWorldId(world, id);
             }
         }
 
@@ -53,7 +53,7 @@ public class WorldModel {
     }
 
     public void addBatch(String world) throws SQLException {
-        if (insertionQueue.contains(world) || identityCache.hasMaterial(world)) {
+        if (insertionQueue.contains(world) || identityCache.hasWorld(world)) {
             return;
         }
 

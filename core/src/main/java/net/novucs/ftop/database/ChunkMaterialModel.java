@@ -70,9 +70,13 @@ public class ChunkMaterialModel {
 
     public void addBatch(int chunkId, int materialId, int count) throws SQLException {
         Integer relationId = identityCache.getChunkMaterialId(chunkId, materialId);
+        Map.Entry<Integer, Integer> insertionKey = new AbstractMap.SimpleImmutableEntry<>(chunkId, materialId);
 
         if (relationId == null) {
-            insertCounter(chunkId, materialId, count);
+            if (!insertionQueue.contains(insertionKey)) {
+                insertCounter(chunkId, materialId, count);
+                insertionQueue.add(insertionKey);
+            }
         } else {
             updateCounter(count, relationId);
         }
@@ -83,7 +87,6 @@ public class ChunkMaterialModel {
         insert.setInt(2, materialId);
         insert.setInt(3, count);
         insert.addBatch();
-        insertionQueue.add(new AbstractMap.SimpleImmutableEntry<>(chunkId, materialId));
     }
 
     private void updateCounter(int count, Integer relationId) throws SQLException {

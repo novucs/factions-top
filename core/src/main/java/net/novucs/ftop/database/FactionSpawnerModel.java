@@ -71,9 +71,13 @@ public class FactionSpawnerModel {
 
     public void addBatch(String factionId, int spawnerId, int count) throws SQLException {
         Integer relationId = identityCache.getFactionSpawnerId(factionId, spawnerId);
+        Map.Entry<String, Integer> insertionKey = new AbstractMap.SimpleImmutableEntry<>(factionId, spawnerId);
 
         if (relationId == null) {
-            insertCounter(factionId, spawnerId, count);
+            if (!insertionQueue.contains(insertionKey)) {
+                insertCounter(factionId, spawnerId, count);
+                insertionQueue.add(insertionKey);
+            }
         } else {
             updateCounter(count, relationId);
         }
@@ -84,7 +88,6 @@ public class FactionSpawnerModel {
         insert.setInt(2, spawnerId);
         insert.setInt(3, count);
         insert.addBatch();
-        insertionQueue.add(new AbstractMap.SimpleImmutableEntry<>(factionId, spawnerId));
     }
 
     private void updateCounter(int count, Integer relationId) throws SQLException {

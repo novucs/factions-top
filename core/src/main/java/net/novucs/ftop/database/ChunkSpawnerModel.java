@@ -70,9 +70,13 @@ public class ChunkSpawnerModel {
 
     public void addBatch(int chunkId, int spawnerId, int count) throws SQLException {
         Integer relationId = identityCache.getChunkSpawnerId(chunkId, spawnerId);
+        Map.Entry<Integer, Integer> insertionKey = new AbstractMap.SimpleImmutableEntry<>(chunkId, spawnerId);
 
         if (relationId == null) {
-            insertCounter(chunkId, spawnerId, count);
+            if (!insertionQueue.contains(insertionKey)) {
+                insertCounter(chunkId, spawnerId, count);
+                insertionQueue.add(insertionKey);
+            }
         } else {
             updateCounter(count, relationId);
         }
@@ -83,7 +87,6 @@ public class ChunkSpawnerModel {
         insert.setInt(2, spawnerId);
         insert.setInt(3, count);
         insert.addBatch();
-        insertionQueue.add(new AbstractMap.SimpleImmutableEntry<>(chunkId, spawnerId));
     }
 
     private void updateCounter(int count, Integer relationId) throws SQLException {

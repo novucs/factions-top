@@ -64,16 +64,20 @@ public class FactionWorthModel {
         for (Map.Entry<WorthType, Double> entry : worthTypes.entrySet()) {
             WorthType worthType = entry.getKey();
             double worth = entry.getValue();
-            int worthId = identityCache.getSpawnerId(worthType.name());
+            int worthId = identityCache.getWorthId(worthType.name());
             addBatch(factionId, worthId, worth);
         }
     }
 
     public void addBatch(String factionId, int worthId, double worth) throws SQLException {
         Integer relationId = identityCache.getFactionWorthId(factionId, worthId);
+        Map.Entry<String, Integer> insertionKey = new AbstractMap.SimpleImmutableEntry<>(factionId, worthId);
 
         if (relationId == null) {
-            insertCounter(factionId, worthId, worth);
+            if (!insertionQueue.contains(insertionKey)) {
+                insertCounter(factionId, worthId, worth);
+                insertionQueue.add(insertionKey);
+            }
         } else {
             updateCounter(worth, relationId);
         }
@@ -84,7 +88,6 @@ public class FactionWorthModel {
         insert.setInt(2, worthId);
         insert.setDouble(3, worth);
         insert.addBatch();
-        insertionQueue.add(new AbstractMap.SimpleImmutableEntry<>(factionId, worthId));
     }
 
     private void updateCounter(double worth, Integer relationId) throws SQLException {

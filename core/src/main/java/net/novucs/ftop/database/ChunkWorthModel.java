@@ -70,9 +70,13 @@ public class ChunkWorthModel {
 
     public void addBatch(int chunkId, int worthTypeId, double value) throws SQLException {
         Integer relationId = identityCache.getChunkWorthId(chunkId, worthTypeId);
+        Map.Entry<Integer, Integer> insertionKey = new AbstractMap.SimpleImmutableEntry<>(chunkId, worthTypeId);
 
         if (relationId == null) {
-            insertCounter(chunkId, worthTypeId, value);
+            if (!insertionQueue.contains(insertionKey)) {
+                insertCounter(chunkId, worthTypeId, value);
+                insertionQueue.add(insertionKey);
+            }
         } else {
             updateCounter(value, relationId);
         }
@@ -83,7 +87,6 @@ public class ChunkWorthModel {
         insert.setInt(2, worthId);
         insert.setDouble(3, value);
         insert.addBatch();
-        insertionQueue.add(new AbstractMap.SimpleImmutableEntry<>(chunkId, worthId));
     }
 
     private void updateCounter(double value, Integer relationId) throws SQLException {
