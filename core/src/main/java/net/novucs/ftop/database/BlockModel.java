@@ -56,12 +56,16 @@ public class BlockModel {
 
     public void addBatch(Collection<BlockPos> blocks) throws SQLException {
         for (BlockPos block : blocks) {
-            int worldId = identityCache.getWorldId(block.getWorld());
-            int x = block.getX();
-            int y = block.getY();
-            int z = block.getZ();
-            addBatch(worldId, x, y, z);
+            addBatch(block);
         }
+    }
+
+    public void addBatch(BlockPos block) throws SQLException {
+        int worldId = identityCache.getWorldId(block.getWorld());
+        int x = block.getX();
+        int y = block.getY();
+        int z = block.getZ();
+        addBatch(worldId, x, y, z);
     }
 
     public void addBatch(int worldId, int x, int y, int z) throws SQLException {

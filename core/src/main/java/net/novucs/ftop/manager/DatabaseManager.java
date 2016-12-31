@@ -203,6 +203,15 @@ public class DatabaseManager {
         FactionModel factionModel = new FactionModel(connection, identityCache);
         factionModel.persist(factions);
 
+        BlockModel blockModel = BlockModel.of(connection, identityCache);
+
+        for (Map.Entry<BlockPos, Integer> entry : createdSigns) {
+            blockModel.addBatch(entry.getKey());
+        }
+
+        blockModel.executeBatch();
+        blockModel.close();
+
         SignModel signModel = SignModel.of(connection, identityCache);
         signModel.addBatch(createdSigns);
         signModel.addBatchDelete(deletedSigns);
