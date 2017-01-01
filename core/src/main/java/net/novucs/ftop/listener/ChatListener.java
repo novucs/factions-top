@@ -53,7 +53,7 @@ public class ChatListener implements Listener, PluginService {
 
         // Update chat format with rank found placeholder.
         FactionWorth worth = plugin.getWorthManager().getWorth(factionId);
-        int rank = plugin.getWorthManager().getOrderedFactions().indexOf(worth);
+        int rank = plugin.getWorthManager().getOrderedFactions().indexOf(worth) + 1;
         String rankFound = plugin.getSettings().getChatRankFound().replace(RANK_PLACEHOLDER, String.valueOf(rank));
         format = format.replace(placeholder, rankFound);
         event.setFormat(format);
