@@ -4,37 +4,39 @@ import net.novucs.ftop.entity.IdentityCache;
 import org.bukkit.Material;
 
 import java.sql.*;
-import java.util.AbstractMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class FactionMaterialModel {
 
     private static final String UPDATE = "UPDATE `faction_material_count` SET `count` = ? WHERE `id` = ?";
     private static final String INSERT = "INSERT INTO `faction_material_count` (`faction_id`, `material_id`, `count`) VALUES (?, ?, ?)";
+    private static final String DELETE = "DELETE FROM `faction_material_count` WHERE `faction_id` = ?";
 
     private final List<Map.Entry<String, Integer>> insertionQueue = new LinkedList<>();
     private final IdentityCache identityCache;
     private final PreparedStatement update;
     private final PreparedStatement insert;
+    private final PreparedStatement delete;
 
-    private FactionMaterialModel(IdentityCache identityCache, PreparedStatement update, PreparedStatement insert) {
+    private FactionMaterialModel(IdentityCache identityCache, PreparedStatement update, PreparedStatement insert, PreparedStatement delete) {
         this.identityCache = identityCache;
         this.update = update;
         this.insert = insert;
+        this.delete = delete;
     }
 
     public static FactionMaterialModel of(Connection connection, IdentityCache identityCache) throws SQLException {
         PreparedStatement update = connection.prepareStatement(UPDATE);
         PreparedStatement insert = connection.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS);
-        return new FactionMaterialModel(identityCache, update, insert);
+        PreparedStatement delete = connection.prepareStatement(DELETE);
+        return new FactionMaterialModel(identityCache, update, insert, delete);
     }
 
     public void executeBatch() throws SQLException {
         // Execute all batched update and insert operations.
         update.executeBatch();
         insert.executeBatch();
+        delete.executeBatch();
 
         // Add newly created faction-material relations to the identity cache.
         ResultSet resultSet = insert.getGeneratedKeys();
@@ -54,10 +56,10 @@ public class FactionMaterialModel {
     }
 
     public void close() throws SQLException {
+        delete.close();
         update.close();
         insert.close();
     }
-
 
     public void addBatch(String factionId, Map<Material, Integer> materials) throws SQLException {
         // Persist all material counters for this specific faction worth.
@@ -94,5 +96,16 @@ public class FactionMaterialModel {
         update.setInt(1, count);
         update.setInt(2, relationId);
         update.addBatch();
+    }
+
+    public void addBatchDelete(Collection<String> factions) throws SQLException {
+        for (String factionId : factions) {
+            addBatchDelete(factionId);
+        }
+    }
+
+    public void addBatchDelete(String factionId) throws SQLException {
+        delete.setString(1, factionId);
+        delete.addBatch();
     }
 }

@@ -7,43 +7,61 @@ import java.sql.*;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 public class FactionModel {
 
     private static final String UPDATE = "UPDATE `faction` SET `name` = ?, `total_worth` = ?, `total_spawners` = ? WHERE `id` = ?";
     private static final String INSERT = "INSERT INTO `faction` (`id`, `name`, `total_worth`, `total_spawners`) VALUES(?, ?, ?, ?)";
+    private static final String DELETE = "DELETE FROM `faction` WHERE `id` = ?";
 
     private final Connection connection;
     private final IdentityCache identityCache;
 
     private PreparedStatement update;
     private PreparedStatement insert;
+    private PreparedStatement delete;
 
     public FactionModel(Connection connection, IdentityCache identityCache) {
         this.connection = connection;
         this.identityCache = identityCache;
     }
 
-    public void persist(Collection<FactionWorth> factions) throws SQLException {
+    public void persist(Collection<FactionWorth> factions, Set<String> deletedFactions) throws SQLException {
         init();
+
+        factions.removeIf(factionWorth -> deletedFactions.contains(factionWorth.getFactionId()));
 
         persistNames(factions);
 
         persistFactions(factions);
 
-        persistStatistics(factions);
+        persistStatistics(factions, deletedFactions);
+
+        deleteFactions(deletedFactions);
 
         close();
     }
 
     private void init() throws SQLException {
+        delete = connection.prepareStatement(DELETE);
         insert = connection.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS);
         update = connection.prepareStatement(UPDATE);
     }
 
     private void close() throws SQLException {
+        delete.close();
         insert.close();
         update.close();
+    }
+
+    private void deleteFactions(Collection<String> factions) throws SQLException {
+        for (String factionId : factions) {
+            delete.setString(1, factionId);
+            delete.addBatch();
+        }
+
+        delete.executeBatch();
     }
 
     private void persistNames(Collection<FactionWorth> factions) throws SQLException {
@@ -120,10 +138,14 @@ public class FactionModel {
         resultSet.close();
     }
 
-    private void persistStatistics(Collection<FactionWorth> factions) throws SQLException {
+    private void persistStatistics(Collection<FactionWorth> factions, Collection<String> deletedFactions) throws SQLException {
         FactionMaterialModel materialModel = FactionMaterialModel.of(connection, identityCache);
         FactionSpawnerModel spawnerModel = FactionSpawnerModel.of(connection, identityCache);
         FactionWorthModel worthModel = FactionWorthModel.of(connection, identityCache);
+
+        materialModel.addBatchDelete(deletedFactions);
+        spawnerModel.addBatchDelete(deletedFactions);
+        worthModel.addBatchDelete(deletedFactions);
 
         for (FactionWorth faction : factions) {
             materialModel.addBatch(faction.getFactionId(), faction.getMaterials());

@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class DatabaseManager {
 
@@ -193,6 +194,7 @@ public class DatabaseManager {
 
     public void save(List<Map.Entry<ChunkPos, ChunkWorth>> chunks,
                      List<FactionWorth> factions,
+                     Set<String> deletedFactions,
                      Collection<Map.Entry<BlockPos, Integer>> createdSigns,
                      Collection<BlockPos> deletedSigns) throws SQLException {
         Connection connection = dataSource.getConnection();
@@ -201,7 +203,7 @@ public class DatabaseManager {
         chunkModel.persist(chunks);
 
         FactionModel factionModel = new FactionModel(connection, identityCache);
-        factionModel.persist(factions);
+        factionModel.persist(factions, deletedFactions);
 
         BlockModel blockModel = BlockModel.of(connection, identityCache);
 

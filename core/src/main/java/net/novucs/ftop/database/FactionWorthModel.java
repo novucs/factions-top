@@ -4,37 +4,39 @@ import net.novucs.ftop.WorthType;
 import net.novucs.ftop.entity.IdentityCache;
 
 import java.sql.*;
-import java.util.AbstractMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class FactionWorthModel {
 
     private static final String UPDATE = "UPDATE `faction_worth` SET `worth` = ? WHERE `id` = ?";
     private static final String INSERT = "INSERT INTO `faction_worth` (`faction_id`, `worth_id`, `worth`) VALUES (?, ?, ?)";
+    private static final String DELETE = "DELETE FROM `faction_worth` WHERE `faction_id` = ?";
 
     private final List<Map.Entry<String, Integer>> insertionQueue = new LinkedList<>();
     private final IdentityCache identityCache;
     private final PreparedStatement update;
     private final PreparedStatement insert;
+    private final PreparedStatement delete;
 
-    private FactionWorthModel(IdentityCache identityCache, PreparedStatement update, PreparedStatement insert) {
+    public FactionWorthModel(IdentityCache identityCache, PreparedStatement update, PreparedStatement insert, PreparedStatement delete) {
         this.identityCache = identityCache;
         this.update = update;
         this.insert = insert;
+        this.delete = delete;
     }
 
     public static FactionWorthModel of(Connection connection, IdentityCache identityCache) throws SQLException {
         PreparedStatement update = connection.prepareStatement(UPDATE);
         PreparedStatement insert = connection.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS);
-        return new FactionWorthModel(identityCache, update, insert);
+        PreparedStatement delete = connection.prepareStatement(DELETE);
+        return new FactionWorthModel(identityCache, update, insert, delete);
     }
 
     public void executeBatch() throws SQLException {
         // Execute all batched update and insert operations.
         update.executeBatch();
         insert.executeBatch();
+        delete.executeBatch();
 
         // Add newly created faction-spawner relations to the identity cache.
         ResultSet resultSet = insert.getGeneratedKeys();
@@ -54,10 +56,10 @@ public class FactionWorthModel {
     }
 
     public void close() throws SQLException {
+        delete.close();
         update.close();
         insert.close();
     }
-
 
     public void addBatch(String factionId, Map<WorthType, Double> worthTypes) throws SQLException {
         // Persist all spawner counters for this specific faction worth.
@@ -94,5 +96,16 @@ public class FactionWorthModel {
         update.setDouble(1, worth);
         update.setInt(2, relationId);
         update.addBatch();
+    }
+
+    public void addBatchDelete(Collection<String> factions) throws SQLException {
+        for (String factionId : factions) {
+            addBatchDelete(factionId);
+        }
+    }
+
+    public void addBatchDelete(String factionId) throws SQLException {
+        delete.setString(1, factionId);
+        delete.addBatch();
     }
 }

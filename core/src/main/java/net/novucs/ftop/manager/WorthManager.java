@@ -567,8 +567,10 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
      */
     public void rename(String factionId, String newName) {
         FactionWorth factionWorth = factions.getOrDefault(factionId, null);
+
         if (factionWorth != null) {
             factionWorth.setName(newName);
+            plugin.getPersistenceTask().queue(factionWorth);
         }
     }
 
@@ -588,5 +590,7 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
                 break;
             }
         }
+
+        plugin.getPersistenceTask().queueDeletedFaction(factionId);
     }
 }

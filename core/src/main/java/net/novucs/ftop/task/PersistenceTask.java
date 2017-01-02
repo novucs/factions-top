@@ -21,6 +21,7 @@ public class PersistenceTask extends Thread {
     private final Map<ChunkPos, ChunkWorth> worthCache = new HashMap<>();
     private final BlockingQueue<Map.Entry<ChunkPos, ChunkWorth>> chunkQueue = new LinkedBlockingQueue<>();
     private final BlockingQueue<FactionWorth> factionQueue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<String> factionDeletionQueue = new LinkedBlockingQueue<>();
     private final BlockingQueue<Map.Entry<BlockPos, Integer>> signCreationQueue = new LinkedBlockingQueue<>();
     private final BlockingQueue<BlockPos> signDeletionQueue = new LinkedBlockingQueue<>();
 
@@ -42,6 +43,12 @@ public class PersistenceTask extends Thread {
     public void queue(Collection<FactionWorth> factions) {
         if (plugin.getSettings().isDatabasePersistFactions()) {
             factionQueue.addAll(factions);
+        }
+    }
+
+    public void queueDeletedFaction(String factionId) {
+        if (plugin.getSettings().isDatabasePersistFactions()) {
+            factionDeletionQueue.add(factionId);
         }
     }
 
@@ -87,6 +94,9 @@ public class PersistenceTask extends Thread {
         List<FactionWorth> factions = new LinkedList<>();
         factionQueue.drainTo(factions);
 
+        Set<String> deletedFactions = new HashSet<>();
+        factionDeletionQueue.drainTo(deletedFactions);
+
         List<Map.Entry<BlockPos, Integer>> createdSigns = new LinkedList<>();
         signCreationQueue.drainTo(createdSigns);
 
@@ -94,7 +104,7 @@ public class PersistenceTask extends Thread {
         signDeletionQueue.drainTo(deletedSigns);
 
         try {
-            plugin.getDatabaseManager().save(chunks, factions, createdSigns, deletedSigns);
+            plugin.getDatabaseManager().save(chunks, factions, deletedFactions, createdSigns, deletedSigns);
         } catch (SQLException e) {
             plugin.getLogger().log(Level.SEVERE, "Failed to persist chunk data", e);
         }
