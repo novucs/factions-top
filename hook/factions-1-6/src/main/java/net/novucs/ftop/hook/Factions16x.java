@@ -5,6 +5,7 @@ import com.google.common.collect.Multimap;
 import com.massivecraft.factions.*;
 import com.massivecraft.factions.event.*;
 import com.massivecraft.factions.zcore.persist.MemoryBoard;
+import com.massivecraft.factions.zcore.persist.MemoryFactions;
 import net.novucs.ftop.entity.ChunkPos;
 import net.novucs.ftop.hook.event.*;
 import net.novucs.ftop.hook.event.FactionDisbandEvent;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 public class Factions16x extends FactionsHook {
 
     private Map<FLocation, String> flocationIds;
+    private Map<String, Faction> factions;
 
     public Factions16x(Plugin plugin) {
         super(plugin);
@@ -41,6 +43,11 @@ public class Factions16x extends FactionsHook {
             flocationIdsField.setAccessible(true);
             flocationIds = (Map<FLocation, String>) flocationIdsField.get(Board.getInstance());
             flocationIdsField.setAccessible(false);
+
+            Field factionsField = MemoryFactions.class.getDeclaredField("factions");
+            factionsField.setAccessible(true);
+            factions = (Map<String, Faction>) factionsField.get(Factions.getInstance());
+            factionsField.setAccessible(false);
         } catch (NoSuchFieldException | IllegalAccessException ex) {
             getPlugin().getLogger().severe("Factions version found is incompatible!");
             getPlugin().getServer().getPluginManager().disablePlugin(getPlugin());
@@ -90,6 +97,11 @@ public class Factions16x extends FactionsHook {
         List<ChunkPos> target = new LinkedList<>();
         target.addAll(getChunkPos(flocationIds.keySet()));
         return target;
+    }
+
+    @Override
+    public Set<String> getFactionIds() {
+        return factions.keySet();
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

@@ -10,6 +10,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public abstract class FactionsHook implements Listener, PluginService {
@@ -57,4 +58,6 @@ public abstract class FactionsHook implements Listener, PluginService {
     public abstract List<UUID> getMembers(String factionId);
 
     public abstract List<ChunkPos> getClaims();
+
+    public abstract Set<String> getFactionIds();
 }

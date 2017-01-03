@@ -92,6 +92,11 @@ public class Factions18x extends FactionsHook {
         return target;
     }
 
+    @Override
+    public Set<String> getFactionIds() {
+        return Factions.i.getMap().keySet();
+    }
+
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDisband(com.massivecraft.factions.event.FactionDisbandEvent event) {
         String factionId = event.getFaction().getId();

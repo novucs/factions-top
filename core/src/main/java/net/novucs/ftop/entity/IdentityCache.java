@@ -34,6 +34,10 @@ public class IdentityCache {
     private final BiMap<Key, Integer> block = HashBiMap.create();
     private final BiMap<Key, Integer> sign = HashBiMap.create();
 
+    public Set<String> getFactionIds() {
+        return faction;
+    }
+
     public boolean hasChunkMaterial(int chunkId, int materialId) {
         return chunkMaterial.containsKey(new Key<>(chunkId, materialId));
     }

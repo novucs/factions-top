@@ -74,6 +74,10 @@ public class PersistenceTask extends Thread {
     @Override
     public void run() {
         while (!isInterrupted()) {
+            if (plugin.getSettings().isDatabasePersistFactions()) {
+                deleteInvalidFactions();
+            }
+
             persist();
 
             try {
@@ -85,6 +89,16 @@ public class PersistenceTask extends Thread {
         }
 
         persist();
+    }
+
+    private void deleteInvalidFactions() {
+        Set<String> factionIds = plugin.getFactionsHook().getFactionIds();
+
+        for (String factionId : plugin.getDatabaseManager().getIdentityCache().getFactionIds()) {
+            if (!factionIds.contains(factionId)) {
+                factionDeletionQueue.add(factionId);
+            }
+        }
     }
 
     private void persist() {

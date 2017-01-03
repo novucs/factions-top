@@ -83,6 +83,11 @@ public class Factions27x extends FactionsHook {
         return target;
     }
 
+    @Override
+    public Set<String> getFactionIds() {
+        return FactionColl.get().getId2entity().keySet();
+    }
+
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDisband(EventFactionsDisband event) {
         String factionId = event.getFactionId();

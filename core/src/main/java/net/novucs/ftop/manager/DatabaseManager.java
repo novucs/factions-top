@@ -168,6 +168,10 @@ public class DatabaseManager {
         statement.executeUpdate();
     }
 
+    public IdentityCache getIdentityCache() {
+        return identityCache;
+    }
+
     public DataDump load() throws SQLException {
         Connection connection = dataSource.getConnection();
 
