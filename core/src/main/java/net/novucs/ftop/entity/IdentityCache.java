@@ -1,7 +1,9 @@
 package net.novucs.ftop.entity;
 
 import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Table;
 import net.novucs.ftop.WorthType;
 import net.novucs.ftop.util.GenericUtils;
 import org.bukkit.Material;
@@ -25,9 +27,9 @@ public class IdentityCache {
     private final BiMap<Key, Integer> worth = HashBiMap.create();
 
     private final Set<String> faction = new HashSet<>();
-    private final BiMap<Key, Integer> factionMaterial = HashBiMap.create();
-    private final BiMap<Key, Integer> factionSpawner = HashBiMap.create();
-    private final BiMap<Key, Integer> factionWorth = HashBiMap.create();
+    private final Table<String, Integer, Integer> factionMaterial = HashBasedTable.create();
+    private final Table<String, Integer, Integer> factionSpawner = HashBasedTable.create();
+    private final Table<String, Integer, Integer> factionWorth = HashBasedTable.create();
 
     private final BiMap<Key, Integer> block = HashBiMap.create();
     private final BiMap<Key, Integer> sign = HashBiMap.create();
@@ -69,15 +71,15 @@ public class IdentityCache {
     }
 
     public boolean hasFactionMaterial(String factionId, int materialId) {
-        return factionMaterial.containsKey(new Key<>(factionId, materialId));
+        return factionMaterial.contains(factionId, materialId);
     }
 
     public boolean hasFactionSpawner(String factionId, int spawnerId) {
-        return factionSpawner.containsKey(new Key<>(factionId, spawnerId));
+        return factionSpawner.contains(factionId, spawnerId);
     }
 
     public boolean hasFactionWorth(String factionId, int worthId) {
-        return factionWorth.containsKey(new Key<>(factionId, worthId));
+        return factionWorth.contains(factionId, worthId);
     }
 
     public boolean hasBlock(int worldId, int x, int y, int z) {
@@ -121,15 +123,15 @@ public class IdentityCache {
     }
 
     public Integer getFactionMaterialId(String factionId, int materialId) {
-        return factionMaterial.get(new Key<>(factionId, materialId));
+        return factionMaterial.get(factionId, materialId);
     }
 
     public Integer getFactionSpawnerId(String factionId, int spawnerId) {
-        return factionSpawner.get(new Key<>(factionId, spawnerId));
+        return factionSpawner.get(factionId, spawnerId);
     }
 
     public Integer getFactionWorthId(String factionId, int worthId) {
-        return factionWorth.get(new Key<>(factionId, worthId));
+        return factionWorth.get(factionId, worthId);
     }
 
     public Integer getBlockId(int worldId, int x, int y, int z) {
@@ -211,18 +213,21 @@ public class IdentityCache {
 
     public void removeFaction(String factionId) {
         faction.remove(factionId);
+        factionMaterial.row(factionId).clear();
+        factionSpawner.row(factionId).clear();
+        factionWorth.row(factionId).clear();
     }
 
     public void setFactionMaterialId(String factionId, int materialId, Integer value) {
-        factionMaterial.put(new Key<>(factionId, materialId), value);
+        factionMaterial.put(factionId, materialId, value);
     }
 
     public void setFactionSpawnerId(String factionId, int spawnerId, Integer value) {
-        factionSpawner.put(new Key<>(factionId, spawnerId), value);
+        factionSpawner.put(factionId, spawnerId, value);
     }
 
     public void setFactionWorthId(String factionId, int worthId, Integer value) {
-        factionWorth.put(new Key<>(factionId, worthId), value);
+        factionWorth.put(factionId, worthId, value);
     }
 
     public void setBlockId(int worldId, int x, int y, int z, Integer value) {

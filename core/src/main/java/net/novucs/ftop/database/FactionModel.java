@@ -59,6 +59,7 @@ public class FactionModel {
         for (String factionId : factions) {
             delete.setString(1, factionId);
             delete.addBatch();
+            identityCache.removeFaction(factionId);
         }
 
         delete.executeBatch();
