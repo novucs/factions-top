@@ -120,7 +120,9 @@ public class PersistenceTask extends Thread {
         try {
             plugin.getDatabaseManager().save(chunks, factions, deletedFactions, createdSigns, deletedSigns);
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.SEVERE, "Failed to persist chunk data", e);
+            plugin.getLogger().log(Level.SEVERE, "Failed to persist queued updates to the database");
+            plugin.getLogger().log(Level.SEVERE, "Are the database credentials in the config correct?");
+            plugin.getLogger().log(Level.SEVERE, "Stack trace: ", e);
         }
     }
 

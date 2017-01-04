@@ -181,9 +181,10 @@ public final class FactionsTopPlugin extends JavaPlugin {
             loadedChunks = dataDump.getChunks();
             loadedSigns = dataDump.getSigns();
         } catch (SQLException e) {
-            getLogger().severe("Failed to correctly communicate with database!");
-            getLogger().log(Level.SEVERE, "The errors are as follows:", e);
-            getLogger().severe("Disabling FactionsTop . . .");
+            getLogger().log(Level.SEVERE, "Failed to initialize the database");
+            getLogger().log(Level.SEVERE, "Are the database credentials in the config correct?");
+            getLogger().log(Level.SEVERE, "Stack trace: ", e);
+            getLogger().log(Level.SEVERE, "Disabling FactionsTop . . .");
             getServer().getPluginManager().disablePlugin(this);
             return false;
         }
