@@ -29,6 +29,7 @@
         <module>factions-2-7</module>
         <module>manager</module>
         <module>essentials</module>
+        <module>mvdwplaceholderapi</module>
         <module>vault</module>
     </modules>
 

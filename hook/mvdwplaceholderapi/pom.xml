@@ -8,20 +8,22 @@
         <artifactId>hook</artifactId>
         <groupId>net.novucs.ftop</groupId>
         <version>1.1.1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>net.novucs.ftop.hook</groupId>
-    <artifactId>essentials</artifactId>
+    <artifactId>mvdwplaceholderapi</artifactId>
     <version>1.1.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>Essentials-Hook</name>
-    <description>Provides economy support with Essentials.</description>
+    <name>MVdWPlaceholderAPI-Hook</name>
+    <description>Provides placeholder support with MVdWPlaceholderAPI.</description>
 
     <repositories>
         <repository>
-            <id>ess-repo</id>
-            <url>http://repo.ess3.net/content/groups/essentials</url>
+            <id>mvdw-software</id>
+            <name>MVdW Public Repositories</name>
+            <url>http://repo.mvdw-software.be/content/groups/public/</url>
         </repository>
     </repositories>
 
@@ -33,10 +35,16 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>net.ess3</groupId>
-            <artifactId>Essentials</artifactId>
-            <version>2.13-SNAPSHOT</version>
+            <groupId>be.maximvdw</groupId>
+            <artifactId>MVdWPlaceholderAPI</artifactId>
+            <version>1.0.2-SNAPSHOT</version>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.bukkit</groupId>
+                    <artifactId>bukkit</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 </project>

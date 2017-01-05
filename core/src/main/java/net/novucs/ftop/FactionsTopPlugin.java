@@ -14,6 +14,8 @@ import net.novucs.ftop.manager.DatabaseManager;
 import net.novucs.ftop.manager.GuiManager;
 import net.novucs.ftop.manager.SignManager;
 import net.novucs.ftop.manager.WorthManager;
+import net.novucs.ftop.replacer.LastReplacer;
+import net.novucs.ftop.replacer.RankReplacer;
 import net.novucs.ftop.task.ChunkWorthTask;
 import net.novucs.ftop.task.PersistenceTask;
 import net.novucs.ftop.task.RecalculateTask;
@@ -63,6 +65,7 @@ public final class FactionsTopPlugin extends JavaPlugin {
     private CraftbukkitHook craftbukkitHook;
     private EconomyHook economyHook;
     private FactionsHook factionsHook;
+    private PlaceholderHook placeholderHook;
     private DatabaseManager databaseManager;
 
     public ChunkWorthTask getChunkWorthTask() {
@@ -297,6 +300,25 @@ public final class FactionsTopPlugin extends JavaPlugin {
         }
     }
 
+    private void loadPlaceholderHook() {
+        Plugin mvdwPlaceholderApi = getServer().getPluginManager().getPlugin("MVdWPlaceholderAPI");
+
+        if (mvdwPlaceholderApi == null) {
+            getLogger().info("MVdWPlaceholderAPI not found, no placeholders created.");
+            return;
+        }
+
+        RankReplacer rankReplacer = new RankReplacer(this);
+        LastReplacer lastReplacer = new LastReplacer(this);
+
+        placeholderHook = new MVdWPlaceholderAPIHook(this, rankReplacer, lastReplacer);
+        boolean updated = placeholderHook.initialize(getSettings().getPlaceholdersEnabledRanks());
+
+        if (updated) {
+            getLogger().info("MVdWPlaceholderAPI found, added placeholders.");
+        }
+    }
+
     /**
      * Attempts to load plugin settings from disk. In the event of an error,
      * the plugin will disable all services until the settings have been
@@ -316,6 +338,9 @@ public final class FactionsTopPlugin extends JavaPlugin {
 
             // Update the plugin state to active.
             active = true;
+
+            // Load all placeholders.
+            loadPlaceholderHook();
             return;
         } catch (InvalidConfigurationException e) {
             getLogger().severe("Unable to load settings from config.yml");

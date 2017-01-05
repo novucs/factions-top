@@ -19,6 +19,9 @@ Configuration walkthrough:
 - - rank-placeholder: The text to replace in the original chat format.
 - - rank-found: How the placeholder should look when a rank is found.
 - - rank-not-found: How the placeholder should look when a rank is NOT found.
+- placeholders: MVdWPlaceholderAPI settings.
+- - faction-not-found: What to replace with when no faction is found.
+- - enabled-ranks: The ranks to be loaded into the MVdWPlaceholderAPI.
 - database: Various database settings, MySQL and H2 are supported.
 - - persist-interval: Millis between database updates.
 - - persist-factions: Saves factions in database for websites to parse.
@@ -83,3 +86,7 @@ Body only:
 - {worth:<worth type>} - Value of a specific worth type.
 - {count:spawner:<spawner>} - Count of a specific spawner type.
 - {count:material:<material>} - Count of a specific material.
+
+MVdW Placeholders:
+{factions-top-rank-#} - The faction name of this specific rank.
+{factions-top-rank-last} - The faction name ranked last place.
