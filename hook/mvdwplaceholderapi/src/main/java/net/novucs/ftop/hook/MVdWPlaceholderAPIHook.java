@@ -23,11 +23,11 @@ public class MVdWPlaceholderAPIHook implements PlaceholderHook {
 
     @Override
     public boolean initialize(List<Integer> enabledRanks) {
-        boolean updated = PlaceholderAPI.registerPlaceholder(plugin, "factions-top-rank-last", new LastReplacer(lastReplacer));
+        boolean updated = PlaceholderAPI.registerPlaceholder(plugin, "factionstop_rank:last", new LastReplacer(lastReplacer));
 
         for (int rank : enabledRanks) {
             RankReplacer replacer = new RankReplacer(rankReplacer, rank);
-            if (PlaceholderAPI.registerPlaceholder(plugin, "factions-top-rank-" + rank, replacer)) {
+            if (PlaceholderAPI.registerPlaceholder(plugin, "factionstop_rank:" + rank, replacer)) {
                 updated = true;
             }
         }

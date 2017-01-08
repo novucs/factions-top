@@ -88,5 +88,6 @@ Body only:
 - {count:material:<material>} - Count of a specific material.
 
 MVdW Placeholders:
-- {factions-top-rank-#} - The faction name of this specific rank.
-- {factions-top-rank-last} - The faction name ranked last place.
+- {factionstop_rank:*}
+- - The faction name of the provided rank by replacing * with a number.
+- - The faction name in last place by replacing * with "last".
