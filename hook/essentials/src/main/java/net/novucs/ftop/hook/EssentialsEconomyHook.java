@@ -59,7 +59,13 @@ public class EssentialsEconomyHook implements EconomyHook, Listener {
 
     @Override
     public double getBalance(UUID playerId) {
-        User user = essentials.getUser(playerId);
+        User user;
+        try {
+            user = essentials.getUser(playerId);
+        } catch (NullPointerException e) {
+            return 0;
+        }
+
         if (user != null) {
             return user.getMoney().doubleValue();
         }
