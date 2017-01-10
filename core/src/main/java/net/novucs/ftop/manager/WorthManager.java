@@ -387,32 +387,41 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
         chunkWorth.setNextRecalculation(Long.MAX_VALUE);
 
         // Schedule this chunk to be recalculated on a separate thread.
+        if (reason == RecalculateReason.UNLOAD) {
+            forceRecalculate(pos, chunk);
+        }
+
         // Occasionally block updates are not updated in the chunk on the
         // same tick, getting the chunk snapshot in the next tick fixes
-        // this issue.
-        plugin.getServer().getScheduler().runTask(plugin, () -> {
-            // Clear the recalculate queue in the event of multiple block
-            // changes in the same tick.
-            recalculateQueue.row(pos).clear();
+        // this issue. This does not apply to chunk unloads.
+        else {
+            plugin.getServer().getScheduler().runTask(plugin, () ->
+                    forceRecalculate(pos, chunk));
+        }
+    }
 
-            // Update the chunk spawner worth on the main thread, unfortunately
-            // there is no better method of doing this. Same with chests.
-            Map<EntityType, Integer> spawners = new EnumMap<>(EntityType.class);
-            Map<Material, Integer> materials = new EnumMap<>(Material.class);
+    private void forceRecalculate(ChunkPos pos, Chunk chunk) {
+        // Clear the recalculate queue in the event of multiple block
+        // changes in the same tick.
+        recalculateQueue.row(pos).clear();
 
-            if (plugin.getSettings().isEnabled(WorthType.SPAWNER)) {
-                set(pos, WorthType.SPAWNER, getSpawnerWorth(chunk, spawners));
-            }
+        // Update the chunk spawner worth on the main thread, unfortunately
+        // there is no better method of doing this. Same with chests.
+        Map<EntityType, Integer> spawners = new EnumMap<>(EntityType.class);
+        Map<Material, Integer> materials = new EnumMap<>(Material.class);
 
-            if (plugin.getSettings().isEnabled(WorthType.CHEST)) {
-                set(pos, WorthType.CHEST, getChestWorth(chunk, materials, spawners));
-            }
+        if (plugin.getSettings().isEnabled(WorthType.SPAWNER)) {
+            set(pos, WorthType.SPAWNER, getSpawnerWorth(chunk, spawners));
+        }
 
-            setSpawners(pos, spawners);
-            materialsQueue.row(pos).putAll(materials);
+        if (plugin.getSettings().isEnabled(WorthType.CHEST)) {
+            set(pos, WorthType.CHEST, getChestWorth(chunk, materials, spawners));
+        }
 
-            plugin.getChunkWorthTask().queue(chunk.getChunkSnapshot());
-        });
+        setSpawners(pos, spawners);
+        materialsQueue.row(pos).putAll(materials);
+
+        plugin.getChunkWorthTask().queue(chunk.getChunkSnapshot());
     }
 
     /**
