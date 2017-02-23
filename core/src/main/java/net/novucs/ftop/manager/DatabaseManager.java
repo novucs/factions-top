@@ -9,8 +9,6 @@ import net.novucs.ftop.entity.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -196,11 +194,11 @@ public class DatabaseManager {
         return new DataDump(chunks, signs);
     }
 
-    public void save(List<Map.Entry<ChunkPos, ChunkWorth>> chunks,
-                     List<FactionWorth> factions,
+    public void save(Set<Map.Entry<ChunkPos, ChunkWorth>> chunks,
+                     Set<FactionWorth> factions,
                      Set<String> deletedFactions,
-                     Collection<Map.Entry<BlockPos, Integer>> createdSigns,
-                     Collection<BlockPos> deletedSigns) throws SQLException {
+                     Set<Map.Entry<BlockPos, Integer>> createdSigns,
+                     Set<BlockPos> deletedSigns) throws SQLException {
         Connection connection = dataSource.getConnection();
 
         ChunkModel chunkModel = new ChunkModel(connection, identityCache);

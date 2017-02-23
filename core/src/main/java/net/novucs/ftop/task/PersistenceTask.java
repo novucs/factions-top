@@ -102,19 +102,19 @@ public class PersistenceTask extends Thread {
     }
 
     private void persist() {
-        List<Map.Entry<ChunkPos, ChunkWorth>> chunks = new LinkedList<>();
+        Set<Map.Entry<ChunkPos, ChunkWorth>> chunks = new HashSet<>();
         chunkQueue.drainTo(chunks);
 
-        List<FactionWorth> factions = new LinkedList<>();
+        Set<FactionWorth> factions = new HashSet<>();
         factionQueue.drainTo(factions);
 
         Set<String> deletedFactions = new HashSet<>();
         factionDeletionQueue.drainTo(deletedFactions);
 
-        List<Map.Entry<BlockPos, Integer>> createdSigns = new LinkedList<>();
+        Set<Map.Entry<BlockPos, Integer>> createdSigns = new HashSet<>();
         signCreationQueue.drainTo(createdSigns);
 
-        List<BlockPos> deletedSigns = new LinkedList<>();
+        Set<BlockPos> deletedSigns = new HashSet<>();
         signDeletionQueue.drainTo(deletedSigns);
 
         try {
