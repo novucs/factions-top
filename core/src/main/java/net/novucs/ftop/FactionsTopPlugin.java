@@ -108,6 +108,10 @@ public final class FactionsTopPlugin extends JavaPlugin {
         return databaseManager;
     }
 
+    public void setDatabaseManager(DatabaseManager databaseManager) {
+        this.databaseManager = databaseManager;
+    }
+
     @Override
     public void onEnable() {
         if (!loadFactionsHook()) {

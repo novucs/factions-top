@@ -6,6 +6,7 @@ import net.novucs.ftop.entity.BlockPos;
 import net.novucs.ftop.entity.ChunkPos;
 import net.novucs.ftop.entity.ChunkWorth;
 import net.novucs.ftop.entity.FactionWorth;
+import net.novucs.ftop.manager.DatabaseManager;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 
@@ -123,6 +124,15 @@ public class PersistenceTask extends Thread {
             plugin.getLogger().log(Level.SEVERE, "Failed to persist queued updates to the database");
             plugin.getLogger().log(Level.SEVERE, "Are the database credentials in the config correct?");
             plugin.getLogger().log(Level.SEVERE, "Stack trace: ", e);
+
+            plugin.getLogger().log(Level.INFO, "Attempting to regenerate HikariCP datasource...");
+
+            try {
+                plugin.setDatabaseManager(DatabaseManager.create(plugin.getSettings().getHikariConfig()));
+                plugin.getLogger().log(Level.SEVERE, "Regeneration successful, issue is with HikariCP datasource");
+            } catch (SQLException ignore) {
+                plugin.getLogger().log(Level.SEVERE, "Failed to regenerate, issue not with HikariCP datasource");
+            }
         }
     }
 
