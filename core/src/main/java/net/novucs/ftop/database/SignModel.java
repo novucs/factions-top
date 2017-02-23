@@ -4,10 +4,10 @@ import net.novucs.ftop.entity.BlockPos;
 import net.novucs.ftop.entity.IdentityCache;
 
 import java.sql.*;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class SignModel {
 
@@ -63,7 +63,7 @@ public class SignModel {
         delete.close();
     }
 
-    public void addBatch(Collection<Map.Entry<BlockPos, Integer>> signs) throws SQLException {
+    public void addBatch(Set<Map.Entry<BlockPos, Integer>> signs) throws SQLException {
         // Persist all material counters for this specific chunk worth.
         for (Map.Entry<BlockPos, Integer> entry : signs) {
             BlockPos block = entry.getKey();
@@ -97,7 +97,7 @@ public class SignModel {
         update.addBatch();
     }
 
-    public void addBatchDelete(Collection<BlockPos> signs) throws SQLException {
+    public void addBatchDelete(Set<BlockPos> signs) throws SQLException {
         for (BlockPos block : signs) {
             int worldId = identityCache.getWorldId(block.getWorld());
             int blockId = identityCache.getBlockId(worldId, block.getX(), block.getY(), block.getZ());

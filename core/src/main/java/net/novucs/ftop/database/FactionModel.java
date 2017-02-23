@@ -4,9 +4,7 @@ import net.novucs.ftop.entity.FactionWorth;
 import net.novucs.ftop.entity.IdentityCache;
 
 import java.sql.*;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 
 public class FactionModel {
@@ -27,7 +25,7 @@ public class FactionModel {
         this.identityCache = identityCache;
     }
 
-    public void persist(Collection<FactionWorth> factions, Set<String> deletedFactions) throws SQLException {
+    public void persist(Set<FactionWorth> factions, Set<String> deletedFactions) throws SQLException {
         init();
 
         factions.removeIf(factionWorth -> deletedFactions.contains(factionWorth.getFactionId()));
@@ -55,7 +53,7 @@ public class FactionModel {
         update.close();
     }
 
-    private void deleteFactions(Collection<String> factions) throws SQLException {
+    private void deleteFactions(Set<String> factions) throws SQLException {
         for (String factionId : factions) {
             delete.setString(1, factionId);
             delete.addBatch();
@@ -65,7 +63,7 @@ public class FactionModel {
         delete.executeBatch();
     }
 
-    private void persistNames(Collection<FactionWorth> factions) throws SQLException {
+    private void persistNames(Set<FactionWorth> factions) throws SQLException {
         MaterialModel materialModel = MaterialModel.of(connection, identityCache);
         SpawnerModel spawnerModel = SpawnerModel.of(connection, identityCache);
         WorthModel worthModel = WorthModel.of(connection, identityCache);
@@ -85,16 +83,16 @@ public class FactionModel {
         worthModel.close();
     }
 
-    private void persistFactions(Collection<FactionWorth> factions) throws SQLException {
+    private void persistFactions(Set<FactionWorth> factions) throws SQLException {
         // Insert chunk positions that are not currently in the database.
-        List<FactionWorth> createdFactions = insertFactions(factions);
+        Set<FactionWorth> createdFactions = insertFactions(factions);
 
         // Add newly created chunk positions to the identity cache.
         cacheFactionIds(createdFactions);
     }
 
-    private List<FactionWorth> insertFactions(Collection<FactionWorth> factions) throws SQLException {
-        List<FactionWorth> createdFactions = new LinkedList<>();
+    private Set<FactionWorth> insertFactions(Set<FactionWorth> factions) throws SQLException {
+        Set<FactionWorth> createdFactions = new HashSet<>();
 
         for (FactionWorth factionWorth : factions) {
             if (identityCache.hasFaction(factionWorth.getFactionId())) {
@@ -118,7 +116,7 @@ public class FactionModel {
         update.addBatch();
     }
 
-    private void insertFaction(List<FactionWorth> createdFactions, FactionWorth factionWorth) throws SQLException {
+    private void insertFaction(Set<FactionWorth> createdFactions, FactionWorth factionWorth) throws SQLException {
         insert.setString(1, factionWorth.getFactionId());
         insert.setString(2, factionWorth.getName());
         insert.setDouble(3, factionWorth.getTotalWorth());
@@ -127,7 +125,7 @@ public class FactionModel {
         createdFactions.add(factionWorth);
     }
 
-    private void cacheFactionIds(List<FactionWorth> createdFactions) throws SQLException {
+    private void cacheFactionIds(Set<FactionWorth> createdFactions) throws SQLException {
         ResultSet resultSet = insert.getGeneratedKeys();
 
         for (FactionWorth factionWorth : createdFactions) {
@@ -139,7 +137,7 @@ public class FactionModel {
         resultSet.close();
     }
 
-    private void persistStatistics(Collection<FactionWorth> factions, Collection<String> deletedFactions) throws SQLException {
+    private void persistStatistics(Set<FactionWorth> factions, Set<String> deletedFactions) throws SQLException {
         FactionMaterialModel materialModel = FactionMaterialModel.of(connection, identityCache);
         FactionSpawnerModel spawnerModel = FactionSpawnerModel.of(connection, identityCache);
         FactionWorthModel worthModel = FactionWorthModel.of(connection, identityCache);

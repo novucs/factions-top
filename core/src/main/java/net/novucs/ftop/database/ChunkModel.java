@@ -5,10 +5,9 @@ import net.novucs.ftop.entity.ChunkWorth;
 import net.novucs.ftop.entity.IdentityCache;
 
 import java.sql.*;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class ChunkModel {
 
@@ -24,7 +23,7 @@ public class ChunkModel {
         this.identityCache = identityCache;
     }
 
-    public void persist(Collection<Map.Entry<ChunkPos, ChunkWorth>> chunks) throws SQLException {
+    public void persist(Set<Map.Entry<ChunkPos, ChunkWorth>> chunks) throws SQLException {
         init();
 
         persistNames(chunks);
@@ -44,7 +43,7 @@ public class ChunkModel {
         insert.close();
     }
 
-    private void persistNames(Collection<Map.Entry<ChunkPos, ChunkWorth>> chunks) throws SQLException {
+    private void persistNames(Set<Map.Entry<ChunkPos, ChunkWorth>> chunks) throws SQLException {
         MaterialModel materialModel = MaterialModel.of(connection, identityCache);
         SpawnerModel spawnerModel = SpawnerModel.of(connection, identityCache);
         WorldModel worldModel = WorldModel.of(connection, identityCache);
@@ -71,16 +70,16 @@ public class ChunkModel {
         worthModel.close();
     }
 
-    private void persistPositions(Collection<Map.Entry<ChunkPos, ChunkWorth>> chunks) throws SQLException {
+    private void persistPositions(Set<Map.Entry<ChunkPos, ChunkWorth>> chunks) throws SQLException {
         // Insert chunk positions that are not currently in the database.
-        List<Map.Entry<ChunkPos, ChunkWorth>> createdChunks = insertChunkPositions(chunks);
+        Set<Map.Entry<ChunkPos, ChunkWorth>> createdChunks = insertChunkPositions(chunks);
 
         // Add newly created chunk positions to the identity cache.
         cacheChunkIds(createdChunks);
     }
 
-    private List<Map.Entry<ChunkPos, ChunkWorth>> insertChunkPositions(Collection<Map.Entry<ChunkPos, ChunkWorth>> chunks) throws SQLException {
-        List<Map.Entry<ChunkPos, ChunkWorth>> createdChunks = new LinkedList<>();
+    private Set<Map.Entry<ChunkPos, ChunkWorth>> insertChunkPositions(Set<Map.Entry<ChunkPos, ChunkWorth>> chunks) throws SQLException {
+        Set<Map.Entry<ChunkPos, ChunkWorth>> createdChunks = new HashSet<>();
 
         for (Map.Entry<ChunkPos, ChunkWorth> entry : chunks) {
             ChunkPos position = entry.getKey();
@@ -102,7 +101,7 @@ public class ChunkModel {
         return createdChunks;
     }
 
-    private void cacheChunkIds(List<Map.Entry<ChunkPos, ChunkWorth>> createdChunks) throws SQLException {
+    private void cacheChunkIds(Set<Map.Entry<ChunkPos, ChunkWorth>> createdChunks) throws SQLException {
         ResultSet resultSet = insert.getGeneratedKeys();
 
         for (Map.Entry<ChunkPos, ChunkWorth> entry : createdChunks) {
@@ -118,7 +117,7 @@ public class ChunkModel {
         resultSet.close();
     }
 
-    private void persistStatistics(Collection<Map.Entry<ChunkPos, ChunkWorth>> chunks) throws SQLException {
+    private void persistStatistics(Set<Map.Entry<ChunkPos, ChunkWorth>> chunks) throws SQLException {
         ChunkMaterialModel chunkMaterialModel = ChunkMaterialModel.of(connection, identityCache);
         ChunkSpawnerModel chunkSpawnerModel = ChunkSpawnerModel.of(connection, identityCache);
         ChunkWorthModel chunkWorthModel = ChunkWorthModel.of(connection, identityCache);
