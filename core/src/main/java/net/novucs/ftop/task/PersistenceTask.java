@@ -128,6 +128,7 @@ public class PersistenceTask extends Thread {
             plugin.getLogger().log(Level.INFO, "Attempting to regenerate HikariCP datasource...");
 
             try {
+                plugin.getDatabaseManager().close();
                 plugin.setDatabaseManager(DatabaseManager.create(plugin.getSettings().getHikariConfig()));
                 plugin.getLogger().log(Level.SEVERE, "Regeneration successful, issue is with HikariCP datasource");
             } catch (SQLException ignore) {
