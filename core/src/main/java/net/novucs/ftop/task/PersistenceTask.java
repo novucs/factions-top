@@ -2,10 +2,7 @@ package net.novucs.ftop.task;
 
 import net.novucs.ftop.FactionsTopPlugin;
 import net.novucs.ftop.WorthType;
-import net.novucs.ftop.entity.BlockPos;
-import net.novucs.ftop.entity.ChunkPos;
-import net.novucs.ftop.entity.ChunkWorth;
-import net.novucs.ftop.entity.FactionWorth;
+import net.novucs.ftop.entity.*;
 import net.novucs.ftop.manager.DatabaseManager;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
@@ -128,8 +125,9 @@ public class PersistenceTask extends Thread {
             plugin.getLogger().log(Level.INFO, "Attempting to regenerate HikariCP datasource...");
 
             try {
+                IdentityCache identityCache = plugin.getDatabaseManager().getIdentityCache();
                 plugin.getDatabaseManager().close();
-                plugin.setDatabaseManager(DatabaseManager.create(plugin.getSettings().getHikariConfig()));
+                plugin.setDatabaseManager(DatabaseManager.create(plugin.getSettings().getHikariConfig(), identityCache));
                 plugin.getLogger().log(Level.SEVERE, "Regeneration successful, issue is with HikariCP datasource");
             } catch (SQLException ignore) {
                 plugin.getLogger().log(Level.SEVERE, "Failed to regenerate, issue not with HikariCP datasource");

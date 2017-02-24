@@ -15,14 +15,18 @@ import java.util.Set;
 public class DatabaseManager {
 
     private final HikariDataSource dataSource;
-    private final IdentityCache identityCache = new IdentityCache();
+    private final IdentityCache identityCache;
 
     public static DatabaseManager create(HikariConfig hikariConfig) throws SQLException {
+        return create(hikariConfig, new IdentityCache());
+    }
+
+    public static DatabaseManager create(HikariConfig hikariConfig, IdentityCache identityCache) throws SQLException {
         // Create the datasource.
         HikariDataSource dataSource = new HikariDataSource(hikariConfig);
 
         // Create the database manager.
-        DatabaseManager manager = new DatabaseManager(dataSource);
+        DatabaseManager manager = new DatabaseManager(dataSource, identityCache);
 
         // Initialize the database.
         Connection connection = dataSource.getConnection();
@@ -33,8 +37,9 @@ public class DatabaseManager {
         return manager;
     }
 
-    private DatabaseManager(HikariDataSource dataSource) {
+    private DatabaseManager(HikariDataSource dataSource, IdentityCache identityCache) {
         this.dataSource = dataSource;
+        this.identityCache = identityCache;
     }
 
     private void init(Connection connection) throws SQLException {
