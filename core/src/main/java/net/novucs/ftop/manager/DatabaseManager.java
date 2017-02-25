@@ -6,9 +6,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import net.novucs.ftop.database.*;
 import net.novucs.ftop.entity.*;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Map;
 import java.util.Set;
 
@@ -131,11 +129,23 @@ public class DatabaseManager {
 
         statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `faction` (" +
                 "`id` VARCHAR(40) NOT NULL, " +
-                "`name` VARCHAR(40) NOT NULL UNIQUE, " +
+                "`name` VARCHAR(40) NOT NULL, " +
                 "`total_worth` FLOAT NOT NULL, " +
                 "`total_spawners` INT NOT NULL, " +
                 "PRIMARY KEY (`id`))");
         statement.executeUpdate();
+
+        DatabaseMetaData metaData = connection.getMetaData();
+        ResultSet resultSet = metaData.getIndexInfo(null, null, "faction", true, false);
+
+        while (resultSet.next()) {
+            String indexName = resultSet.getString("INDEX_NAME");
+
+            if (indexName.equals("name")) {
+                statement = connection.prepareStatement("DROP INDEX name ON faction");
+                statement.executeUpdate();
+            }
+        }
 
         statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `faction_worth` (" +
                 "`id` INT NOT NULL AUTO_INCREMENT, " +
