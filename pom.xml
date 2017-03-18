@@ -6,7 +6,7 @@
 
     <groupId>net.novucs</groupId>
     <artifactId>factions-top</artifactId>
-    <version>1.1.2-SNAPSHOT</version>
+    <version>1.1.2</version>
     <packaging>pom</packaging>
 
     <name>FactionsTop-Parent</name>
