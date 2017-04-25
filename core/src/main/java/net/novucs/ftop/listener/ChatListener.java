@@ -46,14 +46,20 @@ public class ChatListener implements Listener, PluginService {
 
         // Set rank not found if player is in an ignored faction.
         if (plugin.getSettings().getIgnoredFactionIds().contains(factionId)) {
-            format = format.replace(placeholder, plugin.getSettings().getChatRankNotFound());
-            event.setFormat(format);
+            event.setFormat(format.replace(placeholder, plugin.getSettings().getChatRankNotFound()));
+            return;
+        }
+
+        // Or if faction currently has no rank.
+        FactionWorth worth = plugin.getWorthManager().getWorth(factionId);
+        int rank = plugin.getWorthManager().getOrderedFactions().indexOf(worth) + 1;
+
+        if (rank == 0) {
+            event.setFormat(format.replace(placeholder, plugin.getSettings().getChatRankNotFound()));
             return;
         }
 
         // Update chat format with rank found placeholder.
-        FactionWorth worth = plugin.getWorthManager().getWorth(factionId);
-        int rank = plugin.getWorthManager().getOrderedFactions().indexOf(worth) + 1;
         String rankFound = plugin.getSettings().getChatRankFound().replace(RANK_PLACEHOLDER, String.valueOf(rank));
         format = format.replace(placeholder, rankFound);
         event.setFormat(format);
