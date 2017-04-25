@@ -24,6 +24,8 @@
         <module>craftbukkit-1-8-r1</module>
         <module>craftbukkit-1-8-r2</module>
         <module>craftbukkit-1-8-r3</module>
+        <module>epicspawners</module>
+        <module>epicspawnersapi</module>
         <module>factions-1-6</module>
         <module>factions-1-8</module>
         <module>factions-2-7</module>

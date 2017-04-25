@@ -88,6 +88,18 @@
         </dependency>
         <dependency>
             <groupId>net.novucs.ftop.hook</groupId>
+            <artifactId>epicspawners</artifactId>
+            <version>1.1.3-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.novucs.ftop.hook</groupId>
+            <artifactId>epicspawnersapi</artifactId>
+            <version>1.1.3-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.novucs.ftop.hook</groupId>
             <artifactId>essentials</artifactId>
             <version>1.1.3-SNAPSHOT</version>
             <scope>compile</scope>

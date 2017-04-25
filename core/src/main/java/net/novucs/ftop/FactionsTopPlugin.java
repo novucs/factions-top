@@ -66,6 +66,7 @@ public final class FactionsTopPlugin extends JavaPlugin {
     private EconomyHook economyHook;
     private FactionsHook factionsHook;
     private PlaceholderHook placeholderHook;
+    private SpawnerStackerHook spawnerStackerHook;
     private DatabaseManager databaseManager;
 
     public ChunkWorthTask getChunkWorthTask() {
@@ -104,6 +105,10 @@ public final class FactionsTopPlugin extends JavaPlugin {
         return factionsHook;
     }
 
+    public SpawnerStackerHook getSpawnerStackerHook() {
+        return spawnerStackerHook;
+    }
+
     public DatabaseManager getDatabaseManager() {
         return databaseManager;
     }
@@ -122,6 +127,7 @@ public final class FactionsTopPlugin extends JavaPlugin {
         }
 
         loadCraftbukkitHook();
+        loadSpawnerStackerHook();
 
         if (loadEconomyHook()) {
             services.add(economyHook);
@@ -265,6 +271,18 @@ public final class FactionsTopPlugin extends JavaPlugin {
         } else {
             craftbukkitHook = new Craftbukkit18R3();
         }
+    }
+
+    private void loadSpawnerStackerHook() {
+        Plugin epicSpawnersPlugin = getServer().getPluginManager().getPlugin("EpicSpawners");
+
+        if (epicSpawnersPlugin != null) {
+            spawnerStackerHook = new EpicSpawnersHook(this, craftbukkitHook);
+        } else {
+            spawnerStackerHook = new VanillaSpawnerStackerHook(craftbukkitHook);
+        }
+
+        spawnerStackerHook.initialize();
     }
 
     private boolean loadEconomyHook() {

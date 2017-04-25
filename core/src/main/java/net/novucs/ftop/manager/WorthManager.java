@@ -434,20 +434,21 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
     private double getSpawnerWorth(Chunk chunk, Map<EntityType, Integer> spawners) {
         int count;
         double worth = 0;
-        double blockPrice;
 
         for (BlockState blockState : chunk.getTileEntities()) {
             if (!(blockState instanceof CreatureSpawner)) {
                 continue;
             }
 
-            EntityType spawnType = ((CreatureSpawner) blockState).getSpawnedType();
-            blockPrice = plugin.getSettings().getSpawnerPrice(spawnType);
+            CreatureSpawner spawner = (CreatureSpawner) blockState;
+            EntityType spawnType = spawner.getSpawnedType();
+            int stackSize = plugin.getSpawnerStackerHook().getStackSize(spawner);
+            double blockPrice = plugin.getSettings().getSpawnerPrice(spawnType) * stackSize;
             worth += blockPrice;
 
             if (blockPrice != 0) {
                 count = spawners.getOrDefault(spawnType, 0);
-                spawners.put(spawnType, count + 1);
+                spawners.put(spawnType, count + stackSize);
             }
         }
 
@@ -478,13 +479,17 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
             for (ItemStack item : chest.getBlockInventory()) {
                 if (item == null) continue;
 
+                int stackSize = item.getAmount();
+
                 switch (item.getType()) {
                     case MOB_SPAWNER:
-                        spawnerType = plugin.getCraftbukkitHook().getSpawnerType(item);
-                        materialPrice = plugin.getSettings().getSpawnerPrice(spawnerType) * item.getAmount();
+                        stackSize *= plugin.getSpawnerStackerHook().getStackSize(item);
+                        spawnerType = plugin.getSpawnerStackerHook().getSpawnedType(item);
+                        double price = plugin.getSettings().getSpawnerPrice(spawnerType);
+                        materialPrice = price * stackSize;
                         break;
                     default:
-                        materialPrice = plugin.getSettings().getBlockPrice(item.getType()) * item.getAmount();
+                        materialPrice = plugin.getSettings().getBlockPrice(item.getType()) * stackSize;
                         spawnerType = null;
                         break;
                 }
@@ -494,10 +499,10 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
                 if (materialPrice != 0) {
                     if (spawnerType == null) {
                         count = materials.getOrDefault(item.getType(), 0);
-                        materials.put(item.getType(), count + item.getAmount());
+                        materials.put(item.getType(), count + stackSize);
                     } else {
                         count = spawners.getOrDefault(spawnerType, 0);
-                        spawners.put(spawnerType, count + item.getAmount());
+                        spawners.put(spawnerType, count + stackSize);
                     }
                 }
             }
