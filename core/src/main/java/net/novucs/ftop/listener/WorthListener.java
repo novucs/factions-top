@@ -96,14 +96,11 @@ public class WorthListener extends BukkitRunnable implements Listener, PluginSer
         switch (block.getType()) {
             case MOB_SPAWNER:
                 worthType = WorthType.SPAWNER;
-
-                if (multiplier > 0) {
-                    multiplier *= plugin.getSpawnerStackerHook().getStackSize((CreatureSpawner) block.getState());
-                }
-
-                EntityType spawnType = ((CreatureSpawner) block.getState()).getSpawnedType();
-                price = multiplier * plugin.getSettings().getSpawnerPrice(spawnType);
-                spawners.put(spawnType, multiplier);
+                CreatureSpawner spawner = (CreatureSpawner) block.getState();
+                EntityType spawnedType = spawner.getSpawnedType();
+                multiplier *= plugin.getSpawnerStackerHook().getStackSize(spawner);
+                price = multiplier * plugin.getSettings().getSpawnerPrice(spawnedType);
+                spawners.put(spawnedType, multiplier);
                 break;
             case CHEST:
             case TRAPPED_CHEST:
@@ -319,7 +316,7 @@ public class WorthListener extends BukkitRunnable implements Listener, PluginSer
         // Do nothing if this area should not be calculated.
         Block block = event.getBlock();
         String factionId = plugin.getFactionsHook().getFactionAt(block);
-        if (plugin.getSettings().getIgnoredFactionIds().contains(factionId) || event.getNewMultiplier() == 0) {
+        if (plugin.getSettings().getIgnoredFactionIds().contains(factionId)) {
             return;
         }
 
