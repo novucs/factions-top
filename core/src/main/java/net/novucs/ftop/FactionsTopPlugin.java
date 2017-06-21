@@ -305,7 +305,14 @@ public final class FactionsTopPlugin extends JavaPlugin {
     private boolean loadFactionsHook() {
         Plugin factions = getServer().getPluginManager().getPlugin("Factions");
         if (factions == null) {
-            return false;
+            factions = getServer().getPluginManager().getPlugin("LegacyFactions");
+
+            if (factions == null) {
+                return false;
+            }
+
+            factionsHook = new LegacyFactions0103(this);
+            return true;
         }
 
         // Attempt to find a valid hook for the factions version.

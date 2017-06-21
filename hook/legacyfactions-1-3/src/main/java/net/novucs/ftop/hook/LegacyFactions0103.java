@@ -9,7 +9,6 @@ import net.novucs.ftop.hook.event.FactionJoinEvent;
 import net.novucs.ftop.hook.event.FactionLeaveEvent;
 import net.novucs.ftop.hook.event.FactionRenameEvent;
 import net.redstoneore.legacyfactions.FLocation;
-import net.redstoneore.legacyfactions.Factions;
 import net.redstoneore.legacyfactions.entity.Board;
 import net.redstoneore.legacyfactions.entity.FPlayer;
 import net.redstoneore.legacyfactions.entity.FPlayerColl;
@@ -18,7 +17,9 @@ import net.redstoneore.legacyfactions.entity.FactionColl;
 import net.redstoneore.legacyfactions.entity.persist.memory.MemoryBoard;
 import net.redstoneore.legacyfactions.entity.persist.memory.MemoryFactions;
 import net.redstoneore.legacyfactions.event.EventFactionsChange;
+import net.redstoneore.legacyfactions.event.EventFactionsDisband;
 import net.redstoneore.legacyfactions.event.EventFactionsLandChange;
+import net.redstoneore.legacyfactions.event.EventFactionsNameChange;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -26,7 +27,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.plugin.Plugin;
 
-import java.lang.reflect.Field;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
 
 public class LegacyFactions0103 extends FactionsHook {
 
+    private final Set<ChunkPos> recentlyClaimedChunks = new HashSet<>();
     private Map<FLocation, String> flocationIds;
     private Map<String, Faction> factions;
 
@@ -52,20 +54,15 @@ public class LegacyFactions0103 extends FactionsHook {
     @Override
     public void initialize() {
         try {
-            Field flocationIdsField = MemoryBoard.class.getDeclaredField("flocationIds");
-            flocationIdsField.setAccessible(true);
-            flocationIds = (Map<FLocation, String>) flocationIdsField.get(Board.get());
-            flocationIdsField.setAccessible(false);
-
-            Field factionsField = MemoryFactions.class.getDeclaredField("factions");
-            factionsField.setAccessible(true);
-            factions = (Map<String, Faction>) factionsField.get(Factions.get());
-            factionsField.setAccessible(false);
-        } catch (NoSuchFieldException | IllegalAccessException ex) {
+            flocationIds = ((MemoryBoard) Board.get()).flocationIds;
+            factions = ((MemoryFactions) FactionColl.get()).factions;
+        } catch (Exception ex) {
             getPlugin().getLogger().severe("Factions version found is incompatible!");
             getPlugin().getServer().getPluginManager().disablePlugin(getPlugin());
             return;
         }
+
+        getPlugin().getServer().getScheduler().runTaskTimer(getPlugin(), recentlyClaimedChunks::clear, 1, 1);
 
         super.initialize();
     }
@@ -118,17 +115,17 @@ public class LegacyFactions0103 extends FactionsHook {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onDisband(FactionDisbandEvent event) {
-        String factionId = event.getFactionId();
-        String factionName = event.getName();
+    public void onDisband(EventFactionsDisband event) {
+        String factionId = event.getFaction().getId();
+        String factionName = event.getFaction().getTag();
         callEvent(new FactionDisbandEvent(factionId, factionName));
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onRename(FactionRenameEvent event) {
-        String factionId = event.getFactionId();
-        String oldName = event.getOldName();
-        String newName = event.getNewName();
+    public void onRename(EventFactionsNameChange event) {
+        String factionId = event.getFaction().getId();
+        String oldName = event.getFaction().getTag();
+        String newName = event.getFactionTag();
         callEvent(new FactionRenameEvent(factionId, oldName, newName));
     }
 
@@ -140,16 +137,27 @@ public class LegacyFactions0103 extends FactionsHook {
             Multimap<String, ChunkPos> claims = HashMultimap.create();
 
             for (Map.Entry<FLocation, Faction> transaction : event.getTransactions().entrySet()) {
-                claims.put(transaction.getValue().getId(), getChunkPos(transaction.getKey()));
+                String oldFactionId = Board.get().getFactionAt(transaction.getKey()).getId();
+                ChunkPos pos = getChunkPos(transaction.getKey());
+
+                if (recentlyClaimedChunks.contains(pos)) {
+                    continue;
+                }
+
+                recentlyClaimedChunks.add(pos);
+                claims.put(oldFactionId, pos);
             }
 
             callEvent(new FactionClaimEvent(factionId, claims));
         } else {
+            Multimap<String, ChunkPos> claims = HashMultimap.create();
+
             for (Map.Entry<FLocation, Faction> transaction : event.getTransactions().entrySet()) {
-                Multimap<String, ChunkPos> claims = HashMultimap.create();
                 claims.put(factionId, getChunkPos(transaction.getKey()));
-                callEvent(new FactionClaimEvent(transaction.getValue().getId(), claims));
             }
+
+            String newFactionId = FactionColl.get().getWilderness().getId();
+            callEvent(new FactionClaimEvent(newFactionId, claims));
         }
     }
 
