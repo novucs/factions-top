@@ -18,7 +18,7 @@ public class RankReplacer implements Function<Integer, String> {
     public String apply(Integer rank) {
         List<FactionWorth> factions = plugin.getWorthManager().getOrderedFactions();
 
-        if (factions.size() < rank) {
+        if (factions.size() >= rank) {
             return factions.get(rank - 1).getName();
         }
 
