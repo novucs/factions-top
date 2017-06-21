@@ -2,6 +2,7 @@ package net.novucs.ftop.hook;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.massivecraft.factions.Factions;
 import com.massivecraft.factions.entity.BoardColl;
 import com.massivecraft.factions.entity.Faction;
 import com.massivecraft.factions.entity.FactionColl;
@@ -42,7 +43,7 @@ public class Factions0212 extends FactionsHook {
     @Override
     public String getFactionAt(String worldName, int chunkX, int chunkZ) {
         Faction faction = BoardColl.get().getFactionAt(PS.valueOf(worldName, chunkX, chunkZ));
-        return faction.getId();
+        return faction == null ? Factions.ID_NONE : faction.getId();
     }
 
     @Override
