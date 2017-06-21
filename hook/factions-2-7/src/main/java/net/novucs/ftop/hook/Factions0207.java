@@ -28,9 +28,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class Factions27x extends FactionsHook {
+public class Factions0207 extends FactionsHook {
 
-    public Factions27x(Plugin plugin) {
+    public Factions0207(Plugin plugin) {
         super(plugin);
     }
 

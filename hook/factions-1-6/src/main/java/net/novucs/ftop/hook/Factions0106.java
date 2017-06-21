@@ -21,12 +21,12 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Factions16x extends FactionsHook {
+public class Factions0106 extends FactionsHook {
 
     private Map<FLocation, String> flocationIds;
     private Map<String, Faction> factions;
 
-    public Factions16x(Plugin plugin) {
+    public Factions0106(Plugin plugin) {
         super(plugin);
     }
 

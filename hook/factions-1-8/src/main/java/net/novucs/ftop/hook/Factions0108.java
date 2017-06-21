@@ -20,11 +20,11 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Factions18x extends FactionsHook {
+public class Factions0108 extends FactionsHook {
 
     private Map<FLocation, TerritoryAccess> flocationIds;
 
-    public Factions18x(Plugin plugin) {
+    public Factions0108(Plugin plugin) {
         super(plugin);
     }
 

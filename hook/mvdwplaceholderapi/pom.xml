@@ -21,9 +21,8 @@
 
     <repositories>
         <repository>
-            <id>mvdw-software</id>
-            <name>MVdW Public Repositories</name>
-            <url>http://repo.mvdw-software.be/content/groups/public/</url>
+            <id>local-repo</id>
+            <url>file://${project.basedir}/../../repo</url>
         </repository>
     </repositories>
 
@@ -35,16 +34,10 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>be.maximvdw</groupId>
-            <artifactId>MVdWPlaceholderAPI</artifactId>
-            <version>1.0.2-SNAPSHOT</version>
+            <groupId>be.maximvdw.placeholderapi</groupId>
+            <artifactId>mvdwplaceholderapi</artifactId>
+            <version>1.0.0</version>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.bukkit</groupId>
-                    <artifactId>bukkit</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
     </dependencies>
 </project>

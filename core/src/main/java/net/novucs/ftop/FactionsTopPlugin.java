@@ -311,13 +311,19 @@ public final class FactionsTopPlugin extends JavaPlugin {
         // Attempt to find a valid hook for the factions version.
         switch (factions.getDescription().getVersion().substring(0, 3)) {
             case "1.6":
-                factionsHook = new Factions16x(this);
+                factionsHook = new Factions0106(this);
                 return true;
             case "1.8":
-                factionsHook = new Factions18x(this);
+                factionsHook = new Factions0108(this);
+                return true;
+            case "2.7":
+            case "2.8":
+            case "2.9":
+            case "2.10":
+                factionsHook = new Factions0207(this);
                 return true;
             default:
-                factionsHook = new Factions27x(this);
+                factionsHook = new Factions0212(this);
                 return true;
         }
     }
