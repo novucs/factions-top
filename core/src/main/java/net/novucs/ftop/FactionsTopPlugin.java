@@ -203,7 +203,7 @@ public final class FactionsTopPlugin extends JavaPlugin {
         }
 
         worthManager.loadChunks(loadedChunks);
-        worthManager.updateAllFactions();
+        getServer().getScheduler().runTask(this, worthManager::updateAllFactions);
         signManager.setSigns(loadedSigns);
         return loadedChunks.isEmpty();
     }
