@@ -7,13 +7,13 @@
     <parent>
         <artifactId>hook</artifactId>
         <groupId>net.novucs.ftop</groupId>
-        <version>1.2.0</version>
+        <version>1.2.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>net.novucs.ftop.hook</groupId>
     <artifactId>legacyfactions-1-3</artifactId>
-    <version>1.2.0</version>
+    <version>1.2.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>LegacyFactions-Hook-v1.3.x</name>
