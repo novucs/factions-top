@@ -223,6 +223,7 @@ public class WorthListener extends BukkitRunnable implements Listener, PluginSer
     }
 
     private void updateWorth(Chest chest) {
+        if (chest == null) return;
         BlockPos pos = BlockPos.of(chest.getBlock());
         ChestWorth worth = chests.remove(pos);
         if (worth == null) return;
