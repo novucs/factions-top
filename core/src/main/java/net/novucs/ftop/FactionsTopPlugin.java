@@ -316,7 +316,10 @@ public final class FactionsTopPlugin extends JavaPlugin {
         }
 
         // Attempt to find a valid hook for the factions version.
-        switch (factions.getDescription().getVersion().substring(0, 3)) {
+        String[] components = factions.getDescription().getVersion().split("\\.");
+        String version = components.length < 2 ? "" : components[0] + "." + components[1];
+
+        switch (version) {
             case "1.6":
                 factionsHook = new Factions0106(this);
                 return true;
