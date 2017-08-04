@@ -332,6 +332,9 @@ public final class FactionsTopPlugin extends JavaPlugin {
             case "2.10":
                 factionsHook = new Factions0207(this);
                 return true;
+            case "2.11":
+                factionsHook = new Factions0211(this);
+                return true;
             default:
                 factionsHook = new Factions0212(this);
                 return true;
