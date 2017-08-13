@@ -3,19 +3,9 @@ package net.novucs.ftop.hook;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import net.novucs.ftop.entity.ChunkPos;
-import net.novucs.ftop.hook.event.FactionClaimEvent;
-import net.novucs.ftop.hook.event.FactionDisbandEvent;
-import net.novucs.ftop.hook.event.FactionJoinEvent;
-import net.novucs.ftop.hook.event.FactionLeaveEvent;
-import net.novucs.ftop.hook.event.FactionRenameEvent;
+import net.novucs.ftop.hook.event.*;
 import net.redstoneore.legacyfactions.FLocation;
-import net.redstoneore.legacyfactions.entity.Board;
-import net.redstoneore.legacyfactions.entity.FPlayer;
-import net.redstoneore.legacyfactions.entity.FPlayerColl;
-import net.redstoneore.legacyfactions.entity.Faction;
-import net.redstoneore.legacyfactions.entity.FactionColl;
-import net.redstoneore.legacyfactions.entity.persist.memory.MemoryBoard;
-import net.redstoneore.legacyfactions.entity.persist.memory.MemoryFactions;
+import net.redstoneore.legacyfactions.entity.*;
 import net.redstoneore.legacyfactions.event.EventFactionsChange;
 import net.redstoneore.legacyfactions.event.EventFactionsDisband;
 import net.redstoneore.legacyfactions.event.EventFactionsLandChange;
@@ -27,19 +17,12 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.plugin.Plugin;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class LegacyFactions0103 extends FactionsHook {
 
     private final Set<ChunkPos> recentlyClaimedChunks = new HashSet<>();
-    private Map<FLocation, String> flocationIds;
-    private Map<String, Faction> factions;
 
     public LegacyFactions0103(Plugin plugin) {
         super(plugin);
@@ -53,17 +36,7 @@ public class LegacyFactions0103 extends FactionsHook {
 
     @Override
     public void initialize() {
-        try {
-            flocationIds = ((MemoryBoard) Board.get()).flocationIds;
-            factions = ((MemoryFactions) FactionColl.get()).factions;
-        } catch (Exception ex) {
-            getPlugin().getLogger().severe("Factions version found is incompatible!");
-            getPlugin().getServer().getPluginManager().disablePlugin(getPlugin());
-            return;
-        }
-
         getPlugin().getServer().getScheduler().runTaskTimer(getPlugin(), recentlyClaimedChunks::clear, 1, 1);
-
         super.initialize();
     }
 
@@ -105,13 +78,15 @@ public class LegacyFactions0103 extends FactionsHook {
     @Override
     public List<ChunkPos> getClaims() {
         List<ChunkPos> target = new LinkedList<>();
-        target.addAll(getChunkPos(flocationIds.keySet()));
+        target.addAll(getChunkPos(Board.get().getAllClaims()));
         return target;
     }
 
     @Override
     public Set<String> getFactionIds() {
-        return factions.keySet();
+        return FactionColl.all().stream()
+                .map(Faction::getId)
+                .collect(Collectors.toSet());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
