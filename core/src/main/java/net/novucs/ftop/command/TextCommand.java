@@ -5,6 +5,7 @@ import net.novucs.ftop.FactionsTopPlugin;
 import net.novucs.ftop.PluginService;
 import net.novucs.ftop.entity.ButtonMessage;
 import net.novucs.ftop.entity.FactionWorth;
+import net.novucs.ftop.util.SortedSplayTree;
 import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -54,7 +55,7 @@ public class TextCommand implements CommandExecutor, PluginService {
     private void sendTop(CommandSender sender, int page) {
         // Do not attempt to send hook worth if page requested is beyond the limit.
         int entries = plugin.getSettings().getFactionsPerPage();
-        List<FactionWorth> factions = plugin.getWorthManager().getOrderedFactions();
+        SortedSplayTree<FactionWorth> factions = plugin.getWorthManager().getOrderedFactions();
         int maxPage = Math.max((int) Math.ceil((double) factions.size() / entries), 1);
         page = Math.max(1, Math.min(maxPage, page));
 
@@ -87,11 +88,10 @@ public class TextCommand implements CommandExecutor, PluginService {
         }
 
         int spacer = entries * --page;
-        ListIterator<FactionWorth> it = factions.listIterator(spacer);
         for (int i = 0; i < entries; i++) {
-            if (!it.hasNext()) break;
+            if (factions.size() < spacer + i) break;
 
-            FactionWorth worth = it.next();
+            FactionWorth worth = factions.byIndex(spacer + i);
 
             Map<String, String> worthPlaceholders = new HashMap<>(placeholders);
             worthPlaceholders.put("{rank}", Integer.toString(spacer + i + 1));

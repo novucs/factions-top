@@ -3,6 +3,7 @@ package net.novucs.ftop.gui;
 import net.novucs.ftop.FactionsTopPlugin;
 import net.novucs.ftop.entity.FactionWorth;
 import net.novucs.ftop.gui.element.GuiElement;
+import net.novucs.ftop.util.SortedSplayTree;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
@@ -18,20 +19,20 @@ public class GuiContext {
     private final Inventory inventory;
     private final int maxPage;
     private final int thisPage;
-    private final ListIterator<FactionWorth> worthIterator;
+    private final SortedSplayTree<FactionWorth> orderedFactions;
     private final Map<String, String> placeholders;
     private final List<GuiElement> slots = new ArrayList<>();
     private int currentRank;
     private int slot;
 
     public GuiContext(FactionsTopPlugin plugin, Player player, Inventory inventory, int maxPage, int thisPage,
-                      ListIterator<FactionWorth> worthIterator, Map<String, String> placeholders) {
+                      SortedSplayTree<FactionWorth> orderedFactions, Map<String, String> placeholders) {
         this.plugin = plugin;
         this.player = player;
         this.inventory = inventory;
         this.maxPage = maxPage;
         this.thisPage = thisPage;
-        this.worthIterator = worthIterator;
+        this.orderedFactions = orderedFactions;
         this.placeholders = placeholders;
     }
 
@@ -55,8 +56,8 @@ public class GuiContext {
         return thisPage;
     }
 
-    public ListIterator<FactionWorth> getWorthIterator() {
-        return worthIterator;
+    public SortedSplayTree<FactionWorth> getOrderedFactions() {
+        return orderedFactions;
     }
 
     public Map<String, String> getPlaceholders() {

@@ -42,7 +42,7 @@ public class GuiFactionList implements GuiElement {
 
             context.getSlots().add(this);
 
-            if (!context.getWorthIterator().hasNext()) {
+            if (context.getOrderedFactions().size() < context.getCurrentRank()) {
                 if (!fillEmpty) {
                     break;
                 }
@@ -50,7 +50,7 @@ public class GuiFactionList implements GuiElement {
                 continue;
             }
 
-            FactionWorth worth = context.getWorthIterator().next();
+            FactionWorth worth = context.getOrderedFactions().byIndex(context.getCurrentRank() - 1);
             Map<String, String> placeholders = new HashMap<>(context.getPlaceholders());
             placeholders.put("{rank}", Integer.toString(context.getAndIncrementRank()));
             placeholders.put("{relcolor}", "" + ChatColor.COLOR_CHAR +
