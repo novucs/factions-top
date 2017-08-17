@@ -14,7 +14,6 @@ import org.bukkit.command.CommandSender;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 
 import static net.novucs.ftop.util.StringUtils.*;
@@ -88,10 +87,11 @@ public class TextCommand implements CommandExecutor, PluginService {
         }
 
         int spacer = entries * --page;
+        SortedSplayTree.Iterator<FactionWorth> it = factions.iterator(spacer);
         for (int i = 0; i < entries; i++) {
-            if (factions.size() < spacer + i) break;
+            if (!it.hasNext()) break;
 
-            FactionWorth worth = factions.byIndex(spacer + i);
+            FactionWorth worth = it.next();
 
             Map<String, String> worthPlaceholders = new HashMap<>(placeholders);
             worthPlaceholders.put("{rank}", Integer.toString(spacer + i + 1));

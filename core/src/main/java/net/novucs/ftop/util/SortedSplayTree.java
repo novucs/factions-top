@@ -1,12 +1,13 @@
 package net.novucs.ftop.util;
 
 import java.util.Comparator;
+import java.util.NoSuchElementException;
 
 public class SortedSplayTree<E> {
 
     private final Comparator<E> comparator;
     private int size = 0;
-    private Node root;
+    private Node<E> root;
 
     private SortedSplayTree(Comparator<E> comparator) {
         this.comparator = comparator;
@@ -29,17 +30,21 @@ public class SortedSplayTree<E> {
     }
 
     public E byIndex(int index) {
+        return nodeByIndex(index).element;
+    }
+
+    public Node<E> nodeByIndex(int index) {
         if (index < 0 || index >= size) {
             throw new IndexOutOfBoundsException("Size: " + size + "; Accessed: " + index);
         }
 
-        Node current = root;
+        Node<E> current = root;
 
         while (current != null) {
             int length = current.left == null ? 0 : current.left.size;
 
             if (index == length) {
-                return current.element;
+                return current;
             }
 
             if (index < length) {
@@ -54,7 +59,7 @@ public class SortedSplayTree<E> {
     }
 
     public int indexOf(E element) {
-        Node node = find(element);
+        Node<E> node = find(element);
 
         if (node == null) {
             return -1;
@@ -73,31 +78,21 @@ public class SortedSplayTree<E> {
     }
 
     public void add(E element) {
-        Node previous = null;
-        Node current = root;
+        Node<E> previous = null;
+        Node<E> current = root;
 
         while (current != null) {
-            int comparison = comparator.compare(current.element, element);
-
-            if (comparison == 0) {
-                while (current.parent != null) {
-                    current = current.parent;
-                    current.size--;
-                }
-                return;
-            }
-
             current.size++;
             previous = current;
 
-            if (comparison < 0) {
+            if (comparator.compare(current.element, element) < 0) {
                 current = current.right;
             } else {
                 current = current.left;
             }
         }
 
-        current = new Node(element);
+        current = new Node<>(element);
         current.parent = previous;
 
         if (previous == null) {
@@ -117,7 +112,7 @@ public class SortedSplayTree<E> {
     }
 
     public boolean remove(E element) {
-        Node node = find(element);
+        Node<E> node = find(element);
 
         if (node == null) {
             return false;
@@ -125,9 +120,9 @@ public class SortedSplayTree<E> {
 
         splay(node);
 
-        Node left = node.left;
-        Node right = node.right;
-        Node max = null;
+        Node<E> left = node.left;
+        Node<E> right = node.right;
+        Node<E> max = null;
 
         if (left != null) {
             left.parent = null;
@@ -154,8 +149,8 @@ public class SortedSplayTree<E> {
         return true;
     }
 
-    public Node find(E element) {
-        Node node = root;
+    public Node<E> find(E element) {
+        Node<E> node = root;
 
         while (node != null) {
             if (comparator.compare(node.element, element) < 0) {
@@ -170,8 +165,8 @@ public class SortedSplayTree<E> {
         return null;
     }
 
-    private void rotateLeft(Node node) {
-        Node target = node.right;
+    private void rotateLeft(Node<E> node) {
+        Node<E> target = node.right;
         int laterSize = 0;
 
         if (target != null) {
@@ -203,8 +198,8 @@ public class SortedSplayTree<E> {
         node.parent = target;
     }
 
-    private void rotateRight(Node node) {
-        Node target = node.left;
+    private void rotateRight(Node<E> node) {
+        Node<E> target = node.left;
         int laterSize = 0;
 
         if (target != null) {
@@ -236,7 +231,7 @@ public class SortedSplayTree<E> {
         node.parent = target;
     }
 
-    public void splay(Node node) {
+    public void splay(Node<E> node) {
         while (node.parent != null) {
             if (node.parent.parent == null) {
                 if (node == node.parent.left) {
@@ -276,25 +271,85 @@ public class SortedSplayTree<E> {
         return root == null ? null : maximumSubtree(root).element;
     }
 
-    private Node minimumSubtree(Node node) {
+    private Node<E> minimumSubtree(Node<E> node) {
         while (node.left != null) {
             node = node.left;
         }
         return node;
     }
 
-    private Node maximumSubtree(Node node) {
+    private Node<E> maximumSubtree(Node<E> node) {
         while (node.right != null) {
             node = node.right;
         }
         return node;
     }
 
-    public class Node {
+    public Iterator<E> iterator() {
+        return new Iterator<>(minimumSubtree(root));
+    }
+
+    public Iterator<E> iterator(int index) {
+        return new Iterator<>(nodeByIndex(index));
+    }
+
+    private static <E> Node<E> successor(Node<E> node) {
+        if (node == null) {
+            return null;
+        }
+
+        if (node.right != null) {
+            Node<E> successor = node.right;
+
+            while (successor.left != null) {
+                successor = successor.left;
+            }
+
+            return successor;
+        }
+
+        Node<E> parent = node.parent;
+        Node<E> child = node;
+
+        while (parent != null && child == parent.right) {
+            child = parent;
+            parent = parent.parent;
+        }
+
+        return parent;
+    }
+
+    private static <E> Node<E> predecessor(Node<E> node) {
+        if (node == null) {
+            return null;
+        }
+
+        if (node.left != null) {
+            Node<E> predecessor = node.left;
+
+            while (predecessor.right != null) {
+                predecessor = predecessor.right;
+            }
+
+            return predecessor;
+        }
+
+        Node<E> parent = node.parent;
+        Node<E> child = node;
+
+        while (parent != null && child == parent.left) {
+            child = parent;
+            parent = parent.parent;
+        }
+
+        return parent;
+    }
+
+    public static class Node<E> {
         private E element;
-        private Node parent;
-        private Node left;
-        private Node right;
+        private Node<E> parent;
+        private Node<E> left;
+        private Node<E> right;
         private int size = 1;
 
         private Node(E element) {
@@ -305,15 +360,15 @@ public class SortedSplayTree<E> {
             return element;
         }
 
-        public Node getParent() {
+        public Node<E> getParent() {
             return parent;
         }
 
-        public Node getLeft() {
+        public Node<E> getLeft() {
             return left;
         }
 
-        public Node getRight() {
+        public Node<E> getRight() {
             return right;
         }
 
@@ -324,6 +379,49 @@ public class SortedSplayTree<E> {
         @Override
         public String toString() {
             return "Node{element=" + element + ", size=" + size + '}';
+        }
+    }
+
+    public static class Iterator<E> {
+
+        private Node<E> next;
+        private Node<E> prev;
+
+        public Iterator(Node<E> first) {
+            this.next = first;
+            this.prev = first;
+        }
+
+        public boolean hasNext() {
+            return next != null;
+        }
+
+        public boolean hasPrevious() {
+            return prev != null;
+        }
+
+        public E next() {
+            Node<E> node = next;
+
+            if (node == null) {
+                throw new NoSuchElementException();
+            }
+
+            prev = node;
+            next = successor(node);
+            return node.element;
+        }
+
+        public E previous() {
+            Node<E> node = prev;
+
+            if (node == null) {
+                throw new NoSuchElementException();
+            }
+
+            next = node;
+            prev = predecessor(node);
+            return node.element;
         }
     }
 }

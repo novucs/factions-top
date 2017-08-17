@@ -48,6 +48,7 @@ public class GuiManager {
         placeholders.put("{page:last}", String.valueOf(maxPage));
 
         int spacer = entries * (page - 1);
+        SortedSplayTree.Iterator<FactionWorth> it = factions.iterator(spacer);
 
         int lines = plugin.getSettings().getGuiLineCount() * 9;
         String name = StringUtils.replace(plugin.getSettings().getGuiInventoryName(), placeholders);
@@ -56,7 +57,7 @@ public class GuiManager {
         }
         Inventory inventory = plugin.getServer().createInventory(null, lines, name);
 
-        GuiContext context = new GuiContext(plugin, player, inventory, maxPage, page, factions, placeholders);
+        GuiContext context = new GuiContext(plugin, player, inventory, maxPage, page, it, placeholders);
         context.setCurrentRank(spacer + 1);
 
         plugin.getSettings().getGuiLayout().render(context);
