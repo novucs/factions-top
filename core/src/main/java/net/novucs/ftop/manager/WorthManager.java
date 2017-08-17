@@ -178,7 +178,7 @@ public final class WorthManager implements PluginService {
         FactionWorth factionWorth = getFactionWorth(pos);
         if (factionWorth == null) return;
 
-        SortedSplayTree<FactionWorth>.Node node = orderedFactions.find(factionWorth);
+        SortedSplayTree.Node<FactionWorth> node = orderedFactions.find(factionWorth);
 
         // Update all stats with the new chunk data.
         ChunkWorth chunkWorth = getChunkWorth(pos);
@@ -255,7 +255,7 @@ public final class WorthManager implements PluginService {
         FactionWorth factionWorth = getFactionWorth(pos);
         if (factionWorth == null) return;
 
-        SortedSplayTree<FactionWorth>.Node node = orderedFactions.find(factionWorth);
+        SortedSplayTree.Node<FactionWorth> node = orderedFactions.find(factionWorth);
 
         // Update all stats with the new chunk data.
         ChunkWorth chunkWorth = getChunkWorth(pos);
@@ -464,7 +464,7 @@ public final class WorthManager implements PluginService {
         FactionWorth factionWorth = getFactionWorth(factionId);
         if (factionWorth == null) return;
 
-        SortedSplayTree<FactionWorth>.Node node = orderedFactions.find(factionWorth);
+        SortedSplayTree.Node<FactionWorth> node = orderedFactions.find(factionWorth);
 
         // Add all placed and chest worth of each claim to the faction.
         for (ChunkPos pos : claims) {
@@ -511,7 +511,7 @@ public final class WorthManager implements PluginService {
         if (factionWorth == null) return;
 
         // Update faction with the new worth and adjust the worth position.
-        SortedSplayTree<FactionWorth>.Node node = orderedFactions.find(factionWorth);
+        SortedSplayTree.Node<FactionWorth> node = orderedFactions.find(factionWorth);
         factionWorth.addWorth(worthType, worth);
         orderedFactions.splay(node);
         plugin.getPersistenceTask().queue(factionWorth);
