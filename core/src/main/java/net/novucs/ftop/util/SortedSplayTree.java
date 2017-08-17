@@ -268,6 +268,14 @@ public class SortedSplayTree<E> {
         }
     }
 
+    public E getMin() {
+        return root == null ? null : minimumSubtree(root).element;
+    }
+
+    public E getMax() {
+        return root == null ? null : maximumSubtree(root).element;
+    }
+
     private Node minimumSubtree(Node node) {
         while (node.left != null) {
             node = node.left;
@@ -291,6 +299,26 @@ public class SortedSplayTree<E> {
 
         private Node(E element) {
             this.element = element;
+        }
+
+        public E getElement() {
+            return element;
+        }
+
+        public Node getParent() {
+            return parent;
+        }
+
+        public Node getLeft() {
+            return left;
+        }
+
+        public Node getRight() {
+            return right;
+        }
+
+        public int getSize() {
+            return size;
         }
 
         @Override

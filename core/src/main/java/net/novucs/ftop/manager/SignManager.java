@@ -6,6 +6,7 @@ import net.novucs.ftop.FactionsTopPlugin;
 import net.novucs.ftop.PluginService;
 import net.novucs.ftop.entity.BlockPos;
 import net.novucs.ftop.entity.FactionWorth;
+import net.novucs.ftop.util.SortedSplayTree;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -19,7 +20,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -54,14 +54,14 @@ public class SignManager extends BukkitRunnable implements PluginService, Listen
 
     @Override
     public void run() {
-        List<FactionWorth> factions = plugin.getWorthManager().getOrderedFactions();
+        SortedSplayTree<FactionWorth> factions = plugin.getWorthManager().getOrderedFactions();
 
         for (Map.Entry<Integer, Collection<BlockPos>> entry : signs.asMap().entrySet()) {
             // Do nothing if rank is higher than factions size.
             if (entry.getKey() >= factions.size()) continue;
 
             // Get the faction worth.
-            FactionWorth worth = factions.get(entry.getKey());
+            FactionWorth worth = factions.byIndex(entry.getKey());
 
             // Do not update signs if previous value is unchanged.
             double previousWorth = previous.getOrDefault(entry.getKey(), 0d);
@@ -109,10 +109,10 @@ public class SignManager extends BukkitRunnable implements PluginService, Listen
         event.setLine(1, "#" + Math.max(rank, 1));
 
         rank = Math.max(rank - 1, 0);
-        List<FactionWorth> factions = plugin.getWorthManager().getOrderedFactions();
+        SortedSplayTree<FactionWorth> factions = plugin.getWorthManager().getOrderedFactions();
 
         if (factions.size() > rank) {
-            FactionWorth worth = factions.get(rank);
+            FactionWorth worth = factions.byIndex(rank);
             event.setLine(2, worth.getName());
             event.setLine(3, plugin.getSettings().getCurrencyFormat().format(worth.getTotalWorth()));
         } else {
