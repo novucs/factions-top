@@ -9,6 +9,7 @@ import net.novucs.ftop.WorthType;
 import net.novucs.ftop.entity.ChunkPos;
 import net.novucs.ftop.entity.ChunkWorth;
 import net.novucs.ftop.entity.FactionWorth;
+import net.novucs.ftop.util.SplaySet;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
@@ -16,18 +17,15 @@ import org.bukkit.block.Chest;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
-public final class WorthManager extends BukkitRunnable implements PluginService {
+public final class WorthManager implements PluginService {
 
     private final FactionsTopPlugin plugin;
     private final Map<ChunkPos, ChunkWorth> chunks = new HashMap<>();
     private final Map<String, FactionWorth> factions = new HashMap<>();
-    private final List<FactionWorth> orderedFactions = new LinkedList<>();
-    private final List<FactionWorth> sortQueue = new LinkedList<>();
+    private final SplaySet<FactionWorth> orderedFactions = SplaySet.create();
     private final Table<ChunkPos, WorthType, Double> recalculateQueue = HashBasedTable.create();
     private final Table<ChunkPos, Material, Integer> materialsQueue = HashBasedTable.create();
 
@@ -40,8 +38,8 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
      *
      * @return the ordered factions.
      */
-    public List<FactionWorth> getOrderedFactions() {
-        return Collections.unmodifiableList(orderedFactions);
+    public SplaySet<FactionWorth> getOrderedFactions() {
+        return orderedFactions;
     }
 
     /**
@@ -65,21 +63,10 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
 
     @Override
     public void initialize() {
-        runTaskTimer(plugin, 1, 1);
     }
 
     @Override
     public void terminate() {
-        cancel();
-    }
-
-    @Override
-    public void run() {
-        ListIterator<FactionWorth> it = sortQueue.listIterator();
-        while (it.hasNext()) {
-            sort(it.next());
-            it.remove();
-        }
     }
 
     public Map<ChunkPos, ChunkWorth> getChunks() {
@@ -93,6 +80,7 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
 
     public void updateAllFactions() {
         factions.clear();
+
         for (Map.Entry<ChunkPos, ChunkWorth> chunk : chunks.entrySet()) {
             FactionWorth worth = getFactionWorth(chunk.getKey());
             if (worth != null) {
@@ -116,70 +104,11 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
         }
 
         orderedFactions.clear();
-        orderedFactions.addAll(factions.values().stream().sorted().collect(Collectors.toList()));
-        plugin.getPersistenceTask().queue(orderedFactions);
-    }
 
-    /**
-     * Adds a faction worth profile to the ordered factions list.
-     *
-     * @param factionWorth the profile to add.
-     */
-    private void add(FactionWorth factionWorth) {
-        // Start from end of the list.
-        ListIterator<FactionWorth> it = orderedFactions.listIterator(orderedFactions.size());
-
-        // Locate where to insert the new element.
-        while (it.hasPrevious()) {
-            if (it.previous().compareTo(factionWorth) >= 0) {
-                it.next();
-                break;
-            }
+        for (FactionWorth worth : factions.values()) {
+            orderedFactions.add(worth);
+            plugin.getPersistenceTask().queue(worth);
         }
-
-        // Insert ordered value.
-        it.add(factionWorth);
-    }
-
-    /**
-     * Updates the position in which the faction worth profile is ordered in
-     * the top factions list, depending on the profiles total worth.
-     *
-     * @param factionWorth the profile to sort.
-     */
-    private void sort(FactionWorth factionWorth) {
-        // Remove the current value.
-        ListIterator<FactionWorth> it = orderedFactions.listIterator();
-        if (!remove(factionWorth, it)) {
-            return;
-        }
-
-        // Locate where the value should be ordered.
-        while (it.hasPrevious()) {
-            if (it.previous().compareTo(factionWorth) <= 0) {
-                break;
-            }
-        }
-
-        while (it.hasNext()) {
-            if (it.next().compareTo(factionWorth) >= 0) {
-                it.previous();
-                break;
-            }
-        }
-
-        // Add back to list with the correct position.
-        it.add(factionWorth);
-    }
-
-    private <E> boolean remove(E element, ListIterator<E> it) {
-        while (it.hasNext()) {
-            if (it.next() == element) {
-                it.remove();
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -223,7 +152,7 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
         return factions.compute(factionId, (k, v) -> {
             if (v == null) {
                 v = new FactionWorth(k, plugin.getFactionsHook().getFactionName(k));
-                add(v);
+                orderedFactions.add(v);
             }
             return v;
         });
@@ -241,14 +170,13 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
         FactionWorth factionWorth = getFactionWorth(pos);
         if (factionWorth == null) return;
 
+        orderedFactions.remove(factionWorth);
+
         // Update all stats with the new chunk data.
         ChunkWorth chunkWorth = getChunkWorth(pos);
         double oldWorth = chunkWorth.getWorth(worthType);
         chunkWorth.setWorth(worthType, worth);
         factionWorth.addWorth(worthType, worth - oldWorth);
-
-        // Adjust faction worth position.
-        sortQueue.add(factionWorth);
 
         // If this position was added to the recalculate queue, add all queued
         // updates while the chunk was recalculated and set the next time to
@@ -259,6 +187,8 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
             factionWorth.addWorth(worthType, queuedWorth);
             chunkWorth.setNextRecalculation(plugin.getSettings().getChunkRecalculateMillis() + System.currentTimeMillis());
         }
+
+        orderedFactions.add(factionWorth);
     }
 
     public void setMaterials(ChunkPos pos, Map<Material, Integer> materials) {
@@ -284,7 +214,7 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
         plugin.getPersistenceTask().queue(factionWorth);
     }
 
-    public void setSpawners(ChunkPos pos, Map<EntityType, Integer> spawners) {
+    private void setSpawners(ChunkPos pos, Map<EntityType, Integer> spawners) {
         // Do nothing if faction worth is null.
         FactionWorth factionWorth = getFactionWorth(pos);
         if (factionWorth == null) return;
@@ -316,6 +246,8 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
         FactionWorth factionWorth = getFactionWorth(pos);
         if (factionWorth == null) return;
 
+        orderedFactions.remove(factionWorth);
+
         // Update all stats with the new chunk data.
         ChunkWorth chunkWorth = getChunkWorth(pos);
         chunkWorth.addWorth(worthType, worth);
@@ -326,8 +258,7 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
         factionWorth.addMaterials(materials);
         factionWorth.addSpawners(spawners);
 
-        // Adjust faction worth position.
-        sortQueue.add(factionWorth);
+        orderedFactions.add(factionWorth);
 
         // Add this worth to the recalculation queue if the chunk is being
         // recalculated.
@@ -523,6 +454,8 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
         FactionWorth factionWorth = getFactionWorth(factionId);
         if (factionWorth == null) return;
 
+        orderedFactions.remove(factionWorth);
+
         // Add all placed and chest worth of each claim to the faction.
         for (ChunkPos pos : claims) {
             Chunk chunk = pos.getChunk(plugin.getServer());
@@ -546,8 +479,7 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
             recalculate(chunkWorth, pos, chunk, RecalculateReason.CLAIM);
         }
 
-        // Adjust faction worth position.
-        sortQueue.add(factionWorth);
+        orderedFactions.add(factionWorth);
     }
 
     /**
@@ -568,8 +500,9 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
         if (factionWorth == null) return;
 
         // Update faction with the new worth and adjust the worth position.
+        orderedFactions.remove(factionWorth);
         factionWorth.addWorth(worthType, worth);
-        sortQueue.add(factionWorth);
+        orderedFactions.add(factionWorth);
         plugin.getPersistenceTask().queue(factionWorth);
     }
 
@@ -595,16 +528,7 @@ public final class WorthManager extends BukkitRunnable implements PluginService 
      */
     public void remove(String factionId) {
         FactionWorth factionWorth = factions.remove(factionId);
-
-        // Optimised removal, factions lower down the list are more likely to be disbanded.
-        ListIterator<FactionWorth> it = orderedFactions.listIterator(orderedFactions.size());
-        while (it.hasPrevious()) {
-            if (it.previous() == factionWorth) {
-                it.remove();
-                break;
-            }
-        }
-
+        orderedFactions.remove(factionWorth);
         plugin.getPersistenceTask().queueDeletedFaction(factionId);
     }
 }
