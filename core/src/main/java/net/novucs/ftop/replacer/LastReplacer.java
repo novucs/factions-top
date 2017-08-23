@@ -2,7 +2,7 @@ package net.novucs.ftop.replacer;
 
 import net.novucs.ftop.FactionsTopPlugin;
 import net.novucs.ftop.entity.FactionWorth;
-import net.novucs.ftop.util.SortedSplayTree;
+import net.novucs.ftop.util.SplaySet;
 
 import java.util.function.Supplier;
 
@@ -16,7 +16,7 @@ public class LastReplacer implements Supplier<String> {
 
     @Override
     public String get() {
-        SortedSplayTree<FactionWorth> factions = plugin.getWorthManager().getOrderedFactions();
+        SplaySet<FactionWorth> factions = plugin.getWorthManager().getOrderedFactions();
 
         if (factions.isEmpty()) {
             return plugin.getSettings().getPlaceholdersFactionNotFound();

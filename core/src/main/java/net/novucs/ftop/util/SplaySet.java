@@ -1,83 +1,46 @@
 package net.novucs.ftop.util;
 
+import java.util.AbstractSet;
 import java.util.Comparator;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
-public class SortedSplayTree<E> {
+/**
+ * An order statistic tree backed by a splay set.
+ *
+ * @param <E> the type of elements maintained by this set
+ */
+public class SplaySet<E> extends AbstractSet<E> implements Set<E> {
 
     private final Comparator<E> comparator;
     private int size = 0;
     private Node<E> root;
 
-    private SortedSplayTree(Comparator<E> comparator) {
+    private SplaySet(Comparator<E> comparator) {
         this.comparator = comparator;
     }
 
-    public static <E extends Comparable<E>> SortedSplayTree<E> create() {
-        return new SortedSplayTree<E>(Comparator.naturalOrder());
+    public static <E extends Comparable<E>> SplaySet<E> create() {
+        return new SplaySet<E>(Comparator.naturalOrder());
     }
 
-    public static <E> SortedSplayTree<E> create(Comparator<E> comparator) {
-        return new SortedSplayTree<>(comparator);
+    public static <E> SplaySet<E> create(Comparator<E> comparator) {
+        return new SplaySet<>(comparator);
     }
 
-    public boolean isEmpty() {
-        return root == null;
-    }
-
+    @Override
     public int size() {
         return size;
     }
 
-    public E byIndex(int index) {
-        return nodeByIndex(index).element;
+    @Override
+    public void clear() {
+        root = null;
+        size = 0;
     }
 
-    public Node<E> nodeByIndex(int index) {
-        if (index < 0 || index >= size) {
-            throw new IndexOutOfBoundsException("Size: " + size + "; Accessed: " + index);
-        }
-
-        Node<E> current = root;
-
-        while (current != null) {
-            int length = current.left == null ? 0 : current.left.size;
-
-            if (index == length) {
-                return current;
-            }
-
-            if (index < length) {
-                current = current.left;
-            } else {
-                current = current.right;
-                index -= length + 1;
-            }
-        }
-
-        throw new IllegalStateException();
-    }
-
-    public int indexOf(E element) {
-        Node<E> node = find(element);
-
-        if (node == null) {
-            return -1;
-        }
-
-        int rank = node.left == null ? 0 : node.left.size;
-
-        while (node.parent != null) {
-            if (node.parent.left != node) {
-                rank += node.parent.left == null ? 1 : node.parent.left.size + 1;
-            }
-            node = node.parent;
-        }
-
-        return rank;
-    }
-
-    public void add(E element) {
+    @Override
+    public boolean add(E element) {
         Node<E> previous = null;
         Node<E> current = root;
 
@@ -85,8 +48,16 @@ public class SortedSplayTree<E> {
             current.size++;
             previous = current;
 
-            if (comparator.compare(current.element, element) < 0) {
+            int comparison = comparator.compare(current.element, element);
+
+            if (comparison < 0) {
                 current = current.right;
+            } else if (comparison == 0 && element.equals(current.element)) {
+                while (previous != null) {
+                    previous.size--;
+                    previous = previous.parent;
+                }
+                return false;
             } else {
                 current = current.left;
             }
@@ -105,19 +76,17 @@ public class SortedSplayTree<E> {
 
         splay(current);
         size++;
+        return true;
     }
 
-    public boolean contains(E element) {
-        return find(element) != null;
+    @Override
+    public boolean remove(Object o) {
+        @SuppressWarnings("unchecked")
+        Node<E> node = find((E) o);
+        return node != null && removeNode(node);
     }
 
-    public boolean remove(E element) {
-        Node<E> node = find(element);
-
-        if (node == null) {
-            return false;
-        }
-
+    private boolean removeNode(Node<E> node) {
         splay(node);
 
         Node<E> left = node.left;
@@ -149,20 +118,94 @@ public class SortedSplayTree<E> {
         return true;
     }
 
-    public Node<E> find(E element) {
+    @Override
+    public boolean contains(Object o) {
+        @SuppressWarnings("unchecked")
+        Node<E> node = find((E) o);
+        return node != null;
+    }
+
+    @Override
+    public Iterator<E> iterator() {
+        return new Iterator<>(this, minimumSubtree(root));
+    }
+
+    public Iterator<E> iterator(int index) {
+        return new Iterator<>(this, nodeByIndex(index));
+    }
+
+    public E getMin() {
+        return root == null ? null : minimumSubtree(root).element;
+    }
+
+    public E getMax() {
+        return root == null ? null : maximumSubtree(root).element;
+    }
+
+    private Node<E> find(E element) {
         Node<E> node = root;
 
         while (node != null) {
-            if (comparator.compare(node.element, element) < 0) {
-                node = node.right;
-            } else if (comparator.compare(element, node.element) < 0) {
+            int comparison = comparator.compare(node.element, element);
+
+            if (comparison > 0) {
                 node = node.left;
-            } else {
+            } else if (comparison == 0 && element.equals(node.element)) {
                 return node;
+            } else {
+                node = node.right;
             }
         }
 
         return null;
+    }
+
+    public E byIndex(int index) {
+        return nodeByIndex(index).element;
+    }
+
+    public int indexOf(E element) {
+        Node<E> node = find(element);
+
+        if (node == null) {
+            return -1;
+        }
+
+        int rank = node.left == null ? 0 : node.left.size;
+
+        while (node.parent != null) {
+            if (node.parent.left != node) {
+                rank += node.parent.left == null ? 1 : node.parent.left.size + 1;
+            }
+            node = node.parent;
+        }
+
+        return rank;
+    }
+
+    private Node<E> nodeByIndex(int index) {
+        if (index < 0 || index >= size) {
+            throw new IndexOutOfBoundsException("Size: " + size + "; Accessed: " + index);
+        }
+
+        Node<E> current = root;
+
+        while (current != null) {
+            int length = current.left == null ? 0 : current.left.size;
+
+            if (index == length) {
+                return current;
+            }
+
+            if (index < length) {
+                current = current.left;
+            } else {
+                current = current.right;
+                index -= length + 1;
+            }
+        }
+
+        throw new IllegalStateException();
     }
 
     private void rotateLeft(Node<E> node) {
@@ -231,7 +274,11 @@ public class SortedSplayTree<E> {
         node.parent = target;
     }
 
-    public void splay(Node<E> node) {
+    private void splay(Node<E> node) {
+        if (node == null) {
+            return;
+        }
+
         while (node.parent != null) {
             if (node.parent.parent == null) {
                 if (node == node.parent.left) {
@@ -263,14 +310,6 @@ public class SortedSplayTree<E> {
         }
     }
 
-    public E getMin() {
-        return root == null ? null : minimumSubtree(root).element;
-    }
-
-    public E getMax() {
-        return root == null ? null : maximumSubtree(root).element;
-    }
-
     private Node<E> minimumSubtree(Node<E> node) {
         while (node.left != null) {
             node = node.left;
@@ -283,14 +322,6 @@ public class SortedSplayTree<E> {
             node = node.right;
         }
         return node;
-    }
-
-    public Iterator<E> iterator() {
-        return new Iterator<>(minimumSubtree(root));
-    }
-
-    public Iterator<E> iterator(int index) {
-        return new Iterator<>(nodeByIndex(index));
     }
 
     private static <E> Node<E> successor(Node<E> node) {
@@ -345,7 +376,16 @@ public class SortedSplayTree<E> {
         return parent;
     }
 
-    public static class Node<E> {
+    @Override
+    public String toString() {
+        return "SplaySet{" +
+                "comparator=" + comparator +
+                ", size=" + size +
+                ", root=" + root +
+                '}';
+    }
+
+    private static class Node<E> {
         private E element;
         private Node<E> parent;
         private Node<E> left;
@@ -378,50 +418,72 @@ public class SortedSplayTree<E> {
 
         @Override
         public String toString() {
-            return "Node{element=" + element + ", size=" + size + '}';
+            return "Node{" +
+                    "element=" + element +
+                    ", left=" + left +
+                    ", right=" + right +
+                    ", size=" + size +
+                    '}';
         }
     }
 
-    public static class Iterator<E> {
+    public static class Iterator<E> implements TreeIterator<E> {
 
+        private final SplaySet<E> tree;
         private Node<E> next;
         private Node<E> prev;
+        private Node<E> current;
 
-        public Iterator(Node<E> first) {
+        private Iterator(SplaySet<E> tree, Node<E> first) {
+            this.tree = tree;
             this.next = first;
             this.prev = first;
         }
 
+        @Override
         public boolean hasNext() {
             return next != null;
         }
 
+        @Override
         public boolean hasPrevious() {
             return prev != null;
         }
 
+        @Override
         public E next() {
-            Node<E> node = next;
+            current = next;
 
-            if (node == null) {
+            if (current == null) {
                 throw new NoSuchElementException();
             }
 
-            prev = node;
-            next = successor(node);
-            return node.element;
+            prev = current;
+            next = successor(current);
+            return current.element;
         }
 
+        @Override
         public E previous() {
-            Node<E> node = prev;
+            current = prev;
 
-            if (node == null) {
+            if (current == null) {
                 throw new NoSuchElementException();
             }
 
-            next = node;
-            prev = predecessor(node);
-            return node.element;
+            next = current;
+            prev = predecessor(current);
+            return current.element;
+        }
+
+        @Override
+        public void remove() {
+            if (current == null) {
+                throw new IllegalStateException("No element selected to remove");
+            }
+
+            tree.removeNode(current);
+            current = null;
         }
     }
 }

@@ -3,8 +3,9 @@ package net.novucs.ftop.manager;
 import net.novucs.ftop.FactionsTopPlugin;
 import net.novucs.ftop.entity.FactionWorth;
 import net.novucs.ftop.gui.GuiContext;
-import net.novucs.ftop.util.SortedSplayTree;
+import net.novucs.ftop.util.SplaySet;
 import net.novucs.ftop.util.StringUtils;
+import net.novucs.ftop.util.TreeIterator;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -37,7 +38,7 @@ public class GuiManager {
 
     public void sendGui(Player player, int page) {
         int entries = plugin.getSettings().getGuiLayout().getFactionsPerPage();
-        SortedSplayTree<FactionWorth> factions = plugin.getWorthManager().getOrderedFactions();
+        SplaySet<FactionWorth> factions = plugin.getWorthManager().getOrderedFactions();
         int maxPage = Math.max((int) Math.ceil((double) factions.size() / entries), 1);
         page = Math.max(1, Math.min(maxPage, page));
 
@@ -48,7 +49,7 @@ public class GuiManager {
         placeholders.put("{page:last}", String.valueOf(maxPage));
 
         int spacer = entries * (page - 1);
-        SortedSplayTree.Iterator<FactionWorth> it = factions.iterator(spacer);
+        TreeIterator<FactionWorth> it = factions.iterator(spacer);
 
         int lines = plugin.getSettings().getGuiLineCount() * 9;
         String name = StringUtils.replace(plugin.getSettings().getGuiInventoryName(), placeholders);

@@ -6,7 +6,7 @@ import net.novucs.ftop.FactionsTopPlugin;
 import net.novucs.ftop.PluginService;
 import net.novucs.ftop.entity.BlockPos;
 import net.novucs.ftop.entity.FactionWorth;
-import net.novucs.ftop.util.SortedSplayTree;
+import net.novucs.ftop.util.SplaySet;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -54,7 +54,7 @@ public class SignManager extends BukkitRunnable implements PluginService, Listen
 
     @Override
     public void run() {
-        SortedSplayTree<FactionWorth> factions = plugin.getWorthManager().getOrderedFactions();
+        SplaySet<FactionWorth> factions = plugin.getWorthManager().getOrderedFactions();
 
         for (Map.Entry<Integer, Collection<BlockPos>> entry : signs.asMap().entrySet()) {
             // Do nothing if rank is higher than factions size.
@@ -109,7 +109,7 @@ public class SignManager extends BukkitRunnable implements PluginService, Listen
         event.setLine(1, "#" + Math.max(rank, 1));
 
         rank = Math.max(rank - 1, 0);
-        SortedSplayTree<FactionWorth> factions = plugin.getWorthManager().getOrderedFactions();
+        SplaySet<FactionWorth> factions = plugin.getWorthManager().getOrderedFactions();
 
         if (factions.size() > rank) {
             FactionWorth worth = factions.byIndex(rank);

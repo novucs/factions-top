@@ -5,7 +5,8 @@ import net.novucs.ftop.FactionsTopPlugin;
 import net.novucs.ftop.PluginService;
 import net.novucs.ftop.entity.ButtonMessage;
 import net.novucs.ftop.entity.FactionWorth;
-import net.novucs.ftop.util.SortedSplayTree;
+import net.novucs.ftop.util.SplaySet;
+import net.novucs.ftop.util.TreeIterator;
 import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -54,7 +55,7 @@ public class TextCommand implements CommandExecutor, PluginService {
     private void sendTop(CommandSender sender, int page) {
         // Do not attempt to send hook worth if page requested is beyond the limit.
         int entries = plugin.getSettings().getFactionsPerPage();
-        SortedSplayTree<FactionWorth> factions = plugin.getWorthManager().getOrderedFactions();
+        SplaySet<FactionWorth> factions = plugin.getWorthManager().getOrderedFactions();
         int maxPage = Math.max((int) Math.ceil((double) factions.size() / entries), 1);
         page = Math.max(1, Math.min(maxPage, page));
 
@@ -87,7 +88,7 @@ public class TextCommand implements CommandExecutor, PluginService {
         }
 
         int spacer = entries * --page;
-        SortedSplayTree.Iterator<FactionWorth> it = factions.iterator(spacer);
+        TreeIterator<FactionWorth> it = factions.iterator(spacer);
         for (int i = 0; i < entries; i++) {
             if (!it.hasNext()) break;
 
@@ -125,7 +126,7 @@ public class TextCommand implements CommandExecutor, PluginService {
             backIndex = backIndex == -1 ? Integer.MAX_VALUE : backIndex;
             nextIndex = nextIndex == -1 ? Integer.MAX_VALUE : nextIndex;
 
-            if (backIndex < nextIndex && backIndex != Integer.MAX_VALUE) {
+            if (backIndex < nextIndex) {
                 fancyMessage.then(message.substring(0, backIndex)).then(backText);
 
                 if (backCmd != null) {
@@ -133,7 +134,7 @@ public class TextCommand implements CommandExecutor, PluginService {
                 }
 
                 message = message.substring(backIndex + 13);
-            } else if (nextIndex < backIndex && nextIndex != Integer.MAX_VALUE) {
+            } else if (nextIndex < backIndex) {
                 fancyMessage.then(message.substring(0, nextIndex)).then(nextText);
 
                 if (nextCmd != null) {

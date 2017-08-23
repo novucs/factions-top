@@ -9,7 +9,7 @@ import net.novucs.ftop.WorthType;
 import net.novucs.ftop.entity.ChunkPos;
 import net.novucs.ftop.entity.ChunkWorth;
 import net.novucs.ftop.entity.FactionWorth;
-import net.novucs.ftop.util.SortedSplayTree;
+import net.novucs.ftop.util.SplaySet;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
@@ -17,17 +17,15 @@ import org.bukkit.block.Chest;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public final class WorthManager implements PluginService {
 
     private final FactionsTopPlugin plugin;
     private final Map<ChunkPos, ChunkWorth> chunks = new HashMap<>();
     private final Map<String, FactionWorth> factions = new HashMap<>();
-    private final SortedSplayTree<FactionWorth> orderedFactions = SortedSplayTree.create();
+    private final SplaySet<FactionWorth> orderedFactions = SplaySet.create();
     private final Table<ChunkPos, WorthType, Double> recalculateQueue = HashBasedTable.create();
     private final Table<ChunkPos, Material, Integer> materialsQueue = HashBasedTable.create();
 
@@ -40,7 +38,7 @@ public final class WorthManager implements PluginService {
      *
      * @return the ordered factions.
      */
-    public SortedSplayTree<FactionWorth> getOrderedFactions() {
+    public SplaySet<FactionWorth> getOrderedFactions() {
         return orderedFactions;
     }
 
@@ -82,6 +80,7 @@ public final class WorthManager implements PluginService {
 
     public void updateAllFactions() {
         factions.clear();
+
         for (Map.Entry<ChunkPos, ChunkWorth> chunk : chunks.entrySet()) {
             FactionWorth worth = getFactionWorth(chunk.getKey());
             if (worth != null) {
@@ -104,19 +103,12 @@ public final class WorthManager implements PluginService {
             }
         }
 
+        orderedFactions.clear();
+
         for (FactionWorth worth : factions.values()) {
             orderedFactions.add(worth);
             plugin.getPersistenceTask().queue(worth);
         }
-    }
-
-    /**
-     * Adds a faction worth profile to the ordered factions list.
-     *
-     * @param factionWorth the profile to add.
-     */
-    private void add(FactionWorth factionWorth) {
-        orderedFactions.add(factionWorth);
     }
 
     /**
@@ -160,7 +152,7 @@ public final class WorthManager implements PluginService {
         return factions.compute(factionId, (k, v) -> {
             if (v == null) {
                 v = new FactionWorth(k, plugin.getFactionsHook().getFactionName(k));
-                add(v);
+                orderedFactions.add(v);
             }
             return v;
         });
@@ -178,16 +170,13 @@ public final class WorthManager implements PluginService {
         FactionWorth factionWorth = getFactionWorth(pos);
         if (factionWorth == null) return;
 
-        SortedSplayTree.Node<FactionWorth> node = orderedFactions.find(factionWorth);
+        orderedFactions.remove(factionWorth);
 
         // Update all stats with the new chunk data.
         ChunkWorth chunkWorth = getChunkWorth(pos);
         double oldWorth = chunkWorth.getWorth(worthType);
         chunkWorth.setWorth(worthType, worth);
         factionWorth.addWorth(worthType, worth - oldWorth);
-
-        // Adjust faction worth position.
-        orderedFactions.splay(node);
 
         // If this position was added to the recalculate queue, add all queued
         // updates while the chunk was recalculated and set the next time to
@@ -198,6 +187,8 @@ public final class WorthManager implements PluginService {
             factionWorth.addWorth(worthType, queuedWorth);
             chunkWorth.setNextRecalculation(plugin.getSettings().getChunkRecalculateMillis() + System.currentTimeMillis());
         }
+
+        orderedFactions.add(factionWorth);
     }
 
     public void setMaterials(ChunkPos pos, Map<Material, Integer> materials) {
@@ -223,7 +214,7 @@ public final class WorthManager implements PluginService {
         plugin.getPersistenceTask().queue(factionWorth);
     }
 
-    public void setSpawners(ChunkPos pos, Map<EntityType, Integer> spawners) {
+    private void setSpawners(ChunkPos pos, Map<EntityType, Integer> spawners) {
         // Do nothing if faction worth is null.
         FactionWorth factionWorth = getFactionWorth(pos);
         if (factionWorth == null) return;
@@ -255,7 +246,7 @@ public final class WorthManager implements PluginService {
         FactionWorth factionWorth = getFactionWorth(pos);
         if (factionWorth == null) return;
 
-        SortedSplayTree.Node<FactionWorth> node = orderedFactions.find(factionWorth);
+        orderedFactions.remove(factionWorth);
 
         // Update all stats with the new chunk data.
         ChunkWorth chunkWorth = getChunkWorth(pos);
@@ -267,8 +258,7 @@ public final class WorthManager implements PluginService {
         factionWorth.addMaterials(materials);
         factionWorth.addSpawners(spawners);
 
-        // Adjust faction worth position.
-        orderedFactions.splay(node);
+        orderedFactions.add(factionWorth);
 
         // Add this worth to the recalculation queue if the chunk is being
         // recalculated.
@@ -464,7 +454,7 @@ public final class WorthManager implements PluginService {
         FactionWorth factionWorth = getFactionWorth(factionId);
         if (factionWorth == null) return;
 
-        SortedSplayTree.Node<FactionWorth> node = orderedFactions.find(factionWorth);
+        orderedFactions.remove(factionWorth);
 
         // Add all placed and chest worth of each claim to the faction.
         for (ChunkPos pos : claims) {
@@ -489,8 +479,7 @@ public final class WorthManager implements PluginService {
             recalculate(chunkWorth, pos, chunk, RecalculateReason.CLAIM);
         }
 
-        // Adjust faction worth position.
-        orderedFactions.splay(node);
+        orderedFactions.add(factionWorth);
     }
 
     /**
@@ -511,9 +500,9 @@ public final class WorthManager implements PluginService {
         if (factionWorth == null) return;
 
         // Update faction with the new worth and adjust the worth position.
-        SortedSplayTree.Node<FactionWorth> node = orderedFactions.find(factionWorth);
+        orderedFactions.remove(factionWorth);
         factionWorth.addWorth(worthType, worth);
-        orderedFactions.splay(node);
+        orderedFactions.add(factionWorth);
         plugin.getPersistenceTask().queue(factionWorth);
     }
 
@@ -540,7 +529,6 @@ public final class WorthManager implements PluginService {
     public void remove(String factionId) {
         FactionWorth factionWorth = factions.remove(factionId);
         orderedFactions.remove(factionWorth);
-
         plugin.getPersistenceTask().queueDeletedFaction(factionId);
     }
 }

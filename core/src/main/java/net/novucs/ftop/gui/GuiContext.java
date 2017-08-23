@@ -3,7 +3,7 @@ package net.novucs.ftop.gui;
 import net.novucs.ftop.FactionsTopPlugin;
 import net.novucs.ftop.entity.FactionWorth;
 import net.novucs.ftop.gui.element.GuiElement;
-import net.novucs.ftop.util.SortedSplayTree;
+import net.novucs.ftop.util.TreeIterator;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
@@ -18,14 +18,14 @@ public class GuiContext {
     private final Inventory inventory;
     private final int maxPage;
     private final int thisPage;
-    private final SortedSplayTree.Iterator<FactionWorth> worthIterator;
+    private final TreeIterator<FactionWorth> worthIterator;
     private final Map<String, String> placeholders;
     private final List<GuiElement> slots = new ArrayList<>();
     private int currentRank;
     private int slot;
 
     public GuiContext(FactionsTopPlugin plugin, Player player, Inventory inventory, int maxPage, int thisPage,
-                      SortedSplayTree.Iterator<FactionWorth> worthIterator, Map<String, String> placeholders) {
+                      TreeIterator<FactionWorth> worthIterator, Map<String, String> placeholders) {
         this.plugin = plugin;
         this.player = player;
         this.inventory = inventory;
@@ -55,7 +55,7 @@ public class GuiContext {
         return thisPage;
     }
 
-    public SortedSplayTree.Iterator<FactionWorth> getWorthIterator() {
+    public TreeIterator<FactionWorth> getWorthIterator() {
         return worthIterator;
     }
 
