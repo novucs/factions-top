@@ -134,11 +134,11 @@ public class SplaySet<E> extends AbstractSet<E> implements Set<E> {
         return new Iterator<>(this, nodeByIndex(index));
     }
 
-    public E getMin() {
+    public E last() {
         return root == null ? null : minimumSubtree(root).element;
     }
 
-    public E getMax() {
+    public E first() {
         return root == null ? null : maximumSubtree(root).element;
     }
 

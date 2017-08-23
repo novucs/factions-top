@@ -22,6 +22,6 @@ public class LastReplacer implements Supplier<String> {
             return plugin.getSettings().getPlaceholdersFactionNotFound();
         }
 
-        return factions.getMax().getName();
+        return factions.last().getName();
     }
 }
