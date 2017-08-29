@@ -2,22 +2,36 @@ package net.novucs.ftop.hook;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.massivecraft.factions.*;
-import com.massivecraft.factions.event.*;
+import com.massivecraft.factions.Board;
+import com.massivecraft.factions.FLocation;
+import com.massivecraft.factions.FPlayer;
+import com.massivecraft.factions.FPlayers;
+import com.massivecraft.factions.Faction;
+import com.massivecraft.factions.Factions;
+import com.massivecraft.factions.event.FPlayerJoinEvent;
+import com.massivecraft.factions.event.FPlayerLeaveEvent;
+import com.massivecraft.factions.event.LandClaimEvent;
+import com.massivecraft.factions.event.LandUnclaimAllEvent;
+import com.massivecraft.factions.event.LandUnclaimEvent;
 import com.massivecraft.factions.struct.TerritoryAccess;
 import net.novucs.ftop.entity.ChunkPos;
-import net.novucs.ftop.hook.event.*;
+import net.novucs.ftop.hook.event.FactionClaimEvent;
 import net.novucs.ftop.hook.event.FactionDisbandEvent;
+import net.novucs.ftop.hook.event.FactionJoinEvent;
+import net.novucs.ftop.hook.event.FactionLeaveEvent;
 import net.novucs.ftop.hook.event.FactionRenameEvent;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class Factions0108 extends FactionsHook {
@@ -160,9 +174,5 @@ public class Factions0108 extends FactionsHook {
 
     private ChunkPos getChunkPos(FLocation location) {
         return ChunkPos.of(location.getWorldName(), (int) location.getX(), (int) location.getZ());
-    }
-
-    private void callEvent(Event event) {
-        getPlugin().getServer().getPluginManager().callEvent(event);
     }
 }

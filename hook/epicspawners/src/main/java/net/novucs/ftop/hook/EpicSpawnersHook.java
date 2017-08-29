@@ -81,6 +81,13 @@ public class EpicSpawnersHook implements SpawnerStackerHook, Listener {
         int oldMultiplier = event.getOldMulti();
         int newMultiplier = event.getCurrentMulti();
         SpawnerMultiplierChangeEvent event1 = new SpawnerMultiplierChangeEvent(spawner, oldMultiplier, newMultiplier);
-        plugin.getServer().getPluginManager().callEvent(event1);
+
+        if (plugin.getServer().isPrimaryThread()) {
+            plugin.getServer().getPluginManager().callEvent(event1);
+            return;
+        }
+
+        plugin.getServer().getScheduler().runTask(plugin, () ->
+                plugin.getServer().getPluginManager().callEvent(event1));
     }
 }

@@ -166,8 +166,4 @@ public class Factions0106 extends FactionsHook {
     private ChunkPos getChunkPos(FLocation location) {
         return ChunkPos.of(location.getWorldName(), (int) location.getX(), (int) location.getZ());
     }
-
-    private void callEvent(Event event) {
-        getPlugin().getServer().getPluginManager().callEvent(event);
-    }
 }
