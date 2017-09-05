@@ -14,7 +14,7 @@ public class EpicSpawnersAPI {
         throw new UnsupportedOperationException();
     }
 
-    public String getType(ItemStack stack) {
+    public EntityType getType(ItemStack stack) {
         throw new UnsupportedOperationException();
     }
 }

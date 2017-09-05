@@ -40,7 +40,7 @@ public class EpicSpawnersHook implements SpawnerStackerHook, Listener {
         }
 
         try {
-            return EntityType.fromName(api.getType(spawner));
+            return api.getType(spawner);
         } catch (IllegalArgumentException ex) {
             return craftbukkitHook.getSpawnerType(spawner);
         }
