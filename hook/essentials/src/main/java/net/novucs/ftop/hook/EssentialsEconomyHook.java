@@ -56,7 +56,7 @@ public class EssentialsEconomyHook implements EconomyHook, Listener {
     public double getBalance(Player player) {
         try {
             return Economy.getMoneyExact(player.getName()).doubleValue();
-        } catch (UserDoesNotExistException e) {
+        } catch (UserDoesNotExistException | NullPointerException e) {
             return 0;
         }
     }
