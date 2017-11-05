@@ -54,13 +54,6 @@
         </plugins>
     </build>
 
-    <repositories>
-        <repository>
-            <id>stealthyone-repo</id>
-            <url>http://repo.stealthyone.com/content/groups/public</url>
-        </repository>
-    </repositories>
-
     <dependencies>
         <dependency>
             <groupId>net.novucs.ftop.hook</groupId>

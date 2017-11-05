@@ -91,3 +91,5 @@ MVdW Placeholders:
 - {factionstop_name:*}
 - - The faction name of a rank by replacing * with a number.
 - - The faction name in last place by replacing * with "last".
+- {factionstop_rank:player}
+- - The rank of the players faction if valid, otherwise faction-not-found text.

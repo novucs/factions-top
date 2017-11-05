@@ -15,6 +15,7 @@ import net.novucs.ftop.manager.GuiManager;
 import net.novucs.ftop.manager.SignManager;
 import net.novucs.ftop.manager.WorthManager;
 import net.novucs.ftop.replacer.LastReplacer;
+import net.novucs.ftop.replacer.PlayerReplacer;
 import net.novucs.ftop.replacer.RankReplacer;
 import net.novucs.ftop.task.ChunkWorthTask;
 import net.novucs.ftop.task.PersistenceTask;
@@ -349,10 +350,11 @@ public final class FactionsTopPlugin extends JavaPlugin {
             return;
         }
 
+        PlayerReplacer playerReplacer = new PlayerReplacer(this);
         RankReplacer rankReplacer = new RankReplacer(this);
         LastReplacer lastReplacer = new LastReplacer(this);
 
-        placeholderHook = new MVdWPlaceholderAPIHook(this, rankReplacer, lastReplacer);
+        placeholderHook = new MVdWPlaceholderAPIHook(this, playerReplacer, rankReplacer, lastReplacer);
         boolean updated = placeholderHook.initialize(getSettings().getPlaceholdersEnabledRanks());
 
         if (updated) {
