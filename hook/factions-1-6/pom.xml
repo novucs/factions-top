@@ -29,7 +29,7 @@
         <dependency>
             <groupId>com.massivecraft</groupId>
             <artifactId>Factions</artifactId>
-            <version>1.6.9.5-U0.1.14</version>
+            <version>1.6.9.5-U0.1.12</version>
             <exclusions>
                 <exclusion>
                     <groupId>mkremins</groupId>
