@@ -12,12 +12,12 @@
     </parent>
 
     <groupId>net.novucs.ftop.hook</groupId>
-    <artifactId>factions-1-6</artifactId>
+    <artifactId>mergedspawner</artifactId>
     <version>1.2.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>Factions-Hook-v1.6.x</name>
-    <description>Provides support for Factions 1.6.x.</description>
+    <name>MergedSpawner-Hook</name>
+    <description>Provides spawner multiplier support with MergedSpawner.</description>
 
     <repositories>
         <repository>
@@ -34,15 +34,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.massivecraft</groupId>
-            <artifactId>Factions</artifactId>
-            <version>1.6.9.5-U0.1.12</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>mkremins</groupId>
-                    <artifactId>fanciful</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>com.vk2gpz</groupId>
+            <artifactId>mergedspawner</artifactId>
+            <version>4.3.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

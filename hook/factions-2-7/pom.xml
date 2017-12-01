@@ -19,6 +19,13 @@
     <name>Factions-Hook-v2.7.x</name>
     <description>Provides support for Factions 2.7.x.</description>
 
+    <repositories>
+        <repository>
+            <id>local-repo</id>
+            <url>file://${project.basedir}/../../repo</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>net.novucs.ftop.hook</groupId>
