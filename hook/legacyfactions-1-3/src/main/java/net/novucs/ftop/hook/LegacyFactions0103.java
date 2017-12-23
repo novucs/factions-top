@@ -76,7 +76,13 @@ public class LegacyFactions0103 extends FactionsHook {
 
     @Override
     public String getOwnerName(String factionId) {
-        FPlayer owner = FactionColl.get().getFactionById(factionId).getFPlayerAdmin();
+        Faction faction = FactionColl.get().getFactionById(factionId);
+
+        if (faction == null) {
+            return null;
+        }
+
+        FPlayer owner = faction.getOwner();
         return owner == null ? null : owner.getName();
     }
 
