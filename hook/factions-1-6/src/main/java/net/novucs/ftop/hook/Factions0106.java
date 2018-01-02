@@ -33,7 +33,7 @@ public class Factions0106 extends FactionsHook {
     @Override
     public String getFactionAt(String worldName, int chunkX, int chunkZ) {
         Faction faction = Board.getInstance().getFactionAt(new FLocation(worldName, chunkX, chunkZ));
-        return faction.getId();
+        return faction == null ? Factions.getInstance().getNone().getId() : faction.getId();
     }
 
     @Override
