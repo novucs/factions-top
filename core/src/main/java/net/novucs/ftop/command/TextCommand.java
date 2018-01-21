@@ -34,7 +34,6 @@ public class TextCommand implements CommandExecutor, PluginService {
 
     @Override
     public void terminate() {
-        plugin.getServer().getPluginCommand("ftop").setExecutor(null);
     }
 
     @Override

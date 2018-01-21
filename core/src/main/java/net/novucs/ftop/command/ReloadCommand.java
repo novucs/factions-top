@@ -36,7 +36,6 @@ public class ReloadCommand implements CommandExecutor, PluginService {
 
     @Override
     public void terminate() {
-        plugin.getCommand("ftopreload").setExecutor(null);
     }
 
     @Override
