@@ -33,12 +33,12 @@ public class CommandListener implements Listener, PluginService {
         HandlerList.unregisterAll(this);
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onCommand(PlayerCommandPreprocessEvent event) {
         event.setMessage("/" + attemptRebind(event.getMessage().substring(1)));
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onCommand(ServerCommandEvent event) {
         event.setCommand(attemptRebind(event.getCommand()));
     }
