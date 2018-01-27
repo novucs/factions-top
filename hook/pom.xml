@@ -36,5 +36,6 @@
         <module>essentials</module>
         <module>mvdwplaceholderapi</module>
         <module>vault</module>
+        <module>mergedspawner</module>
     </modules>
 </project>

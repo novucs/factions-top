@@ -22,6 +22,7 @@ import net.novucs.ftop.task.PersistenceTask;
 import net.novucs.ftop.task.RecalculateTask;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -275,10 +276,13 @@ public final class FactionsTopPlugin extends JavaPlugin {
     }
 
     private void loadSpawnerStackerHook() {
-        Plugin epicSpawnersPlugin = getServer().getPluginManager().getPlugin("EpicSpawners");
+        PluginManager pm = getServer().getPluginManager();
 
-        if (epicSpawnersPlugin != null) {
+
+        if (pm.isPluginEnabled("EpicSpawners")) { // Use EpicSpawners as preferred stacker hook.
             spawnerStackerHook = new EpicSpawnersHook(this, craftbukkitHook);
+        } else if(pm.isPluginEnabled("MergedSpawner")) { // If MergedSpawner is enabled, enable its hook.
+            spawnerStackerHook = new MergedSpawnerHook(this, craftbukkitHook);
         } else {
             spawnerStackerHook = new VanillaSpawnerStackerHook(craftbukkitHook);
         }
