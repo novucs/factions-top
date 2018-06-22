@@ -66,7 +66,7 @@ public final class FactionsTopPlugin extends JavaPlugin {
     private CraftbukkitHook craftbukkitHook;
     private EconomyHook economyHook;
     private FactionsHook factionsHook;
-    private PlaceholderHook placeholderHook;
+    private Set<PlaceholderHook> placeholderHooks;
     private SpawnerStackerHook spawnerStackerHook;
     private DatabaseManager databaseManager;
 
@@ -343,22 +343,32 @@ public final class FactionsTopPlugin extends JavaPlugin {
     }
 
     private void loadPlaceholderHook() {
-        Plugin mvdwPlaceholderApi = getServer().getPluginManager().getPlugin("MVdWPlaceholderAPI");
-
-        if (mvdwPlaceholderApi == null) {
-            getLogger().info("MVdWPlaceholderAPI not found, no placeholders created.");
-            return;
-        }
-
+        placeholderHooks = new HashSet<>();
+        
         PlayerReplacer playerReplacer = new PlayerReplacer(this);
         RankReplacer rankReplacer = new RankReplacer(this);
         LastReplacer lastReplacer = new LastReplacer(this);
-
-        placeholderHook = new MVdWPlaceholderAPIHook(this, playerReplacer, rankReplacer, lastReplacer);
-        boolean updated = placeholderHook.initialize(getSettings().getPlaceholdersEnabledRanks());
-
-        if (updated) {
-            getLogger().info("MVdWPlaceholderAPI found, added placeholders.");
+        
+        Plugin mvdwPlaceholderApi = getServer().getPluginManager().getPlugin("MVdWPlaceholderAPI");
+        if (mvdwPlaceholderApi != null && mvdwPlaceholderApi.isEnabled()) {
+            PlaceholderHook placeholderHook = new MVdWPlaceholderAPIHook(this, playerReplacer, rankReplacer, lastReplacer);
+            boolean updated = placeholderHook.initialize(getSettings().getPlaceholdersEnabledRanks());
+    
+            placeholderHooks.add(placeholderHook);
+            if (updated) {
+                getLogger().info("MVdWPlaceholderAPI found, added placeholders.");
+            }
+        }
+        
+        Plugin clipPlaceholderApi = getServer().getPluginManager().getPlugin("PlaceholderAPI");
+        if (clipPlaceholderApi != null && clipPlaceholderApi.isEnabled()) {
+            PlaceholderHook placeholderHook = new ClipPlaceholderAPIHook(this, playerReplacer, rankReplacer, lastReplacer);
+            boolean updated = placeholderHook.initialize(getSettings().getPlaceholdersEnabledRanks());
+    
+            placeholderHooks.add(placeholderHook);
+            if (updated) {
+                getLogger().info("PlaceholderAPI found, added placeholders.");
+            }
         }
     }
 

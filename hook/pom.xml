@@ -35,6 +35,7 @@
         <module>manager</module>
         <module>essentials</module>
         <module>mvdwplaceholderapi</module>
+        <module>clipplaceholderapi</module>
         <module>vault</module>
     </modules>
 </project>
