@@ -56,7 +56,9 @@ public class ChunkWorthTask extends Thread {
 
                 for (int x = 0; x < 16; x++) {
                     for (int z = 0; z < 16; z++) {
-                        Material material = Material.getMaterial(snapshot.getBlockTypeId(x, y, z));
+                        // TODO: Add backwards compatibility for:
+                        // TODO: Material.getMaterial(snapshot.getBlockTypeId(x, y, z));
+                        Material material = snapshot.getBlockType(x, y, z);
                         if (material == null) {
                             continue;
                         }
