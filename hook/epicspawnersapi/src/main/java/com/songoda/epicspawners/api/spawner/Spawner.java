@@ -1,6 +1,5 @@
 package com.songoda.epicspawners.api.spawner;
 
-import com.songoda.epicspawners.api.CostType;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
@@ -156,15 +155,6 @@ public interface Spawner {
      * @return true of conditions met, false otherwise
      */
     boolean checkConditions();
-
-    /**
-     * Get the cost needed to upgrade this spawner with
-     * either Experience or Economy.
-     *
-     * @param type upgrade cost type
-     * @return cost to upgrade
-     */
-    int getUpgradeCost(CostType type);
 
     /**
      * Extracts the spawner type and amount from the provided

@@ -15,7 +15,7 @@ public abstract class SpawnerEvent extends PlayerEvent {
 
     public SpawnerEvent(Player who, Spawner spawner) {
         super(who);
-        this.spawner = spawner;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -24,7 +24,7 @@ public abstract class SpawnerEvent extends PlayerEvent {
      * @return the broken spawner
      */
     public Spawner getSpawner() {
-        return spawner;
+        throw new UnsupportedOperationException();
     }
 
 }

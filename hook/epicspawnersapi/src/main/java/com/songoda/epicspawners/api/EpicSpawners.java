@@ -2,8 +2,6 @@ package com.songoda.epicspawners.api;
 
 import com.songoda.epicspawners.api.spawner.SpawnerData;
 import com.songoda.epicspawners.api.spawner.SpawnerManager;
-import com.songoda.epicspawners.api.utils.ProtectionPluginHook;
-import com.songoda.epicspawners.api.utils.SpawnerDataBuilder;
 
 import org.bukkit.inventory.ItemStack;
 
@@ -72,16 +70,6 @@ public interface EpicSpawners {
     SpawnerData getSpawnerDataFromItem(ItemStack item);
 
     /**
-     * Create a new {@link SpawnerDataBuilder} instance
-     * to easily construct a new {@link SpawnerData} object
-     * 
-     * @param identifier the unique spawner data identifier (name)
-     * 
-     * @return the created SpawnerDataBuilder instance
-     */
-    SpawnerDataBuilder createSpawnerData(String identifier);
-
-    /**
      * Get the amount of spawners stacked in an ItemStack.
      *
      * @param item the ItemStack to check
@@ -89,14 +77,4 @@ public interface EpicSpawners {
      * @return the stack size. 1 if invalid or null.
      */
     int getStackSizeFromItem(ItemStack item);
-
-    /**
-     * Register a new {@link ProtectionPluginHook} implementation
-     * in order for EpicSpawners to support plugins that protect
-     * blocks from being interacted with
-     * 
-     * @param hook the hook to register
-     */
-    void registerProtectionHook(ProtectionPluginHook hook);
-
 }

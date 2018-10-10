@@ -2,8 +2,6 @@ package com.songoda.epicspawners.api;
 
 import com.songoda.epicspawners.api.spawner.SpawnerData;
 import com.songoda.epicspawners.api.spawner.SpawnerManager;
-import com.songoda.epicspawners.api.utils.ProtectionPluginHook;
-import com.songoda.epicspawners.api.utils.SpawnerDataBuilder;
 
 import org.bukkit.inventory.ItemStack;
 
@@ -32,11 +30,7 @@ public class EpicSpawnersAPI {
      * @param implementation the implementation to set
      */
     public static void setImplementation(EpicSpawners implementation) {
-        if (EpicSpawnersAPI.implementation != null) {
-            throw new IllegalArgumentException("Cannot set API implementation twice");
-        }
-
-        EpicSpawnersAPI.implementation = implementation;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -47,7 +41,7 @@ public class EpicSpawnersAPI {
      * @return the EpicSpawners implementation
      */
     public static EpicSpawners getImplementation() {
-        return implementation;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -56,7 +50,7 @@ public class EpicSpawnersAPI {
      * @return the spawner manager
      */
     public static SpawnerManager getSpawnerManager() {
-        return implementation.getSpawnerManager();
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -70,7 +64,7 @@ public class EpicSpawnersAPI {
      * @see SpawnerData#toItemStack(int)
      */
     public static ItemStack newSpawnerItem(SpawnerData data, int amount) {
-        return implementation.newSpawnerItem(data, amount);
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -85,7 +79,7 @@ public class EpicSpawnersAPI {
      * @see SpawnerData#toItemStack(int, int)
      */
     public static ItemStack newSpawnerItem(SpawnerData data, int amount, int stackSize) {
-        return implementation.newSpawnerItem(data, amount, stackSize);
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -96,19 +90,7 @@ public class EpicSpawnersAPI {
      * @return the SpawnerData. null if item is null or has no meta
      */
     public static SpawnerData getSpawnerDataFromItem(ItemStack item) {
-        return implementation.getSpawnerDataFromItem(item);
-    }
-
-    /**
-     * Create a new {@link SpawnerDataBuilder} instance to easily
-     * construct a new {@link SpawnerData} object
-     * 
-     * @param identifier the unique spawner data identifier (name)
-     * 
-     * @return the created SpawnerDataBuilder instance
-     */
-    public static SpawnerDataBuilder createSpawnerData(String identifier) {
-        return implementation.createSpawnerData(identifier);
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -119,18 +101,7 @@ public class EpicSpawnersAPI {
      * @return the stack size. 1 if invalid or null.
      */
     public static int getStackSizeFromItem(ItemStack item) {
-        return implementation.getStackSizeFromItem(item);
-    }
-    
-    /**
-     * Register a new {@link ProtectionPluginHook} implementation
-     * in order for EpicSpawners to support plugins that protect
-     * blocks from being interacted with
-     * 
-     * @param hook the hook to register
-     */
-    public static void registerProtectionHook(ProtectionPluginHook hook) {
-        implementation.registerProtectionHook(hook);
+        throw new UnsupportedOperationException();
     }
 
 }

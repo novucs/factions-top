@@ -30,41 +30,30 @@ public class SpawnerChangeEvent extends SpawnerEvent implements Cancellable {
 
     public SpawnerChangeEvent(Player player, Spawner spawner, int stackSize, int oldStackSize) {
         super(player, spawner);
-
-        this.stackSize = stackSize;
-        this.oldStackSize = oldStackSize;
-        this.spawnerData = oldSpawnerData = null;
-        this.type = ChangeType.STACK_SIZE;
+        throw new UnsupportedOperationException();
     }
 
     public SpawnerChangeEvent(Player player, Spawner spawner, SpawnerData data, SpawnerData oldSpawnerData) {
         super(player, spawner);
-
-        this.spawnerData = data;
-        this.oldSpawnerData = oldSpawnerData;
-        this.stackSize = oldStackSize = spawner.getSpawnerDataCount();
-        this.type = ChangeType.SPAWNER_DATA;
+        throw new UnsupportedOperationException();
     }
 
     @Deprecated
     public SpawnerChangeEvent(Location location, Player player, int stackSize, int oldStackSize) {
         this(player, EpicSpawnersAPI.getSpawnerManager().getSpawnerFromWorld(location), stackSize, oldStackSize);
+        throw new UnsupportedOperationException();
     }
 
     @Deprecated
     public SpawnerChangeEvent(Location location, Player player, SpawnerData data, SpawnerData oldSpawnerData) {
         this(player, EpicSpawnersAPI.getSpawnerManager().getSpawnerFromWorld(location), data, oldSpawnerData);
+        throw new UnsupportedOperationException();
     }
 
     @Deprecated
     public SpawnerChangeEvent(Location location, Player player, String type, String oldType) {
         super(player, EpicSpawnersAPI.getSpawnerManager().getSpawnerFromWorld(location));
-
-        SpawnerManager spawnerManager = EpicSpawnersAPI.getSpawnerManager();
-        this.spawnerData = spawnerManager.getSpawnerData(type);
-        this.oldSpawnerData = spawnerManager.getSpawnerData(oldType);
-        this.stackSize = oldStackSize = spawner.getSpawnerDataCount();
-        this.type = ChangeType.SPAWNER_DATA;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -75,7 +64,7 @@ public class SpawnerChangeEvent extends SpawnerEvent implements Cancellable {
      * @return the new stack size
      */
     public int getStackSize() {
-        return stackSize;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -86,7 +75,7 @@ public class SpawnerChangeEvent extends SpawnerEvent implements Cancellable {
      * @return the old stack size
      */
     public int getOldStackSize() {
-        return oldStackSize;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -96,7 +85,7 @@ public class SpawnerChangeEvent extends SpawnerEvent implements Cancellable {
      * @return the new spawner data
      */
     public SpawnerData getSpawnerData() {
-        return spawnerData;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -106,7 +95,7 @@ public class SpawnerChangeEvent extends SpawnerEvent implements Cancellable {
      * @return the old spawner data
      */
     public SpawnerData getOldSpawnerData() {
-        return oldSpawnerData;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -115,26 +104,26 @@ public class SpawnerChangeEvent extends SpawnerEvent implements Cancellable {
      * @return the change type
      */
     public ChangeType getChange() {
-        return type;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public HandlerList getHandlers() {
-        return HANDLERS;
+        throw new UnsupportedOperationException();
     }
 
     public static HandlerList getHandlerList() {
-        return HANDLERS;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean isCancelled() {
-        return canceled;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void setCancelled(boolean canceled) {
-        this.canceled = canceled;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -146,7 +135,7 @@ public class SpawnerChangeEvent extends SpawnerEvent implements Cancellable {
      */
     @Deprecated
     public int getCurrentMulti() {
-        return stackSize;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -158,7 +147,7 @@ public class SpawnerChangeEvent extends SpawnerEvent implements Cancellable {
      */
     @Deprecated
     public int getOldMulti() {
-        return oldStackSize;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -170,7 +159,7 @@ public class SpawnerChangeEvent extends SpawnerEvent implements Cancellable {
      */
     @Deprecated
     public String getType() {
-        return spawnerData.getIdentifyingName();
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -182,7 +171,7 @@ public class SpawnerChangeEvent extends SpawnerEvent implements Cancellable {
      */
     @Deprecated
     public String getOldType() {
-        return oldSpawnerData.getIdentifyingName();
+        throw new UnsupportedOperationException();
     }
 
 }

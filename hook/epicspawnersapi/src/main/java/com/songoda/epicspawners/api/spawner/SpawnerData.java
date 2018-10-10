@@ -1,10 +1,6 @@
 package com.songoda.epicspawners.api.spawner;
 
 import com.songoda.epicspawners.api.EpicSpawnersAPI;
-import com.songoda.epicspawners.api.particles.ParticleDensity;
-import com.songoda.epicspawners.api.particles.ParticleEffect;
-import com.songoda.epicspawners.api.particles.ParticleType;
-import com.songoda.epicspawners.api.spawner.condition.SpawnCondition;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
@@ -436,94 +432,6 @@ public interface SpawnerData {
     void setTickRate(String tickRate);
 
     /**
-     * Get the effect used when displaying
-     * complicated particle effects.
-     *
-     * @return effect set
-     */
-    ParticleEffect getParticleEffect();
-
-    /**
-     * Set the effect used when displaying
-     * complicated particle effects.
-     *
-     * @param effect particle effect
-     */
-    void setParticleEffect(ParticleEffect effect);
-
-    /**
-     * Get the particle type used for complicated
-     * particle effects.
-     *
-     * @return particle type set
-     */
-    ParticleType getSpawnEffectParticle();
-
-
-    /**
-     * Set the particle type used for complicated
-     * particle effects.
-     *
-     * @param particle particle type
-     */
-    void setSpawnEffectParticle(ParticleType particle);
-
-    /**
-     * Get the particle used when an entity spawns
-     * from the spawner of this spawn type into
-     * the game world.
-     *
-     * <p>Spawn particles are displayed around
-     * said entity.</p>
-     *
-     * @return defined particle type
-     */
-    ParticleType getEntitySpawnParticle();
-
-    /**
-     * Set the particle used when an entity spawns
-     * from the spawner of this spawn type into
-     * the game world.
-     *
-     * @param particle particle type
-     */
-    void setEntitySpawnParticle(ParticleType particle);
-
-    /**
-     * Get the particle used when an entity spawns
-     * from the spawner of this spawn type into
-     * the game world.
-     *
-     * @return particle currently set
-     */
-    ParticleType getSpawnerSpawnParticle();
-
-    /**
-     * Set the particle used when an entity spawns
-     * from the spawner of this spawn type into
-     * the game world.
-     *
-     * @param particle particle to be used
-     */
-    void setSpawnerSpawnParticle(ParticleType particle);
-
-    /**
-     * Get the density of particles used when a
-     * particle effect is in use.
-     *
-     * @return amount of particles
-     */
-    ParticleDensity getParticleDensity();
-
-    /**
-     * Set the density of particles used when a
-     * particle effect is in use.
-     *
-     * @param amount density of particles to use
-     */
-    void setParticleDensity(ParticleDensity amount);
-
-    /**
      * Whether or not complicated particles effects
      * are constant or effect only boosted spawners.
      *
@@ -540,26 +448,5 @@ public interface SpawnerData {
      *                    spawners, false otherwise
      */
     void setParticleEffectBoostedOnly(boolean boostedOnly);
-
-    /**
-     *  Add spawner condiction.
-     *
-     * @param spawnCondition SpawnerCondition
-     */
-    void addCondition(SpawnCondition spawnCondition);
-
-    /**
-     *  remove spawner condiction.
-     *
-     * @param spawnCondition SpawnerCondition
-     */
-    void removeCondition(SpawnCondition spawnCondition);
-
-    /**
-     *  List spawner conditions.
-     *
-     * @return spawner conditions
-     */
-    List<SpawnCondition> getConditions();
 
 }
