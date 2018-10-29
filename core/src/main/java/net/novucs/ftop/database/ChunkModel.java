@@ -3,6 +3,7 @@ package net.novucs.ftop.database;
 import net.novucs.ftop.entity.ChunkPos;
 import net.novucs.ftop.entity.ChunkWorth;
 import net.novucs.ftop.entity.IdentityCache;
+import net.novucs.ftop.manager.DatabaseManager;
 
 import java.sql.*;
 import java.util.HashSet;
@@ -11,7 +12,7 @@ import java.util.Set;
 
 public class ChunkModel {
 
-    private static final String INSERT = "INSERT INTO `chunk` (`world_id`, `x`, `z`) VALUES(?, ?, ?)";
+    private static final String INSERT = "INSERT INTO `" + DatabaseManager.prefix + "chunk` (`world_id`, `x`, `z`) VALUES(?, ?, ?)";
 
     private final Connection connection;
     private final IdentityCache identityCache;

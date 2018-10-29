@@ -1,6 +1,7 @@
 package net.novucs.ftop.database;
 
 import net.novucs.ftop.entity.IdentityCache;
+import net.novucs.ftop.manager.DatabaseManager;
 import org.bukkit.Material;
 
 import java.sql.*;
@@ -8,9 +9,9 @@ import java.util.*;
 
 public class FactionMaterialModel {
 
-    private static final String UPDATE = "UPDATE `faction_material_count` SET `count` = ? WHERE `id` = ?";
-    private static final String INSERT = "INSERT INTO `faction_material_count` (`faction_id`, `material_id`, `count`) VALUES (?, ?, ?)";
-    private static final String DELETE = "DELETE FROM `faction_material_count` WHERE `faction_id` = ?";
+    private static final String UPDATE = "UPDATE `" + DatabaseManager.prefix + "faction_material_count` SET `count` = ? WHERE `id` = ?";
+    private static final String INSERT = "INSERT INTO `" + DatabaseManager.prefix + "faction_material_count` (`faction_id`, `material_id`, `count`) VALUES (?, ?, ?)";
+    private static final String DELETE = "DELETE FROM `" + DatabaseManager.prefix + "faction_material_count` WHERE `faction_id` = ?";
 
     private final List<Map.Entry<String, Integer>> insertionQueue = new LinkedList<>();
     private final IdentityCache identityCache;

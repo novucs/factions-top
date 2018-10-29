@@ -4,6 +4,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import net.novucs.ftop.entity.BlockPos;
 import net.novucs.ftop.entity.IdentityCache;
+import net.novucs.ftop.manager.DatabaseManager;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -12,8 +13,8 @@ import java.sql.SQLException;
 
 public class SignLoader {
 
-    private static final String SELECT_BLOCK = "SELECT * FROM `block`";
-    private static final String SELECT_SIGN = "SELECT * FROM `sign`";
+    private static final String SELECT_BLOCK = "SELECT * FROM `" + DatabaseManager.prefix + "block`";
+    private static final String SELECT_SIGN = "SELECT * FROM `" + DatabaseManager.prefix + "sign`";
 
     private final IdentityCache identityCache;
     private final PreparedStatement selectBlock;

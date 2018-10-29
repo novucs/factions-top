@@ -1,6 +1,7 @@
 package net.novucs.ftop.database;
 
 import net.novucs.ftop.entity.IdentityCache;
+import net.novucs.ftop.manager.DatabaseManager;
 
 import java.sql.*;
 import java.util.Collection;
@@ -9,7 +10,7 @@ import java.util.List;
 
 public class WorldModel {
 
-    private static final String INSERT = "INSERT INTO `world` (`name`) VALUES(?)";
+    private static final String INSERT = "INSERT INTO `" + DatabaseManager.prefix + "world` (`name`) VALUES(?)";
 
     private final List<String> insertionQueue = new LinkedList<>();
     private final IdentityCache identityCache;

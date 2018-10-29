@@ -6,6 +6,7 @@ import net.novucs.ftop.WorthType;
 import net.novucs.ftop.entity.ChunkPos;
 import net.novucs.ftop.entity.ChunkWorth;
 import net.novucs.ftop.entity.IdentityCache;
+import net.novucs.ftop.manager.DatabaseManager;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 
@@ -19,10 +20,10 @@ import java.util.Map;
 
 public class ChunkLoader {
 
-    private static final String SELECT_CHUNK = "SELECT * FROM `chunk`";
-    private static final String SELECT_CHUNK_MATERIAL = "SELECT * FROM `chunk_material_count`";
-    private static final String SELECT_CHUNK_SPAWNER = "SELECT * FROM `chunk_spawner_count`";
-    private static final String SELECT_CHUNK_WORTH = "SELECT * FROM `chunk_worth`";
+    private static final String SELECT_CHUNK = "SELECT * FROM `" + DatabaseManager.prefix + "chunk`";
+    private static final String SELECT_CHUNK_MATERIAL = "SELECT * FROM `" + DatabaseManager.prefix + "chunk_material_count`";
+    private static final String SELECT_CHUNK_SPAWNER = "SELECT * FROM `" + DatabaseManager.prefix + "chunk_spawner_count`";
+    private static final String SELECT_CHUNK_WORTH = "SELECT * FROM `" + DatabaseManager.prefix + "chunk_worth`";
 
     private final IdentityCache identityCache;
     private final PreparedStatement selectChunk;

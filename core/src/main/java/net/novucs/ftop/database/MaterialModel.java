@@ -1,6 +1,7 @@
 package net.novucs.ftop.database;
 
 import net.novucs.ftop.entity.IdentityCache;
+import net.novucs.ftop.manager.DatabaseManager;
 import org.bukkit.Material;
 
 import java.sql.*;
@@ -10,7 +11,7 @@ import java.util.List;
 
 public class MaterialModel {
 
-    private static final String INSERT = "INSERT INTO `material` (`name`) VALUES(?)";
+    private static final String INSERT = "INSERT INTO `" + DatabaseManager.prefix + "material` (`name`) VALUES(?)";
 
     private final List<Material> insertionQueue = new LinkedList<>();
     private final IdentityCache identityCache;

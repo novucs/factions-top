@@ -28,7 +28,7 @@ import static net.novucs.ftop.util.StringUtils.format;
 
 public class Settings {
 
-    private static final int LATEST_VERSION = 7;
+    private static final int LATEST_VERSION = 8;
 
     private static final ImmutableList<String> WORTH_HOVER = ImmutableList.of(
             "&e&l-- General --",
@@ -134,6 +134,7 @@ public class Settings {
     private List<Integer> placeholdersEnabledRanks;
     private long databasePersistInterval;
     private boolean databasePersistFactions;
+    private String prefix;
     private HikariConfig hikariConfig;
     private Map<WorthType, Boolean> enabled;
     private Map<RecalculateReason, Boolean> performRecalculate;
@@ -279,6 +280,10 @@ public class Settings {
 
     public boolean isDatabasePersistFactions() {
         return databasePersistFactions;
+    }
+
+    public String getPrefix() {
+        return prefix;
     }
 
     public HikariConfig getHikariConfig() {
@@ -517,6 +522,8 @@ public class Settings {
 
         placeholdersFactionNotFound = format(getString("settings.placeholders.faction-not-found", "-"));
         placeholdersEnabledRanks = getList("settings.placeholders.enabled-ranks", Arrays.asList(1, 2, 3), Integer.class);
+
+        prefix = getString("settings.database.prefix", "");
 
         // Do not reload hikari configuration if already loaded.
         if (hikariConfig == null) {

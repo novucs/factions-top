@@ -190,7 +190,7 @@ public final class FactionsTopPlugin extends JavaPlugin {
         Map<ChunkPos, ChunkWorth> loadedChunks;
         Multimap<Integer, BlockPos> loadedSigns;
         try {
-            databaseManager = DatabaseManager.create(settings.getHikariConfig());
+            databaseManager = DatabaseManager.create(settings.getPrefix(), settings.getHikariConfig());
             DatabaseManager.DataDump dataDump = databaseManager.load();
             loadedChunks = dataDump.getChunks();
             loadedSigns = dataDump.getSigns();

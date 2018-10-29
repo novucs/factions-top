@@ -2,15 +2,16 @@ package net.novucs.ftop.database;
 
 import net.novucs.ftop.WorthType;
 import net.novucs.ftop.entity.IdentityCache;
+import net.novucs.ftop.manager.DatabaseManager;
 
 import java.sql.*;
 import java.util.*;
 
 public class FactionWorthModel {
 
-    private static final String UPDATE = "UPDATE `faction_worth` SET `worth` = ? WHERE `id` = ?";
-    private static final String INSERT = "INSERT INTO `faction_worth` (`faction_id`, `worth_id`, `worth`) VALUES (?, ?, ?)";
-    private static final String DELETE = "DELETE FROM `faction_worth` WHERE `faction_id` = ?";
+    private static final String UPDATE = "UPDATE `" + DatabaseManager.prefix + "faction_worth` SET `worth` = ? WHERE `id` = ?";
+    private static final String INSERT = "INSERT INTO `" + DatabaseManager.prefix + "faction_worth` (`faction_id`, `worth_id`, `worth`) VALUES (?, ?, ?)";
+    private static final String DELETE = "DELETE FROM `" + DatabaseManager.prefix + "faction_worth` WHERE `faction_id` = ?";
 
     private final List<Map.Entry<String, Integer>> insertionQueue = new LinkedList<>();
     private final IdentityCache identityCache;

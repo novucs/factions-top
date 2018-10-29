@@ -2,6 +2,7 @@ package net.novucs.ftop.database;
 
 import net.novucs.ftop.WorthType;
 import net.novucs.ftop.entity.IdentityCache;
+import net.novucs.ftop.manager.DatabaseManager;
 
 import java.sql.*;
 import java.util.AbstractMap;
@@ -11,8 +12,8 @@ import java.util.Map;
 
 public class ChunkWorthModel {
 
-    private static final String UPDATE = "UPDATE `chunk_worth` SET `worth` = ? WHERE `id` = ?";
-    private static final String INSERT = "INSERT INTO `chunk_worth` (`chunk_id`, `worth_id`, `worth`) VALUES(?, ?, ?)";
+    private static final String UPDATE = "UPDATE `" + DatabaseManager.prefix + "chunk_worth` SET `worth` = ? WHERE `id` = ?";
+    private static final String INSERT = "INSERT INTO `" + DatabaseManager.prefix + "chunk_worth` (`chunk_id`, `worth_id`, `worth`) VALUES(?, ?, ?)";
 
     private final List<Map.Entry<Integer, Integer>> insertionQueue = new LinkedList<>();
     private final IdentityCache identityCache;

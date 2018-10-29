@@ -1,6 +1,7 @@
 package net.novucs.ftop.database;
 
 import net.novucs.ftop.entity.IdentityCache;
+import net.novucs.ftop.manager.DatabaseManager;
 import org.bukkit.entity.EntityType;
 
 import java.sql.*;
@@ -11,8 +12,8 @@ import java.util.Map;
 
 public class ChunkSpawnerModel {
 
-    private static final String UPDATE = "UPDATE `chunk_spawner_count` SET `count` = ? WHERE `id` = ?";
-    private static final String INSERT = "INSERT INTO `chunk_spawner_count` (`chunk_id`, `spawner_id`, `count`) VALUES(?, ?, ?)";
+    private static final String UPDATE = "UPDATE `" + DatabaseManager.prefix + "chunk_spawner_count` SET `count` = ? WHERE `id` = ?";
+    private static final String INSERT = "INSERT INTO `" + DatabaseManager.prefix + "chunk_spawner_count` (`chunk_id`, `spawner_id`, `count`) VALUES(?, ?, ?)";
 
     private final List<Map.Entry<Integer, Integer>> insertionQueue = new LinkedList<>();
     private final IdentityCache identityCache;

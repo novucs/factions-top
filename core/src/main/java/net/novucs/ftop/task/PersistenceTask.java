@@ -127,7 +127,7 @@ public class PersistenceTask extends Thread {
             try {
                 IdentityCache identityCache = plugin.getDatabaseManager().getIdentityCache();
                 plugin.getDatabaseManager().close();
-                plugin.setDatabaseManager(DatabaseManager.create(plugin.getSettings().getHikariConfig(), identityCache));
+                plugin.setDatabaseManager(DatabaseManager.create(plugin.getSettings().getPrefix(), plugin.getSettings().getHikariConfig(), identityCache));
                 plugin.getLogger().log(Level.SEVERE, "Regeneration successful, issue is with HikariCP datasource");
             } catch (SQLException ignore) {
                 plugin.getLogger().log(Level.SEVERE, "Failed to regenerate, issue not with HikariCP datasource");

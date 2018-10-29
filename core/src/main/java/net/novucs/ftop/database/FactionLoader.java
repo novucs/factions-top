@@ -1,6 +1,7 @@
 package net.novucs.ftop.database;
 
 import net.novucs.ftop.entity.IdentityCache;
+import net.novucs.ftop.manager.DatabaseManager;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -9,10 +10,10 @@ import java.sql.SQLException;
 
 public class FactionLoader {
 
-    private static final String SELECT_FACTION = "SELECT `id` FROM `faction`";
-    private static final String SELECT_FACTION_MATERIAL = "SELECT * FROM `faction_material_count`";
-    private static final String SELECT_FACTION_SPAWNER = "SELECT * FROM `faction_spawner_count`";
-    private static final String SELECT_FACTION_WORTH = "SELECT * FROM `faction_worth`";
+    private static final String SELECT_FACTION = "SELECT `id` FROM `" + DatabaseManager.prefix + "faction`";
+    private static final String SELECT_FACTION_MATERIAL = "SELECT * FROM `" + DatabaseManager.prefix + "faction_material_count`";
+    private static final String SELECT_FACTION_SPAWNER = "SELECT * FROM `" + DatabaseManager.prefix + "faction_spawner_count`";
+    private static final String SELECT_FACTION_WORTH = "SELECT * FROM `" + DatabaseManager.prefix + "faction_worth`";
 
     private final IdentityCache identityCache;
     private final PreparedStatement selectFaction;

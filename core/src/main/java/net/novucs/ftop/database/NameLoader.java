@@ -1,6 +1,7 @@
 package net.novucs.ftop.database;
 
 import net.novucs.ftop.entity.IdentityCache;
+import net.novucs.ftop.manager.DatabaseManager;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,10 +11,10 @@ import java.util.function.BiConsumer;
 
 public class NameLoader {
 
-    private static final String SELECT_MATERIAL = "SELECT * FROM `material`";
-    private static final String SELECT_SPAWNER = "SELECT * FROM `spawner`";
-    private static final String SELECT_WORLD = "SELECT * FROM `world`";
-    private static final String SELECT_WORTH = "SELECT * FROM `worth`";
+    private static final String SELECT_MATERIAL = "SELECT * FROM `" + DatabaseManager.prefix + "material`";
+    private static final String SELECT_SPAWNER = "SELECT * FROM `" + DatabaseManager.prefix + "spawner`";
+    private static final String SELECT_WORLD = "SELECT * FROM `" + DatabaseManager.prefix + "world`";
+    private static final String SELECT_WORTH = "SELECT * FROM `" + DatabaseManager.prefix + "worth`";
 
     private final IdentityCache identityCache;
     private final PreparedStatement selectMaterial;

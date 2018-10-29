@@ -2,6 +2,7 @@ package net.novucs.ftop.database;
 
 import net.novucs.ftop.entity.BlockPos;
 import net.novucs.ftop.entity.IdentityCache;
+import net.novucs.ftop.manager.DatabaseManager;
 
 import java.sql.*;
 import java.util.Collection;
@@ -11,7 +12,7 @@ import java.util.Objects;
 
 public class BlockModel {
 
-    private static final String INSERT = "INSERT INTO `block` (`world_id`, `x`, `y`, `z`) VALUES(?, ?, ?, ?)";
+    private static final String INSERT = "INSERT INTO `" + DatabaseManager.prefix + "block` (`world_id`, `x`, `y`, `z`) VALUES(?, ?, ?, ?)";
 
     private final List<FormattedBlockPos> insertionQueue = new LinkedList<>();
     private final IdentityCache identityCache;

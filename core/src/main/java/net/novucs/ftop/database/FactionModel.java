@@ -2,6 +2,7 @@ package net.novucs.ftop.database;
 
 import net.novucs.ftop.entity.FactionWorth;
 import net.novucs.ftop.entity.IdentityCache;
+import net.novucs.ftop.manager.DatabaseManager;
 
 import java.sql.*;
 import java.util.HashSet;
@@ -9,9 +10,9 @@ import java.util.Set;
 
 public class FactionModel {
 
-    private static final String UPDATE = "UPDATE `faction` SET `name` = ?, `total_worth` = ?, `total_spawners` = ? WHERE `id` = ?";
-    private static final String INSERT = "INSERT INTO `faction` (`id`, `name`, `total_worth`, `total_spawners`) VALUES(?, ?, ?, ?)";
-    private static final String DELETE = "DELETE FROM `faction` WHERE `id` = ?";
+    private static final String UPDATE = "UPDATE `" + DatabaseManager.prefix + "faction` SET `name` = ?, `total_worth` = ?, `total_spawners` = ? WHERE `id` = ?";
+    private static final String INSERT = "INSERT INTO `" + DatabaseManager.prefix + "faction` (`id`, `name`, `total_worth`, `total_spawners`) VALUES(?, ?, ?, ?)";
+    private static final String DELETE = "DELETE FROM `" + DatabaseManager.prefix + "faction` WHERE `id` = ?";
 
     private final Connection connection;
     private final IdentityCache identityCache;

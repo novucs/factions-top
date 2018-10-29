@@ -2,6 +2,7 @@ package net.novucs.ftop.database;
 
 import net.novucs.ftop.entity.BlockPos;
 import net.novucs.ftop.entity.IdentityCache;
+import net.novucs.ftop.manager.DatabaseManager;
 
 import java.sql.*;
 import java.util.LinkedList;
@@ -11,9 +12,9 @@ import java.util.Set;
 
 public class SignModel {
 
-    private static final String UPDATE = "UPDATE `sign` SET `rank` = ? WHERE `id` = ?";
-    private static final String INSERT = "INSERT INTO `sign` (`block_id`, `rank`) VALUES(?, ?)";
-    private static final String DELETE = "DELETE FROM `sign` WHERE `id` = ?";
+    private static final String UPDATE = "UPDATE `" + DatabaseManager.prefix + "sign` SET `rank` = ? WHERE `id` = ?";
+    private static final String INSERT = "INSERT INTO `" + DatabaseManager.prefix + "sign` (`block_id`, `rank`) VALUES(?, ?)";
+    private static final String DELETE = "DELETE FROM `" + DatabaseManager.prefix + "sign` WHERE `id` = ?";
 
     private final List<Integer> insertionQueue = new LinkedList<>();
     private final IdentityCache identityCache;

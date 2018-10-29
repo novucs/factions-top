@@ -1,6 +1,7 @@
 package net.novucs.ftop.database;
 
 import net.novucs.ftop.entity.IdentityCache;
+import net.novucs.ftop.manager.DatabaseManager;
 import org.bukkit.entity.EntityType;
 
 import java.sql.*;
@@ -10,7 +11,7 @@ import java.util.List;
 
 public class SpawnerModel {
 
-    private static final String INSERT = "INSERT INTO `spawner` (`name`) VALUES(?)";
+    private static final String INSERT = "INSERT INTO `" + DatabaseManager.prefix + "spawner` (`name`) VALUES(?)";
 
     private final List<EntityType> insertionQueue = new LinkedList<>();
     private final IdentityCache identityCache;

@@ -14,17 +14,18 @@ public class DatabaseManager {
 
     private final HikariDataSource dataSource;
     private final IdentityCache identityCache;
+    public static String prefix;
 
-    public static DatabaseManager create(HikariConfig hikariConfig) throws SQLException {
-        return create(hikariConfig, new IdentityCache());
+    public static DatabaseManager create(String prefix, HikariConfig hikariConfig) throws SQLException {
+        return create(prefix, hikariConfig, new IdentityCache());
     }
 
-    public static DatabaseManager create(HikariConfig hikariConfig, IdentityCache identityCache) throws SQLException {
+    public static DatabaseManager create(String prefix, HikariConfig hikariConfig, IdentityCache identityCache) throws SQLException {
         // Create the datasource.
         HikariDataSource dataSource = new HikariDataSource(hikariConfig);
 
         // Create the database manager.
-        DatabaseManager manager = new DatabaseManager(dataSource, identityCache);
+        DatabaseManager manager = new DatabaseManager(prefix, dataSource, identityCache);
 
         // Initialize the database.
         Connection connection = dataSource.getConnection();
@@ -35,99 +36,100 @@ public class DatabaseManager {
         return manager;
     }
 
-    private DatabaseManager(HikariDataSource dataSource, IdentityCache identityCache) {
+    private DatabaseManager(String prefix, HikariDataSource dataSource, IdentityCache identityCache) {
+        DatabaseManager.prefix = prefix;
         this.dataSource = dataSource;
         this.identityCache = identityCache;
     }
 
     private void init(Connection connection) throws SQLException {
-        PreparedStatement statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `world` (" +
+        PreparedStatement statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `" + prefix + "world` (" +
                 "`id` INT NOT NULL AUTO_INCREMENT," +
                 "`name` VARCHAR(40) NOT NULL UNIQUE," +
                 "PRIMARY KEY (`id`))");
         statement.executeUpdate();
 
-        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `chunk` (" +
+        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `" + prefix + "chunk` (" +
                 "`id` INT NOT NULL AUTO_INCREMENT," +
                 "`world_id` INT NOT NULL," +
                 "`x` INT NOT NULL," +
                 "`z` INT NOT NULL," +
                 "PRIMARY KEY (`id`)," +
-                "FOREIGN KEY (`world_id`) REFERENCES world(`id`)," +
+                "FOREIGN KEY (`world_id`) REFERENCES " + prefix + "world(`id`)," +
                 "UNIQUE (`world_id`, `x`, `z`))");
         statement.executeUpdate();
 
-        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `worth` (" +
+        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `" + prefix + "worth` (" +
                 "`id` INT NOT NULL AUTO_INCREMENT," +
                 "`name` VARCHAR (40) NOT NULL UNIQUE," +
                 "PRIMARY KEY (`id`))");
         statement.executeUpdate();
 
-        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `chunk_worth` (" +
+        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `" + prefix + "chunk_worth` (" +
                 "`id` INT NOT NULL AUTO_INCREMENT," +
                 "`chunk_id` INT NOT NULL," +
                 "`worth_id` INT NOT NULL," +
                 "`worth` FLOAT NOT NULL," +
                 "PRIMARY KEY (`id`)," +
-                "FOREIGN KEY (`chunk_id`) REFERENCES chunk(`id`)," +
-                "FOREIGN KEY (`worth_id`) REFERENCES worth(`id`)," +
+                "FOREIGN KEY (`chunk_id`) REFERENCES " + prefix + "chunk(`id`)," +
+                "FOREIGN KEY (`worth_id`) REFERENCES " + prefix + "worth(`id`)," +
                 "UNIQUE(`chunk_id`, `worth_id`))");
         statement.executeUpdate();
 
-        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `material` (" +
+        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `" + prefix + "material` (" +
                 "`id` INT NOT NULL AUTO_INCREMENT," +
                 "`name` VARCHAR(40) NOT NULL UNIQUE," +
                 "PRIMARY KEY (`id`))");
         statement.executeUpdate();
 
-        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `chunk_material_count` (" +
+        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `" + prefix + "chunk_material_count` (" +
                 "`id` INT NOT NULL AUTO_INCREMENT," +
                 "`chunk_id` INT NOT NULL," +
                 "`material_id` INT NOT NULL," +
                 "`count` INT NOT NULL," +
                 "PRIMARY KEY (`id`)," +
-                "FOREIGN KEY (`chunk_id`) REFERENCES chunk(`id`)," +
-                "FOREIGN KEY (`material_id`) REFERENCES material(`id`)," +
+                "FOREIGN KEY (`chunk_id`) REFERENCES " + prefix + "chunk(`id`)," +
+                "FOREIGN KEY (`material_id`) REFERENCES " + prefix + "material(`id`)," +
                 "UNIQUE (`chunk_id`, `material_id`))");
         statement.executeUpdate();
 
-        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `spawner` (" +
+        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `" + prefix + "spawner` (" +
                 "`id` INT NOT NULL AUTO_INCREMENT," +
                 "`name` VARCHAR(40) NOT NULL UNIQUE," +
                 "PRIMARY KEY (`id`))");
         statement.executeUpdate();
 
-        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `chunk_spawner_count` (" +
+        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `" + prefix + "chunk_spawner_count` (" +
                 "`id` INT NOT NULL AUTO_INCREMENT," +
                 "`chunk_id` INT NOT NULL," +
                 "`spawner_id` INT NOT NULL," +
                 "`count` INT NOT NULL," +
                 "PRIMARY KEY (`id`)," +
-                "FOREIGN KEY (`chunk_id`) REFERENCES chunk(`id`)," +
-                "FOREIGN KEY (`spawner_id`) REFERENCES spawner(`id`)," +
+                "FOREIGN KEY (`chunk_id`) REFERENCES " + prefix + "chunk(`id`)," +
+                "FOREIGN KEY (`spawner_id`) REFERENCES " + prefix + "spawner(`id`)," +
                 "UNIQUE (`chunk_id`, `spawner_id`))");
         statement.executeUpdate();
 
-        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `block` (" +
+        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `" + prefix + "block` (" +
                 "`id` INT NOT NULL AUTO_INCREMENT, " +
                 "`world_id` INT NOT NULL, " +
                 "`x` INT NOT NULL, " +
                 "`y` INT NOT NULL, " +
                 "`z` INT NOT NULL, " +
                 "PRIMARY KEY (`id`), " +
-                "FOREIGN KEY (`world_id`) REFERENCES world(`id`), " +
+                "FOREIGN KEY (`world_id`) REFERENCES " + prefix + "world(`id`), " +
                 "UNIQUE (`world_id`, `x`, `y`, `z`))");
         statement.executeUpdate();
 
-        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `sign` (" +
+        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `" + prefix + "sign` (" +
                 "`id` INT NOT NULL AUTO_INCREMENT, " +
                 "`block_id` INT NOT NULL UNIQUE, " +
                 "`rank` INT NOT NULL, " +
                 "PRIMARY KEY (`id`), " +
-                "FOREIGN KEY (`block_id`) REFERENCES block(`id`))");
+                "FOREIGN KEY (`block_id`) REFERENCES " + prefix + "block(`id`))");
         statement.executeUpdate();
 
-        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `faction` (" +
+        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `" + prefix + "faction` (" +
                 "`id` VARCHAR(40) NOT NULL, " +
                 "`name` VARCHAR(40) NOT NULL, " +
                 "`total_worth` FLOAT NOT NULL, " +
@@ -136,47 +138,47 @@ public class DatabaseManager {
         statement.executeUpdate();
 
         DatabaseMetaData metaData = connection.getMetaData();
-        ResultSet resultSet = metaData.getIndexInfo(null, null, "faction", true, false);
+        ResultSet resultSet = metaData.getIndexInfo(null, null, "" + prefix + "faction", true, false);
 
         while (resultSet.next()) {
             String indexName = resultSet.getString("INDEX_NAME");
 
             if (indexName.equals("name")) {
-                statement = connection.prepareStatement("DROP INDEX name ON faction");
+                statement = connection.prepareStatement("DROP INDEX name ON " + prefix + "faction");
                 statement.executeUpdate();
             }
         }
 
-        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `faction_worth` (" +
+        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `" + prefix + "faction_worth` (" +
                 "`id` INT NOT NULL AUTO_INCREMENT, " +
                 "`faction_id` VARCHAR(40) NOT NULL, " +
                 "`worth_id` INT NOT NULL, " +
                 "`worth` FLOAT NOT NULL, " +
                 "PRIMARY KEY (`id`), " +
-                "FOREIGN KEY (`faction_id`) REFERENCES faction(`id`), " +
-                "FOREIGN KEY (`worth_id`) REFERENCES worth(`id`), " +
+                "FOREIGN KEY (`faction_id`) REFERENCES " + prefix + "faction(`id`), " +
+                "FOREIGN KEY (`worth_id`) REFERENCES " + prefix + "worth(`id`), " +
                 "UNIQUE (`faction_id`, `worth_id`))");
         statement.executeUpdate();
 
-        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `faction_material_count` (" +
+        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `" + prefix + "faction_material_count` (" +
                 "`id` INT NOT NULL AUTO_INCREMENT, " +
                 "`faction_id` VARCHAR(40) NOT NULL, " +
                 "`material_id` INT NOT NULL, " +
                 "`count` INT NOT NULL, " +
                 "PRIMARY KEY (`id`), " +
-                "FOREIGN KEY (`faction_id`) REFERENCES faction(`id`), " +
-                "FOREIGN KEY (`material_id`) REFERENCES material(`id`), " +
+                "FOREIGN KEY (`faction_id`) REFERENCES " + prefix + "faction(`id`), " +
+                "FOREIGN KEY (`material_id`) REFERENCES " + prefix + "material(`id`), " +
                 "UNIQUE (`faction_id`, `material_id`))");
         statement.executeUpdate();
 
-        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `faction_spawner_count` (" +
+        statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS `" + prefix + "faction_spawner_count` (" +
                 "`id` INT NOT NULL AUTO_INCREMENT, " +
                 "`faction_id` VARCHAR(40) NOT NULL, " +
                 "`spawner_id` INT NOT NULL, " +
                 "`count` INT NOT NULL, " +
                 "PRIMARY KEY (`id`), " +
-                "FOREIGN KEY (`faction_id`) REFERENCES faction(`id`), " +
-                "FOREIGN KEY (`spawner_id`) REFERENCES spawner(`id`), " +
+                "FOREIGN KEY (`faction_id`) REFERENCES " + prefix + "faction(`id`), " +
+                "FOREIGN KEY (`spawner_id`) REFERENCES " + prefix + "spawner(`id`), " +
                 "UNIQUE (`faction_id`, `spawner_id`))");
         statement.executeUpdate();
     }

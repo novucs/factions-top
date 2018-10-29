@@ -2,6 +2,7 @@ package net.novucs.ftop.database;
 
 import net.novucs.ftop.WorthType;
 import net.novucs.ftop.entity.IdentityCache;
+import net.novucs.ftop.manager.DatabaseManager;
 
 import java.sql.*;
 import java.util.Collection;
@@ -10,7 +11,7 @@ import java.util.List;
 
 public class WorthModel {
 
-    private static final String INSERT = "INSERT INTO `worth` (`name`) VALUES(?)";
+    private static final String INSERT = "INSERT INTO `" + DatabaseManager.prefix + "worth` (`name`) VALUES(?)";
 
     private final List<WorthType> insertionQueue = new LinkedList<>();
     private final IdentityCache identityCache;
