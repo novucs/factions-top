@@ -315,8 +315,7 @@ public class WorthListener extends BukkitRunnable implements Listener, PluginSer
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void updateWorth(SpawnerMultiplierChangeEvent event) {
         // Do nothing if this area should not be calculated.
-        Block block = event.getBlock();
-        String factionId = plugin.getFactionsHook().getFactionAt(block);
+        String factionId = plugin.getFactionsHook().getFactionAt(event.getBlock());
         if (plugin.getSettings().getIgnoredFactionIds().contains(factionId)) {
             return;
         }
@@ -327,13 +326,13 @@ public class WorthListener extends BukkitRunnable implements Listener, PluginSer
         Map<Material, Integer> materials = new HashMap<>();
         Map<EntityType, Integer> spawners = new HashMap<>();
 
-        EntityType spawnType = ((CreatureSpawner) block.getState()).getSpawnedType();
+        EntityType spawnType = event.getSpawner().getSpawnedType();
         double price = difference * plugin.getSettings().getSpawnerPrice(spawnType);
         spawners.put(spawnType, difference);
 
         RecalculateReason reason = difference > 0 ? RecalculateReason.PLACE : RecalculateReason.BREAK;
 
         // Add block price to the count.
-        plugin.getWorthManager().add(block.getChunk(), reason, worthType, price, materials, spawners);
+        plugin.getWorthManager().add(event.getBlock().getChunk(), reason, worthType, price, materials, spawners);
     }
 }

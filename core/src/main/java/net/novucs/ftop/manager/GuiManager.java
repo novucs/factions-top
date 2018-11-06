@@ -39,6 +39,12 @@ public class GuiManager {
     public void sendGui(Player player, int page) {
         int entries = plugin.getSettings().getGuiLayout().getFactionsPerPage();
         SplaySet<FactionWorth> factions = plugin.getWorthManager().getOrderedFactions();
+
+        if (factions.size() == 0) {
+            player.sendMessage(plugin.getSettings().getNoEntriesMessage());
+            return;
+        }
+
         int maxPage = Math.max((int) Math.ceil((double) factions.size() / entries), 1);
         page = Math.max(1, Math.min(maxPage, page));
 
