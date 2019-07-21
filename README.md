@@ -33,3 +33,31 @@ results while still maintaining a good performance.
 | factionstop.reload      | Reload the plugin settings      | operator    |
 | factionstop.sign.break  | Break FactionsTop ranking signs | operator    |
 | factionstop.sign.place  | Place FactionsTop ranking signs | operator    |
+
+## Development
+### Prerequisites
+* [Maven](https://maven.apache.org/)
+* [OpenJDK 8](https://openjdk.java.net/install/)
+
+### Project Setup (For UNIX)
+```sh
+# Clone the factions-top repository.
+git clone git@github.com:novucs/factions-top.git
+
+# Create and switch to build tools directory, use your own if exists.
+mkdir buildtools && cd buildtools
+
+# Fetch latest buildtools version.
+wget https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
+
+# Install required craftbukkit dependencies to maven.
+java -jar BuildTools.jar --rev 1.8 && \
+  java -jar BuildTools.jar --rev 1.8.3 && \
+  java -jar BuildTools.jar --rev 1.8.8
+
+# Change directory to factions-top.
+cd ../factions-top
+
+# Install factions-top.
+mvn clean install
+```
