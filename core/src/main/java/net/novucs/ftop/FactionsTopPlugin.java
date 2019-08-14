@@ -6,6 +6,7 @@ import net.novucs.ftop.entity.BlockPos;
 import net.novucs.ftop.entity.ChunkPos;
 import net.novucs.ftop.entity.ChunkWorth;
 import net.novucs.ftop.hook.*;
+import net.novucs.ftop.listener.ChatListener;
 import net.novucs.ftop.listener.CommandListener;
 import net.novucs.ftop.listener.GuiListener;
 import net.novucs.ftop.listener.WorthListener;
@@ -13,6 +14,9 @@ import net.novucs.ftop.manager.DatabaseManager;
 import net.novucs.ftop.manager.GuiManager;
 import net.novucs.ftop.manager.SignManager;
 import net.novucs.ftop.manager.WorthManager;
+import net.novucs.ftop.replacer.LastReplacer;
+import net.novucs.ftop.replacer.PlayerReplacer;
+import net.novucs.ftop.replacer.RankReplacer;
 import net.novucs.ftop.task.ChunkWorthTask;
 import net.novucs.ftop.task.PersistenceTask;
 import net.novucs.ftop.task.RecalculateTask;
@@ -52,6 +56,7 @@ public final class FactionsTopPlugin extends JavaPlugin {
             new ReloadCommand(this),
             new TextCommand(this),
             new VersionCommand(this),
+            new ChatListener(this),
             new CommandListener(this),
             new GuiListener(this),
             new WorthListener(this)
@@ -61,6 +66,8 @@ public final class FactionsTopPlugin extends JavaPlugin {
     private CraftbukkitHook craftbukkitHook;
     private EconomyHook economyHook;
     private FactionsHook factionsHook;
+    private Set<PlaceholderHook> placeholderHooks;
+    private SpawnerStackerHook spawnerStackerHook;
     private DatabaseManager databaseManager;
 
     public ChunkWorthTask getChunkWorthTask() {
@@ -99,8 +106,16 @@ public final class FactionsTopPlugin extends JavaPlugin {
         return factionsHook;
     }
 
+    public SpawnerStackerHook getSpawnerStackerHook() {
+        return spawnerStackerHook;
+    }
+
     public DatabaseManager getDatabaseManager() {
         return databaseManager;
+    }
+
+    public void setDatabaseManager(DatabaseManager databaseManager) {
+        this.databaseManager = databaseManager;
     }
 
     @Override
@@ -113,6 +128,7 @@ public final class FactionsTopPlugin extends JavaPlugin {
         }
 
         loadCraftbukkitHook();
+        loadSpawnerStackerHook();
 
         if (loadEconomyHook()) {
             services.add(economyHook);
@@ -175,18 +191,20 @@ public final class FactionsTopPlugin extends JavaPlugin {
         Multimap<Integer, BlockPos> loadedSigns;
         try {
             databaseManager = DatabaseManager.create(settings.getHikariConfig());
-            loadedChunks = databaseManager.load();
-            loadedSigns = databaseManager.loadSigns();
+            DatabaseManager.DataDump dataDump = databaseManager.load();
+            loadedChunks = dataDump.getChunks();
+            loadedSigns = dataDump.getSigns();
         } catch (SQLException e) {
-            getLogger().severe("Failed to correctly communicate with database!");
-            getLogger().log(Level.SEVERE, "The errors are as follows:", e);
-            getLogger().severe("Disabling FactionsTop . . .");
+            getLogger().log(Level.SEVERE, "Failed to initialize the database");
+            getLogger().log(Level.SEVERE, "Are the database credentials in the config correct?");
+            getLogger().log(Level.SEVERE, "Stack trace: ", e);
+            getLogger().log(Level.SEVERE, "Disabling FactionsTop . . .");
             getServer().getPluginManager().disablePlugin(this);
             return false;
         }
 
         worthManager.loadChunks(loadedChunks);
-        worthManager.updateAllFactions();
+        getServer().getScheduler().runTask(this, worthManager::updateAllFactions);
         signManager.setSigns(loadedSigns);
         return loadedChunks.isEmpty();
     }
@@ -256,6 +274,18 @@ public final class FactionsTopPlugin extends JavaPlugin {
         }
     }
 
+    private void loadSpawnerStackerHook() {
+        Plugin epicSpawnersPlugin = getServer().getPluginManager().getPlugin("EpicSpawners");
+
+        if (epicSpawnersPlugin != null) {
+            spawnerStackerHook = new EpicSpawnersHook(this, craftbukkitHook);
+        } else {
+            spawnerStackerHook = new VanillaSpawnerStackerHook(craftbukkitHook);
+        }
+
+        spawnerStackerHook.initialize();
+    }
+
     private boolean loadEconomyHook() {
         Plugin essentials = getServer().getPluginManager().getPlugin("Essentials");
         if (essentials != null) {
@@ -276,24 +306,70 @@ public final class FactionsTopPlugin extends JavaPlugin {
     private boolean loadFactionsHook() {
         Plugin factions = getServer().getPluginManager().getPlugin("Factions");
         if (factions == null) {
-            return false;
+            factions = getServer().getPluginManager().getPlugin("LegacyFactions");
+
+            if (factions == null) {
+                return false;
+            }
+
+            factionsHook = new LegacyFactions0103(this);
+            return true;
         }
 
         // Attempt to find a valid hook for the factions version.
-        switch (factions.getDescription().getVersion().substring(0, 3)) {
+        String[] components = factions.getDescription().getVersion().split("\\.");
+        String version = components.length < 2 ? "" : components[0] + "." + components[1];
+
+        switch (version) {
             case "1.6":
-                factionsHook = new Factions16x(this);
+                factionsHook = new Factions0106(this);
                 return true;
             case "1.8":
-                factionsHook = new Factions18x(this);
+                factionsHook = new Factions0108(this);
                 return true;
             case "2.7":
             case "2.8":
-                factionsHook = new Factions27x(this);
+            case "2.9":
+            case "2.10":
+                factionsHook = new Factions0207(this);
+                return true;
+            case "2.11":
+                factionsHook = new Factions0211(this);
+                return true;
+            default:
+                factionsHook = new Factions0212(this);
                 return true;
         }
+    }
 
-        return false;
+    private void loadPlaceholderHook() {
+        placeholderHooks = new HashSet<>();
+        
+        PlayerReplacer playerReplacer = new PlayerReplacer(this);
+        RankReplacer rankReplacer = new RankReplacer(this);
+        LastReplacer lastReplacer = new LastReplacer(this);
+        
+        Plugin mvdwPlaceholderApi = getServer().getPluginManager().getPlugin("MVdWPlaceholderAPI");
+        if (mvdwPlaceholderApi != null && mvdwPlaceholderApi.isEnabled()) {
+            PlaceholderHook placeholderHook = new MVdWPlaceholderAPIHook(this, playerReplacer, rankReplacer, lastReplacer);
+            boolean updated = placeholderHook.initialize(getSettings().getPlaceholdersEnabledRanks());
+    
+            placeholderHooks.add(placeholderHook);
+            if (updated) {
+                getLogger().info("MVdWPlaceholderAPI found, added placeholders.");
+            }
+        }
+        
+        Plugin clipPlaceholderApi = getServer().getPluginManager().getPlugin("PlaceholderAPI");
+        if (clipPlaceholderApi != null && clipPlaceholderApi.isEnabled()) {
+            PlaceholderHook placeholderHook = new ClipPlaceholderAPIHook(this, playerReplacer, rankReplacer, lastReplacer);
+            boolean updated = placeholderHook.initialize(getSettings().getPlaceholdersEnabledRanks());
+    
+            placeholderHooks.add(placeholderHook);
+            if (updated) {
+                getLogger().info("PlaceholderAPI found, added placeholders.");
+            }
+        }
     }
 
     /**
@@ -315,6 +391,9 @@ public final class FactionsTopPlugin extends JavaPlugin {
 
             // Update the plugin state to active.
             active = true;
+
+            // Load all placeholders.
+            loadPlaceholderHook();
             return;
         } catch (InvalidConfigurationException e) {
             getLogger().severe("Unable to load settings from config.yml");

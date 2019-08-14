@@ -96,9 +96,11 @@ public class WorthListener extends BukkitRunnable implements Listener, PluginSer
         switch (block.getType()) {
             case MOB_SPAWNER:
                 worthType = WorthType.SPAWNER;
-                EntityType spawnType = ((CreatureSpawner) block.getState()).getSpawnedType();
-                price = multiplier * plugin.getSettings().getSpawnerPrice(spawnType);
-                spawners.put(spawnType, multiplier);
+                CreatureSpawner spawner = (CreatureSpawner) block.getState();
+                EntityType spawnedType = spawner.getSpawnedType();
+                multiplier *= plugin.getSpawnerStackerHook().getStackSize(spawner);
+                price = multiplier * plugin.getSettings().getSpawnerPrice(spawnedType);
+                spawners.put(spawnedType, multiplier);
                 break;
             case CHEST:
             case TRAPPED_CHEST:
@@ -156,11 +158,12 @@ public class WorthListener extends BukkitRunnable implements Listener, PluginSer
             if (item == null) continue;
 
             if (item.getType() == Material.MOB_SPAWNER) {
-                EntityType spawnerType = plugin.getCraftbukkitHook().getSpawnerType(item);
-                worth += plugin.getSettings().getSpawnerPrice(spawnerType) * item.getAmount();
+                int stackSize = plugin.getSpawnerStackerHook().getStackSize(item);
+                EntityType spawnerType = plugin.getSpawnerStackerHook().getSpawnedType(item);
+                worth += plugin.getSettings().getSpawnerPrice(spawnerType) * item.getAmount() * stackSize;
 
                 int count = spawners.getOrDefault(spawnerType, 0);
-                spawners.put(spawnerType, count + item.getAmount());
+                spawners.put(spawnerType, count + (item.getAmount() * stackSize));
                 continue;
             }
 
@@ -181,11 +184,12 @@ public class WorthListener extends BukkitRunnable implements Listener, PluginSer
             if (item == null) continue;
 
             if (item.getType() == Material.MOB_SPAWNER) {
-                EntityType spawnerType = plugin.getCraftbukkitHook().getSpawnerType(item);
-                worth -= plugin.getSettings().getSpawnerPrice(spawnerType) * item.getAmount();
+                int stackSize = plugin.getSpawnerStackerHook().getStackSize(item);
+                EntityType spawnerType = plugin.getSpawnerStackerHook().getSpawnedType(item);
+                worth -= plugin.getSettings().getSpawnerPrice(spawnerType) * item.getAmount() * stackSize;
 
                 int count = spawners.getOrDefault(spawnerType, 0);
-                spawners.put(spawnerType, count - item.getAmount());
+                spawners.put(spawnerType, count - (item.getAmount() + stackSize));
                 continue;
             }
 
@@ -219,6 +223,7 @@ public class WorthListener extends BukkitRunnable implements Listener, PluginSer
     }
 
     private void updateWorth(Chest chest) {
+        if (chest == null) return;
         BlockPos pos = BlockPos.of(chest.getBlock());
         ChestWorth worth = chests.remove(pos);
         if (worth == null) return;
@@ -305,5 +310,30 @@ public class WorthListener extends BukkitRunnable implements Listener, PluginSer
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void recalculate(ChunkUnloadEvent event) {
         plugin.getWorthManager().recalculate(event.getChunk(), RecalculateReason.UNLOAD);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void updateWorth(SpawnerMultiplierChangeEvent event) {
+        // Do nothing if this area should not be calculated.
+        Block block = event.getBlock();
+        String factionId = plugin.getFactionsHook().getFactionAt(block);
+        if (plugin.getSettings().getIgnoredFactionIds().contains(factionId)) {
+            return;
+        }
+
+        // Get the worth type and price of this event.
+        int difference = event.getNewMultiplier() - event.getOldMultiplier();
+        WorthType worthType = WorthType.SPAWNER;
+        Map<Material, Integer> materials = new HashMap<>();
+        Map<EntityType, Integer> spawners = new HashMap<>();
+
+        EntityType spawnType = ((CreatureSpawner) block.getState()).getSpawnedType();
+        double price = difference * plugin.getSettings().getSpawnerPrice(spawnType);
+        spawners.put(spawnType, difference);
+
+        RecalculateReason reason = difference > 0 ? RecalculateReason.PLACE : RecalculateReason.BREAK;
+
+        // Add block price to the count.
+        plugin.getWorthManager().add(block.getChunk(), reason, worthType, price, materials, spawners);
     }
 }

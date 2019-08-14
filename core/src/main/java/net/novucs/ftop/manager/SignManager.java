@@ -6,6 +6,7 @@ import net.novucs.ftop.FactionsTopPlugin;
 import net.novucs.ftop.PluginService;
 import net.novucs.ftop.entity.BlockPos;
 import net.novucs.ftop.entity.FactionWorth;
+import net.novucs.ftop.util.SplaySet;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -17,12 +18,9 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 public class SignManager extends BukkitRunnable implements PluginService, Listener {
@@ -56,14 +54,14 @@ public class SignManager extends BukkitRunnable implements PluginService, Listen
 
     @Override
     public void run() {
-        List<FactionWorth> factions = plugin.getWorthManager().getOrderedFactions();
+        SplaySet<FactionWorth> factions = plugin.getWorthManager().getOrderedFactions();
 
         for (Map.Entry<Integer, Collection<BlockPos>> entry : signs.asMap().entrySet()) {
             // Do nothing if rank is higher than factions size.
             if (entry.getKey() >= factions.size()) continue;
 
             // Get the faction worth.
-            FactionWorth worth = factions.get(entry.getKey());
+            FactionWorth worth = factions.byIndex(entry.getKey());
 
             // Do not update signs if previous value is unchanged.
             double previousWorth = previous.getOrDefault(entry.getKey(), 0d);
@@ -111,10 +109,10 @@ public class SignManager extends BukkitRunnable implements PluginService, Listen
         event.setLine(1, "#" + Math.max(rank, 1));
 
         rank = Math.max(rank - 1, 0);
-        List<FactionWorth> factions = plugin.getWorthManager().getOrderedFactions();
+        SplaySet<FactionWorth> factions = plugin.getWorthManager().getOrderedFactions();
 
         if (factions.size() > rank) {
-            FactionWorth worth = factions.get(rank);
+            FactionWorth worth = factions.byIndex(rank);
             event.setLine(2, worth.getName());
             event.setLine(3, plugin.getSettings().getCurrencyFormat().format(worth.getTotalWorth()));
         } else {
@@ -127,14 +125,7 @@ public class SignManager extends BukkitRunnable implements PluginService, Listen
 
     private void saveSign(BlockPos pos, int rank) {
         signs.put(rank, pos);
-        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
-            try {
-                plugin.getDatabaseManager().saveSign(pos, rank);
-            } catch (SQLException e) {
-                plugin.getLogger().severe("Failed to save a sign to the database!");
-                plugin.getLogger().log(Level.SEVERE, "The error is as follows: ", e);
-            }
-        });
+        plugin.getPersistenceTask().queueCreatedSign(pos, rank);
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -161,13 +152,6 @@ public class SignManager extends BukkitRunnable implements PluginService, Listen
 
     private void removeSign(BlockPos pos) {
         signs.values().remove(pos);
-        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
-            try {
-                plugin.getDatabaseManager().removeSign(pos);
-            } catch (SQLException e) {
-                plugin.getLogger().severe("Failed to remove a sign from the database!");
-                plugin.getLogger().log(Level.SEVERE, "The error is as follows: ", e);
-            }
-        });
+        plugin.getPersistenceTask().queueDeletedSign(pos);
     }
 }

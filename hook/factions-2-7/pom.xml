@@ -7,34 +7,41 @@
     <parent>
         <artifactId>hook</artifactId>
         <groupId>net.novucs.ftop</groupId>
-        <version>1.0.9-SNAPSHOT</version>
+        <version>1.2.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>net.novucs.ftop.hook</groupId>
     <artifactId>factions-2-7</artifactId>
-    <version>1.0.9-SNAPSHOT</version>
+    <version>1.2.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Factions-Hook-v2.7.x</name>
     <description>Provides support for Factions 2.7.x.</description>
 
+    <repositories>
+        <repository>
+            <id>local-repo</id>
+            <url>file://${project.basedir}/../../repo</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>net.novucs.ftop.hook</groupId>
             <artifactId>manager</artifactId>
-            <version>1.0.9-SNAPSHOT</version>
+            <version>1.2.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.massivecraft</groupId>
-            <artifactId>Factions</artifactId>
+            <groupId>com.massivecraft.factions</groupId>
+            <artifactId>factions</artifactId>
             <version>2.7.5</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.massivecraft</groupId>
-            <artifactId>MassiveCore</artifactId>
+            <groupId>com.massivecraft.massivecore</groupId>
+            <artifactId>massivecore</artifactId>
             <version>2.7.5</version>
             <scope>provided</scope>
         </dependency>

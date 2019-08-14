@@ -22,7 +22,6 @@ public class VersionCommand implements CommandExecutor, PluginService {
 
     @Override
     public void terminate() {
-        plugin.getCommand("ftopversion").setExecutor(null);
     }
 
     @Override

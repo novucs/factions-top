@@ -30,7 +30,12 @@ public final class StringUtils {
     }
 
     public static ChatColor getRelationColor(FactionsTopPlugin plugin, CommandSender sender, String factionId) {
-        return sender instanceof Player ? plugin.getFactionsHook().getRelation((Player) sender, factionId) : ChatColor.WHITE;
+        if (!(sender instanceof Player)) {
+            return ChatColor.WHITE;
+        }
+
+        ChatColor relationColor = plugin.getFactionsHook().getRelation((Player) sender, factionId);
+        return relationColor == null ? ChatColor.WHITE : relationColor;
     }
 
     public static String insertPlaceholders(Replacer replacer, String key, String message) {

@@ -5,11 +5,13 @@ import net.novucs.ftop.entity.ChunkPos;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public abstract class FactionsHook implements Listener, PluginService {
@@ -57,4 +59,16 @@ public abstract class FactionsHook implements Listener, PluginService {
     public abstract List<UUID> getMembers(String factionId);
 
     public abstract List<ChunkPos> getClaims();
+
+    public abstract Set<String> getFactionIds();
+
+    void callEvent(Event event) {
+        if (plugin.getServer().isPrimaryThread()) {
+            plugin.getServer().getPluginManager().callEvent(event);
+            return;
+        }
+
+        plugin.getServer().getScheduler().runTask(plugin, () ->
+                plugin.getServer().getPluginManager().callEvent(event));
+    }
 }

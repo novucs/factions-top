@@ -24,7 +24,6 @@ public class GuiCommand implements CommandExecutor, PluginService {
 
     @Override
     public void terminate() {
-        plugin.getServer().getPluginCommand("ftopgui").setExecutor(null);
     }
 
     @Override

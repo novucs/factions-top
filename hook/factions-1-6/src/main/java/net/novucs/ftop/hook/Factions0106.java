@@ -4,7 +4,8 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.massivecraft.factions.*;
 import com.massivecraft.factions.event.*;
-import com.massivecraft.factions.struct.TerritoryAccess;
+import com.massivecraft.factions.zcore.persist.MemoryBoard;
+import com.massivecraft.factions.zcore.persist.MemoryFactions;
 import net.novucs.ftop.entity.ChunkPos;
 import net.novucs.ftop.hook.event.*;
 import net.novucs.ftop.hook.event.FactionDisbandEvent;
@@ -20,21 +21,33 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Factions18x extends FactionsHook {
+public class Factions0106 extends FactionsHook {
 
-    private Map<FLocation, TerritoryAccess> flocationIds;
+    private Map<FLocation, String> flocationIds;
+    private Map<String, Faction> factions;
 
-    public Factions18x(Plugin plugin) {
+    public Factions0106(Plugin plugin) {
         super(plugin);
+    }
+
+    @Override
+    public String getFactionAt(String worldName, int chunkX, int chunkZ) {
+        Faction faction = Board.getInstance().getFactionAt(new FLocation(worldName, chunkX, chunkZ));
+        return faction == null ? Factions.getInstance().getNone().getId() : faction.getId();
     }
 
     @Override
     public void initialize() {
         try {
-            Field flocationIdsField = Board.class.getDeclaredField("flocationIds");
+            Field flocationIdsField = MemoryBoard.class.getDeclaredField("flocationIds");
             flocationIdsField.setAccessible(true);
-            flocationIds = (Map<FLocation, TerritoryAccess>) flocationIdsField.get(null);
+            flocationIds = (Map<FLocation, String>) flocationIdsField.get(Board.getInstance());
             flocationIdsField.setAccessible(false);
+
+            Field factionsField = MemoryFactions.class.getDeclaredField("factions");
+            factionsField.setAccessible(true);
+            factions = (Map<String, Faction>) factionsField.get(Factions.getInstance());
+            factionsField.setAccessible(false);
         } catch (NoSuchFieldException | IllegalAccessException ex) {
             getPlugin().getLogger().severe("Factions version found is incompatible!");
             getPlugin().getServer().getPluginManager().disablePlugin(getPlugin());
@@ -45,42 +58,42 @@ public class Factions18x extends FactionsHook {
     }
 
     @Override
-    public String getFactionAt(String worldName, int chunkX, int chunkZ) {
-        Faction faction = Board.getFactionAt(new FLocation(worldName, chunkX, chunkZ));
-        return faction.getId();
-    }
-
-    @Override
     public String getFaction(Player player) {
-        return FPlayers.i.get(player).getFaction().getId();
+        return FPlayers.getInstance().getByPlayer(player).getFaction().getId();
     }
 
     @Override
     public String getFactionName(String factionId) {
-        return Factions.i.get(factionId).getTag();
+        return Factions.getInstance().getFactionById(factionId).getTag();
     }
 
     @Override
     public boolean isFaction(String factionId) {
-        return Factions.i.get(factionId) != null;
+        return Factions.getInstance().getFactionById(factionId) != null;
     }
 
     @Override
     public ChatColor getRelation(Player player, String factionId) {
-        FPlayer fplayer = FPlayers.i.get(player);
-        Faction faction = Factions.i.get(factionId);
+        FPlayer fplayer = FPlayers.getInstance().getByPlayer(player);
+        Faction faction = Factions.getInstance().getFactionById(factionId);
         return fplayer.getFaction().getRelationTo(faction).getColor();
     }
 
     @Override
     public String getOwnerName(String factionId) {
-        FPlayer owner = Factions.i.get(factionId).getFPlayerLeader();
+        Faction faction = Factions.getInstance().getFactionById(factionId);
+
+        if (faction == null) {
+            return null;
+        }
+
+        FPlayer owner = faction.getFPlayerAdmin();
         return owner == null ? null : owner.getName();
     }
 
     @Override
     public List<UUID> getMembers(String factionId) {
-        return Factions.i.get(factionId).getFPlayers().stream()
+        return Factions.getInstance().getFactionById(factionId).getFPlayers().stream()
                 .map(fplayer -> UUID.fromString(fplayer.getId()))
                 .collect(Collectors.toList());
     }
@@ -90,6 +103,11 @@ public class Factions18x extends FactionsHook {
         List<ChunkPos> target = new LinkedList<>();
         target.addAll(getChunkPos(flocationIds.keySet()));
         return target;
+    }
+
+    @Override
+    public Set<String> getFactionIds() {
+        return factions.keySet();
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -102,14 +120,14 @@ public class Factions18x extends FactionsHook {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onRename(com.massivecraft.factions.event.FactionRenameEvent event) {
         String factionId = event.getFaction().getId();
-        String oldName = event.getFPlayer().getFaction().getTag();
+        String oldName = event.getfPlayer().getFaction().getTag();
         String newName = event.getFactionTag();
         callEvent(new FactionRenameEvent(factionId, oldName, newName));
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onClaim(LandClaimEvent event) {
-        Faction faction = Board.getFactionAt(event.getLocation());
+        Faction faction = Board.getInstance().getFactionAt(event.getLocation());
         Multimap<String, ChunkPos> claims = HashMultimap.create();
         claims.put(faction.getId(), getChunkPos(event.getLocation()));
         callEvent(new FactionClaimEvent(event.getFaction().getId(), claims));
@@ -119,30 +137,28 @@ public class Factions18x extends FactionsHook {
     public void onClaim(LandUnclaimEvent event) {
         Multimap<String, ChunkPos> claims = HashMultimap.create();
         claims.put(event.getFaction().getId(), getChunkPos(event.getLocation()));
-        callEvent(new FactionClaimEvent(Factions.i.getNone().getId(), claims));
+        callEvent(new FactionClaimEvent(Factions.getInstance().getNone().getId(), claims));
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onClaim(LandUnclaimAllEvent event) {
         Multimap<String, ChunkPos> claims = HashMultimap.create();
-
-        flocationIds.entrySet().stream()
-                .filter(entry -> entry.getValue().getHostFaction() == event.getFaction())
-                .forEach(entry -> claims.put(event.getFactionId(), getChunkPos(entry.getKey())));
-
-        callEvent(new FactionClaimEvent(Factions.i.getNone().getId(), claims));
+        for (FLocation location : event.getFaction().getClaimOwnership().keySet()) {
+            claims.put(event.getFaction().getId(), getChunkPos(location));
+        }
+        callEvent(new FactionClaimEvent(Factions.getInstance().getNone().getId(), claims));
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onJoin(FPlayerJoinEvent event) {
-        Player player = event.getFPlayer().getPlayer();
+        Player player = event.getfPlayer().getPlayer();
         String factionId = event.getFaction().getId();
         callEvent(new FactionJoinEvent(factionId, player));
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onLeave(FPlayerLeaveEvent event) {
-        Player player = event.getFPlayer().getPlayer();
+        Player player = event.getfPlayer().getPlayer();
         String factionId = event.getFaction().getId();
         if (player != null) {
             callEvent(new FactionLeaveEvent(factionId, player));
@@ -155,9 +171,5 @@ public class Factions18x extends FactionsHook {
 
     private ChunkPos getChunkPos(FLocation location) {
         return ChunkPos.of(location.getWorldName(), (int) location.getX(), (int) location.getZ());
-    }
-
-    private void callEvent(Event event) {
-        getPlugin().getServer().getPluginManager().callEvent(event);
     }
 }

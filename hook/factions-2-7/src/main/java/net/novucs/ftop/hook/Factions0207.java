@@ -2,6 +2,7 @@ package net.novucs.ftop.hook;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.massivecraft.factions.Factions;
 import com.massivecraft.factions.entity.BoardColl;
 import com.massivecraft.factions.entity.Faction;
 import com.massivecraft.factions.entity.FactionColl;
@@ -13,10 +14,13 @@ import com.massivecraft.factions.event.EventFactionsNameChange;
 import com.massivecraft.massivecore.ps.PS;
 import com.massivecraft.massivecore.store.SenderEntity;
 import net.novucs.ftop.entity.ChunkPos;
-import net.novucs.ftop.hook.event.*;
+import net.novucs.ftop.hook.event.FactionClaimEvent;
+import net.novucs.ftop.hook.event.FactionDisbandEvent;
+import net.novucs.ftop.hook.event.FactionJoinEvent;
+import net.novucs.ftop.hook.event.FactionLeaveEvent;
+import net.novucs.ftop.hook.event.FactionRenameEvent;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.plugin.Plugin;
@@ -27,16 +31,16 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class Factions27x extends FactionsHook {
+public class Factions0207 extends FactionsHook {
 
-    public Factions27x(Plugin plugin) {
+    public Factions0207(Plugin plugin) {
         super(plugin);
     }
 
     @Override
     public String getFactionAt(String worldName, int chunkX, int chunkZ) {
         Faction faction = BoardColl.get().getFactionAt(PS.valueOf(worldName, chunkX, chunkZ));
-        return faction.getId();
+        return faction == null ? Factions.ID_NONE : faction.getId();
     }
 
     @Override
@@ -83,6 +87,11 @@ public class Factions27x extends FactionsHook {
         return target;
     }
 
+    @Override
+    public Set<String> getFactionIds() {
+        return FactionColl.get().getId2entity().keySet();
+    }
+
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDisband(EventFactionsDisband event) {
         String factionId = event.getFactionId();
@@ -124,9 +133,5 @@ public class Factions27x extends FactionsHook {
 
     private ChunkPos psToChunkPos(PS ps) {
         return ChunkPos.of(ps.getWorld(), ps.getChunkX(), ps.getChunkZ());
-    }
-
-    private void callEvent(Event event) {
-        getPlugin().getServer().getPluginManager().callEvent(event);
     }
 }

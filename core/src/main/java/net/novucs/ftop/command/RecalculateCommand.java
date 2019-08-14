@@ -22,7 +22,6 @@ public class RecalculateCommand implements CommandExecutor, PluginService {
 
     @Override
     public void terminate() {
-        plugin.getCommand("ftoprecalculate").setExecutor(null);
     }
 
     @Override

@@ -8,7 +8,11 @@ import net.ess3.api.events.UserBalanceUpdateEvent;
 import net.novucs.ftop.hook.event.FactionEconomyEvent;
 import net.novucs.ftop.hook.event.PlayerEconomyEvent;
 import org.bukkit.entity.Player;
-import org.bukkit.event.*;
+import org.bukkit.event.Event;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 
 import java.util.List;
@@ -52,14 +56,20 @@ public class EssentialsEconomyHook implements EconomyHook, Listener {
     public double getBalance(Player player) {
         try {
             return Economy.getMoneyExact(player.getName()).doubleValue();
-        } catch (UserDoesNotExistException e) {
+        } catch (UserDoesNotExistException | NullPointerException e) {
             return 0;
         }
     }
 
     @Override
     public double getBalance(UUID playerId) {
-        User user = essentials.getUser(playerId);
+        User user;
+        try {
+            user = essentials.getUser(playerId);
+        } catch (NullPointerException e) {
+            return 0;
+        }
+
         if (user != null) {
             return user.getMoney().doubleValue();
         }
@@ -78,7 +88,7 @@ public class EssentialsEconomyHook implements EconomyHook, Listener {
     @Override
     public double getFactionBalance(String factionId) {
         try {
-            return Economy.getMoneyExact("faction_" + factionId).doubleValue();
+            return Economy.getMoneyExact("faction_" + factionId.replace("-", "_")).doubleValue();
         } catch (UserDoesNotExistException e) {
             return 0;
         }

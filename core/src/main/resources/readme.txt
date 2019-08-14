@@ -14,6 +14,14 @@ Configuration walkthrough:
 - liquid-update-ticks: Duration in ticks between liquid economy updates.
 - chunk-queue-size: Hard-limit maximum chunks to be queued for recalculation.
 - chunk-recalculate-millis: Duration in millis between chunk recalculations.
+- chat: Chat placeholder settings.
+- - enabled: Are FactionsTop placeholders going to be used?
+- - rank-placeholder: The text to replace in the original chat format.
+- - rank-found: How the placeholder should look when a rank is found.
+- - rank-not-found: How the placeholder should look when a rank is NOT found.
+- placeholders: MVdWPlaceholderAPI settings.
+- - faction-not-found: What to replace with when no faction is found.
+- - enabled-ranks: The ranks to be loaded into the MVdWPlaceholderAPI.
 - database: Various database settings, MySQL and H2 are supported.
 - - persist-interval: Millis between database updates.
 - - persist-factions: Saves factions in database for websites to parse.
@@ -78,3 +86,10 @@ Body only:
 - {worth:<worth type>} - Value of a specific worth type.
 - {count:spawner:<spawner>} - Count of a specific spawner type.
 - {count:material:<material>} - Count of a specific material.
+
+MVdW Placeholders:
+- {factionstop_name:*}
+- - The faction name of a rank by replacing * with a number.
+- - The faction name in last place by replacing * with "last".
+- {factionstop_rank:player}
+- - The rank of the players faction if valid, otherwise faction-not-found text.
