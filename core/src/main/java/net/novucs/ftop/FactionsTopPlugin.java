@@ -2,6 +2,7 @@ package net.novucs.ftop;
 
 import com.google.common.collect.Multimap;
 import net.novucs.ftop.command.*;
+import net.novucs.ftop.delayedspawners.DelayedSpawners;
 import net.novucs.ftop.entity.BlockPos;
 import net.novucs.ftop.entity.ChunkPos;
 import net.novucs.ftop.entity.ChunkWorth;
@@ -48,9 +49,11 @@ public final class FactionsTopPlugin extends JavaPlugin {
     private final Settings settings = new Settings(this);
     private final SignManager signManager = new SignManager(this);
     private final WorthManager worthManager = new WorthManager(this);
+    private final DelayedSpawners delayedSpawners = new DelayedSpawners(this);
     private final Set<PluginService> services = new HashSet<>(Arrays.asList(
             signManager,
             worthManager,
+            delayedSpawners,
             new GuiCommand(this),
             new RecalculateCommand(this),
             new ReloadCommand(this),
@@ -92,6 +95,10 @@ public final class FactionsTopPlugin extends JavaPlugin {
 
     public WorthManager getWorthManager() {
         return worthManager;
+    }
+
+    public DelayedSpawners getDelayedSpawners() {
+        return delayedSpawners;
     }
 
     public CraftbukkitHook getCraftbukkitHook() {

@@ -372,6 +372,10 @@ public final class WorthManager implements PluginService {
             }
 
             CreatureSpawner spawner = (CreatureSpawner) blockState;
+
+            if (plugin.getDelayedSpawners().isDelayed(spawner))
+                continue;
+
             EntityType spawnType = spawner.getSpawnedType();
             int stackSize = plugin.getSpawnerStackerHook().getStackSize(spawner);
             double blockPrice = plugin.getSettings().getSpawnerPrice(spawnType) * stackSize;

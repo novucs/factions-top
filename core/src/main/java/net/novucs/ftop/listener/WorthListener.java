@@ -5,6 +5,7 @@ import net.novucs.ftop.FactionsTopPlugin;
 import net.novucs.ftop.PluginService;
 import net.novucs.ftop.RecalculateReason;
 import net.novucs.ftop.WorthType;
+import net.novucs.ftop.delayedspawners.DelayedSpawners;
 import net.novucs.ftop.entity.BlockPos;
 import net.novucs.ftop.entity.ChestWorth;
 import net.novucs.ftop.hook.event.*;
@@ -95,8 +96,20 @@ public class WorthListener extends BukkitRunnable implements Listener, PluginSer
 
         switch (block.getType()) {
             case MOB_SPAWNER:
-                worthType = WorthType.SPAWNER;
+                DelayedSpawners delayedSpawners = plugin.getDelayedSpawners();
                 CreatureSpawner spawner = (CreatureSpawner) block.getState();
+
+                if (multiplier == -1 && delayedSpawners.isDelayed(spawner)) {
+                    delayedSpawners.removeFromQueue(spawner);
+                    return;
+                }
+
+                if (multiplier == 1) {
+                    delayedSpawners.queue(spawner);
+                    return;
+                }
+
+                worthType = WorthType.SPAWNER;
                 EntityType spawnedType = spawner.getSpawnedType();
                 multiplier *= plugin.getSpawnerStackerHook().getStackSize(spawner);
                 price = multiplier * plugin.getSettings().getSpawnerPrice(spawnedType);
