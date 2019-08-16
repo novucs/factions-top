@@ -93,9 +93,9 @@ public class WorthListener extends BukkitRunnable implements Listener, PluginSer
         plugin.getWorthManager().add(block.getChunk(), reason, worthType, price,
                 ImmutableMap.of(block.getType(), multiplier), spawners);
 
-        switch (block.getType()) {
-            // TODO: Add backwards compatibility for MOB_SPAWNER
-            case SPAWNER:
+        switch (block.getType().name()) {
+            case "SPAWNER":
+            case "MOB_SPAWNER":
                 worthType = WorthType.SPAWNER;
                 CreatureSpawner spawner = (CreatureSpawner) block.getState();
                 EntityType spawnedType = spawner.getSpawnedType();
@@ -103,8 +103,8 @@ public class WorthListener extends BukkitRunnable implements Listener, PluginSer
                 price = multiplier * plugin.getSettings().getSpawnerPrice(spawnedType);
                 spawners.put(spawnedType, multiplier);
                 break;
-            case CHEST:
-            case TRAPPED_CHEST:
+            case "CHEST":
+            case "TRAPPED_CHEST":
                 if (plugin.getSettings().isDisableChestEvents()) {
                     return;
                 }
@@ -158,8 +158,7 @@ public class WorthListener extends BukkitRunnable implements Listener, PluginSer
         for (ItemStack item : inventory.getContents()) {
             if (item == null) continue;
 
-            // TODO: Add backwards compatibility for MOB_SPAWNER
-            if (item.getType() == Material.SPAWNER) {
+            if (item.getType().name().equals("SPAWNER") || item.getType().name().equals("MOB_SPAWNER")) {
                 int stackSize = plugin.getSpawnerStackerHook().getStackSize(item);
                 EntityType spawnerType = plugin.getSpawnerStackerHook().getSpawnedType(item);
                 worth += plugin.getSettings().getSpawnerPrice(spawnerType) * item.getAmount() * stackSize;
@@ -185,8 +184,7 @@ public class WorthListener extends BukkitRunnable implements Listener, PluginSer
         for (ItemStack item : inventory.getContents()) {
             if (item == null) continue;
 
-            // TODO: Add backwards compatibility for MOB_SPAWNER
-            if (item.getType() == Material.SPAWNER) {
+            if (item.getType().name().equals("SPAWNER") || item.getType().name().equals("MOB_SPAWNER")) {
                 int stackSize = plugin.getSpawnerStackerHook().getStackSize(item);
                 EntityType spawnerType = plugin.getSpawnerStackerHook().getSpawnedType(item);
                 worth -= plugin.getSettings().getSpawnerPrice(spawnerType) * item.getAmount() * stackSize;

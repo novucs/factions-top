@@ -412,9 +412,9 @@ public final class WorthManager implements PluginService {
 
                 int stackSize = item.getAmount();
 
-                switch (item.getType()) {
-                    // TODO: Add backwards compatibility for MOB_SPAWNER
-                    case SPAWNER:
+                switch (item.getType().name()) {
+                    case "MOB_SPAWNER":
+                    case "SPAWNER":
                         stackSize *= plugin.getSpawnerStackerHook().getStackSize(item);
                         spawnerType = plugin.getSpawnerStackerHook().getSpawnedType(item);
                         double price = plugin.getSettings().getSpawnerPrice(spawnerType);

@@ -77,9 +77,12 @@ public class GuiFactionList implements GuiElement {
         String text = insertPlaceholders(settings, worth, replace(this.text, placeholders));
         List<String> lore = insertPlaceholders(settings, worth, replace(this.lore, placeholders));
 
-        // TODO: Add backwards compatibility for SKULL_ITEM
-        ItemStack item = new ItemStack(Material.LEGACY_SKULL_ITEM, 1, (short) 3);
-
+        ItemStack item;
+        try {
+            item = new ItemStack(Material.PLAYER_HEAD, 1);
+        } catch (NoSuchFieldError e) {
+            item = new ItemStack(Material.valueOf("SKULL_ITEM"), 1, (short) 3);
+        }
         SkullMeta meta = (SkullMeta) item.getItemMeta();
         meta.setDisplayName(text);
         meta.setLore(lore);
