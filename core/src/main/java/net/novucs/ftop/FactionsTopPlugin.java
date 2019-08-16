@@ -11,6 +11,7 @@ import net.novucs.ftop.listener.ChatListener;
 import net.novucs.ftop.listener.CommandListener;
 import net.novucs.ftop.listener.GuiListener;
 import net.novucs.ftop.listener.WorthListener;
+import net.novucs.ftop.logger.FactionsTopLogger;
 import net.novucs.ftop.manager.DatabaseManager;
 import net.novucs.ftop.manager.GuiManager;
 import net.novucs.ftop.manager.SignManager;
@@ -62,7 +63,8 @@ public final class FactionsTopPlugin extends JavaPlugin {
             new ChatListener(this),
             new CommandListener(this),
             new GuiListener(this),
-            new WorthListener(this)
+            new WorthListener(this),
+            new FactionsTopLogger(this)
     ));
 
     private boolean active;

@@ -3,17 +3,9 @@ package net.novucs.ftop.hook;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import net.novucs.ftop.entity.ChunkPos;
-import net.novucs.ftop.hook.event.FactionClaimEvent;
-import net.novucs.ftop.hook.event.FactionDisbandEvent;
-import net.novucs.ftop.hook.event.FactionJoinEvent;
-import net.novucs.ftop.hook.event.FactionLeaveEvent;
-import net.novucs.ftop.hook.event.FactionRenameEvent;
+import net.novucs.ftop.hook.event.*;
 import net.redstoneore.legacyfactions.FLocation;
-import net.redstoneore.legacyfactions.entity.Board;
-import net.redstoneore.legacyfactions.entity.FPlayer;
-import net.redstoneore.legacyfactions.entity.FPlayerColl;
-import net.redstoneore.legacyfactions.entity.Faction;
-import net.redstoneore.legacyfactions.entity.FactionColl;
+import net.redstoneore.legacyfactions.entity.*;
 import net.redstoneore.legacyfactions.event.EventFactionsChange;
 import net.redstoneore.legacyfactions.event.EventFactionsDisband;
 import net.redstoneore.legacyfactions.event.EventFactionsLandChange;
@@ -24,12 +16,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.plugin.Plugin;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class LegacyFactions0103 extends FactionsHook {

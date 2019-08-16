@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static net.novucs.ftop.util.GenericUtils.*;
-import static net.novucs.ftop.util.StringUtils.*;
+import static net.novucs.ftop.util.StringUtils.format;
 
 public enum GuiElementType {
 
