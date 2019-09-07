@@ -4,15 +4,12 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.massivecraft.factions.*;
 import com.massivecraft.factions.event.*;
-import com.massivecraft.factions.zcore.persist.MemoryBoard;
-import com.massivecraft.factions.zcore.persist.MemoryFactions;
 import net.novucs.ftop.entity.ChunkPos;
 import net.novucs.ftop.hook.event.*;
 import net.novucs.ftop.hook.event.FactionDisbandEvent;
 import net.novucs.ftop.hook.event.FactionRenameEvent;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.plugin.Plugin;
@@ -39,16 +36,25 @@ public class Factions0106 extends FactionsHook {
     @Override
     public void initialize() {
         try {
-            Field flocationIdsField = MemoryBoard.class.getDeclaredField("flocationIds");
+            Class<?> boardClass, factionsClass;
+            try {
+                boardClass = Class.forName("com.massivecraft.factions.zcore.persist.MemoryBoard");
+                factionsClass = Class.forName("com.massivecraft.factions.zcore.persist.MemoryFactions");
+            } catch(ClassNotFoundException ex) {
+                boardClass = Class.forName("com.massivecraft.factions.data.MemoryBoard");
+                factionsClass = Class.forName("com.massivecraft.factions.data.MemoryFactions");
+            }
+
+            Field flocationIdsField = boardClass.getDeclaredField("flocationIds");
             flocationIdsField.setAccessible(true);
             flocationIds = (Map<FLocation, String>) flocationIdsField.get(Board.getInstance());
             flocationIdsField.setAccessible(false);
 
-            Field factionsField = MemoryFactions.class.getDeclaredField("factions");
+            Field factionsField = factionsClass.getDeclaredField("factions");
             factionsField.setAccessible(true);
             factions = (Map<String, Faction>) factionsField.get(Factions.getInstance());
             factionsField.setAccessible(false);
-        } catch (NoSuchFieldException | IllegalAccessException ex) {
+        } catch (NoSuchFieldException | IllegalAccessException | ClassNotFoundException ex) {
             getPlugin().getLogger().severe("Factions version found is incompatible!");
             getPlugin().getServer().getPluginManager().disablePlugin(getPlugin());
             return;
