@@ -226,6 +226,12 @@ public final class WorthManager implements PluginService {
         factionWorth.addSpawners(spawners);
     }
 
+    public void addPenalty(FactionWorth faction, double amount) {
+        orderedFactions.remove(faction);
+        faction.addPenaltyWorth(amount);
+        orderedFactions.add(faction);
+    }
+
     /**
      * Adds worth to a chunk.
      *

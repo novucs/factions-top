@@ -16,6 +16,7 @@ public class FactionWorth implements Comparable<FactionWorth> {
     private final Map<EntityType, Integer> spawners = new EnumMap<>(EntityType.class);
     private String name;
     private double totalWorth = 0;
+    private double penaltyWorth = 0;
     private int totalSpawners = 0;
 
     public FactionWorth(String factionId, String name) {
@@ -52,7 +53,19 @@ public class FactionWorth implements Comparable<FactionWorth> {
     }
 
     public double getTotalWorth() {
-        return totalWorth;
+        return Math.max(0, totalWorth - penaltyWorth);
+    }
+
+    public double getPenaltyWorth() {
+        return penaltyWorth;
+    }
+
+    public void setPenaltyWorth(double penaltyWorth) {
+        this.penaltyWorth = penaltyWorth;
+    }
+
+    public void addPenaltyWorth(double penaltyWorth) {
+        this.penaltyWorth += penaltyWorth;
     }
 
     private void setWorth(WorthType worthType, double worth) {
@@ -117,7 +130,7 @@ public class FactionWorth implements Comparable<FactionWorth> {
 
     @Override
     public int compareTo(FactionWorth o) {
-        return Double.compare(o.totalWorth, totalWorth);
+        return Double.compare(o.getTotalWorth(), getTotalWorth());
     }
 
     @Override
