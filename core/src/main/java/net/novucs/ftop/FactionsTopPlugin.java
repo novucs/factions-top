@@ -211,8 +211,8 @@ public final class FactionsTopPlugin extends JavaPlugin {
 
     private void setupSlf4j() {
         try {
-            loadLibrary("http://repo2.maven.org/maven2/org/slf4j/slf4j-api/1.7.9/slf4j-api-1.7.9.jar");
-            loadLibrary("http://repo2.maven.org/maven2/org/slf4j/slf4j-nop/1.7.9/slf4j-nop-1.7.9.jar");
+            loadLibrary("https://repo.maven.apache.org/maven2/org/slf4j/slf4j-api/1.7.9/slf4j-api-1.7.9.jar");
+            loadLibrary("https://repo.maven.apache.org/maven2/org/slf4j/slf4j-nop/1.7.9/slf4j-nop-1.7.9.jar");
         } catch (Exception ignore) {
         }
     }
@@ -226,7 +226,7 @@ public final class FactionsTopPlugin extends JavaPlugin {
         }
 
         try {
-            loadLibrary("http://repo2.maven.org/maven2/com/h2database/h2/1.4.192/h2-1.4.192.jar");
+            loadLibrary("https://repo.maven.apache.org/maven2/com/h2database/h2/1.4.192/h2-1.4.192.jar");
             getLogger().info("H2 forcefully loaded, a reboot may be required.");
         } catch (Exception e) {
             getLogger().severe("H2 was unable to be loaded.");
