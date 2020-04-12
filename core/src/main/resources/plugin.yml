@@ -1,6 +1,6 @@
 name: ${project.name}
 main: net.novucs.ftop.FactionsTopPlugin
-version: ${project.version}
+version: '${minecraft.plugin.version}'
 description: ${project.description}
 author: novucs
 softdepend: [EpicSpawners, Essentials, Factions, LegacyFactions, Vault, MVdWPlaceholderAPI, PlaceholderAPI]
