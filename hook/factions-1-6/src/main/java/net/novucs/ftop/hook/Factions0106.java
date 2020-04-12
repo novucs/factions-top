@@ -47,7 +47,7 @@ public class Factions0106 extends FactionsHook {
             factionsField.setAccessible(true);
             factions = (Map<String, Faction>) factionsField.get(Factions.getInstance());
             factionsField.setAccessible(false);
-        } catch (NoSuchFieldException | IllegalAccessException ex) {
+        } catch (NoSuchFieldException | IllegalAccessException | NoClassDefFoundError ex) {
             getPlugin().getLogger().severe("Factions version found is incompatible!");
             getPlugin().getServer().getPluginManager().disablePlugin(getPlugin());
             return;
