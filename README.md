@@ -34,6 +34,13 @@ results while still maintaining a good performance.
 | factionstop.sign.break  | Break FactionsTop ranking signs | operator    |
 | factionstop.sign.place  | Place FactionsTop ranking signs | operator    |
 
+## Useful links
+
+- [SpigotMC.org resource page](https://www.spigotmc.org/resources/f-top-factions-top-by-novucs.26905/)
+- [Bukkit.org project page](https://dev.bukkit.org/projects/factionstop)
+- [Development builds](https://ci.minebench.de/job/FactionsTop/)
+- [Issue tracker](https://github.com/novucs/factions-top/issues)
+
 ## Development
 ### Prerequisites
 * [Maven](https://maven.apache.org/)
