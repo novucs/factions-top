@@ -4,8 +4,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.massivecraft.factions.*;
 import com.massivecraft.factions.event.*;
-import com.massivecraft.factions.data.MemoryBoard;
-import com.massivecraft.factions.data.MemoryFactions;
 import net.novucs.ftop.entity.ChunkPos;
 import net.novucs.ftop.hook.event.*;
 import net.novucs.ftop.hook.event.FactionDisbandEvent;
@@ -38,22 +36,38 @@ public class Factions0106 extends FactionsHook {
     @Override
     public void initialize() {
         try {
-            Field flocationIdsField = MemoryBoard.class.getDeclaredField("flocationIds");
+            Class<?> memoryBoardClass = getFactionsClass("MemoryBoard");
+            Class<?> memoryFactionsClass = getFactionsClass("MemoryFactions");
+
+            Field flocationIdsField = memoryBoardClass.getDeclaredField("flocationIds");
             flocationIdsField.setAccessible(true);
             flocationIds = (Map<FLocation, String>) flocationIdsField.get(Board.getInstance());
             flocationIdsField.setAccessible(false);
 
-            Field factionsField = MemoryFactions.class.getDeclaredField("factions");
+            Field factionsField = memoryFactionsClass.getDeclaredField("factions");
             factionsField.setAccessible(true);
             factions = (Map<String, Faction>) factionsField.get(Factions.getInstance());
             factionsField.setAccessible(false);
-        } catch (NoSuchFieldException | IllegalAccessException | NoClassDefFoundError ex) {
+        } catch (NoSuchFieldException | IllegalAccessException | ClassNotFoundException ex) {
             getPlugin().getLogger().severe("Factions version found is incompatible!");
+            Plugin factions = getPlugin().getServer().getPluginManager().getPlugin("Factions");
+            if (factions != null) {
+                getPlugin().getLogger().info("Installed Factions version: " + factions.getDescription().getVersion()
+                        + " by " + factions.getDescription().getAuthors());
+            }
             getPlugin().getServer().getPluginManager().disablePlugin(getPlugin());
             return;
         }
 
         super.initialize();
+    }
+
+    private Class<?> getFactionsClass(String name) throws ClassNotFoundException {
+        try {
+            return Class.forName("com.massivecraft.factions.data." + name);
+        } catch (ClassNotFoundException e) {
+            return Class.forName("com.massivecraft.factions.zcore.persist." + name);
+        }
     }
 
     @Override

@@ -51,6 +51,11 @@ public class Factions0108 extends FactionsHook {
             flocationIdsField.setAccessible(false);
         } catch (NoSuchFieldException | IllegalAccessException ex) {
             getPlugin().getLogger().severe("Factions version found is incompatible!");
+            Plugin factions = getPlugin().getServer().getPluginManager().getPlugin("Factions");
+            if (factions != null) {
+                getPlugin().getLogger().info("Installed Factions version: " + factions.getDescription().getVersion()
+                        + " by " + factions.getDescription().getAuthors());
+            }
             getPlugin().getServer().getPluginManager().disablePlugin(getPlugin());
             return;
         }
