@@ -1,4 +1,15 @@
-.idea/
-*/target/
-*/*/target/
+# Eclipse Files
+*.classpath
+*.project
+*.prefs
+
+# IntelliJ IDEA Files
 *.iml
+*.idea
+
+# Java Files
+*.class
+
+# Maven Stuff
+target/
+*.lst
