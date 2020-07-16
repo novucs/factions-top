@@ -65,8 +65,7 @@ public class ChunkWorthTask extends Thread {
                         worth += blockPrice;
 
                         if (blockPrice != 0) {
-                            int count = materials.getOrDefault(material, 0);
-                            materials.put(material, count + 1);
+                            materials.merge(material, 1, Integer::sum)
                         }
                     }
                 }
