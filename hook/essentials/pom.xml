@@ -21,7 +21,7 @@
     <repositories>
         <repository>
             <id>ess-repo</id>
-            <url>http://repo.ess3.net/content/groups/essentials</url>
+            <url>https://repo.ess3.net/content/groups/essentials</url>
         </repository>
     </repositories>
 

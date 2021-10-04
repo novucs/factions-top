@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class ClipPlaceholderAPIHook extends PlaceholderExpansion implements PlaceholderHook {
+public class ClipPlaceholderAPIHook implements PlaceholderHook {
 
     private final Plugin plugin;
     private final Function<Player, String> playerReplacer;
@@ -30,48 +30,49 @@ public class ClipPlaceholderAPIHook extends PlaceholderExpansion implements Plac
     @Override
     public boolean initialize(List<Integer> enabledRanks) {
         this.enabledRanks = new HashSet<>(enabledRanks);
-        return register();
-    }
+        return new PlaceholderExpansion() {
 
-    @Override
-    public String onPlaceholderRequest(Player player, String identifier) {
-        if ("name:last".equals(identifier)) {
-            return lastReplacer.get();
-        } else if ("rank:player".equals(identifier)) {
-            return playerReplacer.apply(player);
-        } else if (identifier.startsWith("name:")) {
-            String[] split = identifier.split(":");
-            if (split.length > 1) {
-                try {
-                    int rank = Integer.parseInt(split[1]);
-                    if (enabledRanks.contains(rank) || enabledRanks.isEmpty()) {
-                        return rankReplacer.apply(rank);
+            @Override
+            public String onPlaceholderRequest(Player player, String identifier) {
+                if ("name:last".equals(identifier)) {
+                    return lastReplacer.get();
+                } else if ("rank:player".equals(identifier)) {
+                    return playerReplacer.apply(player);
+                } else if (identifier.startsWith("name:")) {
+                    String[] split = identifier.split(":");
+                    if (split.length > 1) {
+                        try {
+                            int rank = Integer.parseInt(split[1]);
+                            if (enabledRanks.contains(rank) || enabledRanks.isEmpty()) {
+                                return rankReplacer.apply(rank);
+                            }
+                        } catch (NumberFormatException ignored) {
+                        }
                     }
-                } catch (NumberFormatException ignored) {
                 }
+                return null;
             }
-        }
-        return null;
-    }
 
 
-    @Override
-    public boolean persist() {
-        return true;
-    }
+            @Override
+            public boolean persist() {
+                return true;
+            }
 
-    @Override
-    public String getIdentifier() {
-        return "factionstop";
-    }
+            @Override
+            public String getIdentifier() {
+                return "factionstop";
+            }
 
-    @Override
-    public String getAuthor() {
-        return String.join(", ", plugin.getDescription().getAuthors());
-    }
+            @Override
+            public String getAuthor() {
+                return String.join(", ", plugin.getDescription().getAuthors());
+            }
 
-    @Override
-    public String getVersion() {
-        return plugin.getDescription().getVersion();
+            @Override
+            public String getVersion() {
+                return plugin.getDescription().getVersion();
+            }
+        }.register();
     }
 }

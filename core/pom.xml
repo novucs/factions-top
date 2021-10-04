@@ -90,7 +90,7 @@
     <repositories>
         <repository>
             <id>fanciful-repo</id>
-            <url>http://ci.ender.zone/plugin/repository/everything/</url>
+            <url>https://ci.ender.zone/plugin/repository/everything/</url>
         </repository>
     </repositories>
 
