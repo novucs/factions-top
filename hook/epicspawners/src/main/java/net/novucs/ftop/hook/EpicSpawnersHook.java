@@ -1,8 +1,8 @@
 package net.novucs.ftop.hook;
 
-import com.songoda.epicspawners.API.EpicSpawnersAPI;
-import com.songoda.epicspawners.EpicSpawners;
-import com.songoda.epicspawners.Spawners.SpawnerChangeEvent;
+import com.songoda.epicspawners.api.EpicSpawners;
+import com.songoda.epicspawners.api.EpicSpawnersAPI;
+import com.songoda.epicspawners.api.events.SpawnerChangeEvent;
 import net.novucs.ftop.hook.event.SpawnerMultiplierChangeEvent;
 import org.bukkit.ChatColor;
 import org.bukkit.block.CreatureSpawner;
@@ -17,7 +17,7 @@ public class EpicSpawnersHook implements SpawnerStackerHook, Listener {
 
     private final Plugin plugin;
     private final CraftbukkitHook craftbukkitHook;
-    private EpicSpawnersAPI api;
+    private EpicSpawners api;
 
     public EpicSpawnersHook(Plugin plugin, CraftbukkitHook craftbukkitHook) {
         this.plugin = plugin;
@@ -25,12 +25,8 @@ public class EpicSpawnersHook implements SpawnerStackerHook, Listener {
     }
 
     public void initialize() {
-        Plugin epicSpawnersPlugin = plugin.getServer().getPluginManager().getPlugin("EpicSpawners");
-
-        if (epicSpawnersPlugin instanceof EpicSpawners) {
-            api = ((EpicSpawners) epicSpawnersPlugin).getApi();
-            plugin.getServer().getPluginManager().registerEvents(this, plugin);
-        }
+        api = EpicSpawnersAPI.getImplementation();
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @Override
@@ -40,7 +36,7 @@ public class EpicSpawnersHook implements SpawnerStackerHook, Listener {
         }
 
         try {
-            return api.getType(spawner);
+            return api.getSpawnerDataFromItem(spawner).getEntities().get(0);
         } catch (IllegalArgumentException ex) {
             return craftbukkitHook.getSpawnerType(spawner);
         }
@@ -72,14 +68,14 @@ public class EpicSpawnersHook implements SpawnerStackerHook, Listener {
             return 1;
         }
 
-        return api.getSpawnerMultiplier(spawner.getLocation());
+        return api.getSpawnerManager().getSpawnerFromWorld(spawner.getLocation()).getSpawnerStacks().size();
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void updateWorth(SpawnerChangeEvent event) {
-        CreatureSpawner spawner = (CreatureSpawner) event.getSpawner().getState();
-        int oldMultiplier = event.getOldMulti();
-        int newMultiplier = event.getCurrentMulti();
+        CreatureSpawner spawner = event.getSpawner().getCreatureSpawner();
+        int oldMultiplier = event.getOldStackSize();
+        int newMultiplier = event.getStackSize();
         SpawnerMultiplierChangeEvent event1 = new SpawnerMultiplierChangeEvent(spawner, oldMultiplier, newMultiplier);
 
         if (plugin.getServer().isPrimaryThread()) {
